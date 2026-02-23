@@ -1,15 +1,20 @@
 package DTO;
-import java.time.LocalDate;
+
+import java.time.LocalDateTime;
+
+/**
+ * Data Transfer Object cho bảng Nhật ký hệ thống (Log)
+ */
 public class logDTO {
-    public String Malog;
-    public String accountid; 
-    public String hanhvi; 
-    public String thucthe; 
-    public String chitiethv; 
-    public LocalDate thoidiem; 
+    private String malog;
+    private String accountid; 
+    private String hanhvi; 
+    private String thucthe; 
+    private String chitiethv; 
+    private LocalDateTime thoidiem; // Đổi từ LocalDate sang LocalDateTime
 
-    public logDTO(String Malog, String accountid, String hanhvi, String thucthe, String chitiethv, LocalDate thoidiem) {
-        this.Malog = Malog;
+    public logDTO(String malog, String accountid, String hanhvi, String thucthe, String chitiethv, LocalDateTime thoidiem) {
+        this.malog = malog;
         this.accountid = accountid;
         this.hanhvi = hanhvi;
         this.thucthe = thucthe;
@@ -17,54 +22,34 @@ public class logDTO {
         this.thoidiem = thoidiem;
     }
     
-    public logDTO(){}
+    public logDTO() {}
 
-    public String getMalog() {
-        return Malog;
-    }
+    /* ============================================================
+       GETTERS & SETTERS
+       ============================================================ */
+    public String getMalog() { return malog; }
+    public void setMalog(String malog) { this.malog = malog; }
 
-    public void setMalog(String Malog) {
-        this.Malog = Malog;
-    }
+    public String getAccountid() { return accountid; }
+    public void setAccountid(String accountid) { this.accountid = accountid; }
 
-    public String getAccountid() {
-        return accountid;
-    }
+    public String getHanhvi() { return hanhvi; }
+    public void setHanhvi(String hanhvi) { this.hanhvi = hanhvi; }
 
-    public void setAccountid(String accountid) {
-        this.accountid = accountid;
-    }
+    public String getThucthe() { return thucthe; }
+    public void setThucthe(String thucthe) { this.thucthe = thucthe; }
 
-    public String getHanhvi() {
-        return hanhvi;
-    }
+    public String getChitiethv() { return chitiethv; }
+    public void setChitiethv(String chitiethv) { this.chitiethv = chitiethv; }
 
-    public void setHanhvi(String hanhvi) {
-        this.hanhvi = hanhvi;
-    }
+    public LocalDateTime getThoidiem() { return thoidiem; }
+    public void setThoidiem(LocalDateTime thoidiem) { this.thoidiem = thoidiem; }
 
-    public String getThucthe() {
-        return thucthe;
+    /**
+     * Hỗ trợ in nhanh thông tin log để kiểm tra
+     */
+    @Override
+    public String toString() {
+        return "LogDTO{" + "hanhvi='" + hanhvi + '\'' + ", thoidiem=" + thoidiem + '}';
     }
-
-    public void setThucthe(String thucthe) {
-        this.thucthe = thucthe;
-    }
-
-    public String getChitiethv() {
-        return chitiethv;
-    }
-
-    public void setChitiethv(String chitiethv) {
-        this.chitiethv = chitiethv;
-    }
-
-    public LocalDate getThoidiem() {
-        return thoidiem;
-    }
-
-    public void setThoidiem(LocalDate thoidiem) {
-        this.thoidiem = thoidiem;
-    }
-    
 }
