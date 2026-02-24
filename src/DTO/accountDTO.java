@@ -1,21 +1,21 @@
 package DTO;
 public class accountDTO {
-    private int id;
+    private String id;
     private String ten;
     private String pass;
     private String quyen;
 
     public accountDTO() {}
 
-    public accountDTO(int id, String ten, String pass, String quyen) {
+    public accountDTO(String id, String ten, String pass, String quyen) {
         this.id = id;
         this.ten = ten;
         this.pass = pass;
         this.quyen = quyen;
     }
     
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
     public String getTen() { return ten; }
     public void setTen(String ten) { this.ten = ten; }
