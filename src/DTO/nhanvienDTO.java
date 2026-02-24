@@ -9,11 +9,11 @@ public class nhanvienDTO {
     private String diaChi;
     private double thamNien;
     private double luong;
+    private boolean trangthai; 
 
     public nhanvienDTO() {
     }
-
-    public nhanvienDTO(String maNV, String hoTen, String gioiTinh, String sdt, String diaChi, double thamNien, double luong) {
+    public nhanvienDTO(String maNV, String hoTen, String gioiTinh, String sdt, String diaChi, double thamNien, double luong, boolean trangthai) {
         this.maNV = maNV;
         this.hoTen = hoTen;
         this.gioiTinh = gioiTinh;
@@ -21,6 +21,7 @@ public class nhanvienDTO {
         this.diaChi = diaChi;
         this.thamNien = thamNien;
         this.luong = luong;
+        this.trangthai = trangthai; 
     }
 
     public String getMaNV() { return maNV; }
@@ -43,5 +44,8 @@ public class nhanvienDTO {
 
     public double getLuong() { return luong; }
     public void setLuong(double luong) { this.luong = luong; }
+
+    public boolean istrangthai() { return trangthai; }
+    public void settrangthai(boolean trangthai) { this.trangthai = trangthai; }
 
 }
