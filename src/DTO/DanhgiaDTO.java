@@ -1,5 +1,5 @@
 package DTO;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class DanhgiaDTO {
     private String maDG;
@@ -7,9 +7,9 @@ public class DanhgiaDTO {
     private String maSP;
     private String noiDungDG;
     private int sao;
-    private LocalDate ngayTao;
+    private LocalDateTime ngayTao;
 
-    public DanhgiaDTO(String maDG, String maKH, String maSP, String noiDungDG, int sao, LocalDate ngayTao) {
+    public DanhgiaDTO(String maDG, String maKH, String maSP, String noiDungDG, int sao, LocalDateTime ngayTao) {
         this.maDG = maDG;
         this.maKH = maKH;
         this.maSP = maSP;
@@ -59,11 +59,11 @@ public class DanhgiaDTO {
         this.sao = sao;
     }
 
-    public LocalDate getNgayTao() {
+    public LocalDateTime getNgayTao() {
         return ngayTao;
     }
 
-    public void setNgayTao(LocalDate ngayTao) {
+    public void setNgayTao(LocalDateTime ngayTao) {
         this.ngayTao = ngayTao;
     }
     
