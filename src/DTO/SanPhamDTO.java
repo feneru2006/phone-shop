@@ -10,10 +10,10 @@ public class SanPhamDTO {
     private String maLoai;
     private String cauHinh;
     private String nsx;
-
+    private boolean isDeleted; 
+    
     public SanPhamDTO() {}
-
-    public SanPhamDTO(String maSP, String tenSP, int slTon, double gia, String trangThai, String maLoai, String cauHinh, String nsx) {
+    public SanPhamDTO(String maSP, String tenSP, int slTon, double gia, String trangThai, String maLoai, String cauHinh, String nsx, boolean isDeleted) {
         this.maSP = maSP;
         this.tenSP = tenSP;
         this.slTon = slTon;
@@ -22,9 +22,8 @@ public class SanPhamDTO {
         this.maLoai = maLoai;
         this.cauHinh = cauHinh;
         this.nsx = nsx;
+        this.isDeleted = isDeleted;
     }
-
-    // Getters and Setters
     public String getMaSP() { return maSP; }
     public void setMaSP(String maSP) { this.maSP = maSP; }
 
@@ -49,5 +48,7 @@ public class SanPhamDTO {
     public String getNsx() { return nsx; }
     public void setNsx(String nsx) { this.nsx = nsx; }
 
+    public boolean isDeleted() { return isDeleted; }
+    public void setDeleted(boolean isDeleted) { this.isDeleted = isDeleted; }
+
 }
-   
