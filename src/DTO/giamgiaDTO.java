@@ -1,15 +1,18 @@
 package DTO;
+import java.time.LocalDateTime;
 public class giamgiaDTO {
     private String MAGG; 
-    private String maSP; 
-    private String phantramgg;
+    private String dotGG; 
+    private LocalDateTime batdau;  
+    private LocalDateTime ketthuc;
+
     
     public giamgiaDTO(){}
-
-    public giamgiaDTO(String MAGG, String maSP, String phantramgg) {
+    public giamgiaDTO(String MAGG, String dotGG, LocalDateTime batdau, LocalDateTime ketthuc) {
         this.MAGG = MAGG;
-        this.maSP = maSP;
-        this.phantramgg = phantramgg;
+        this.dotGG = dotGG;
+        this.batdau = batdau;
+        this.ketthuc = ketthuc;
     }
 
     public String getMAGG() {
@@ -20,21 +23,28 @@ public class giamgiaDTO {
         this.MAGG = MAGG;
     }
 
-    public String getMaSP() {
-        return maSP;
+    public String getdotGG() {
+        return dotGG;
     }
 
-    public void setMaSP(String maSP) {
-        this.maSP = maSP;
+    public void setdotGG(String dotGG) {
+        this.dotGG = dotGG;
     }
 
-    public String getPhantramgg() {
-        return phantramgg;
+    public LocalDateTime getBatdau() {
+        return batdau;
     }
 
-    public void setPhantramgg(String phantramgg) {
-        this.phantramgg = phantramgg;
+    public void setBatdau(LocalDateTime batdau) {
+        this.batdau = batdau;
     }
-    
-    
+
+    public LocalDateTime getKetthuc() {
+        return ketthuc;
+    }
+
+    public void setKetthuc(LocalDateTime ketthuc) {
+        this.ketthuc = ketthuc;
+    }
+
 }
