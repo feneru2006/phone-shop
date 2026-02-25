@@ -2,9 +2,16 @@ package DTO;
 import java.util.*; 
 import java.util.Objects;
 public class nhanvienDTO {
+ 
+    public enum GioiTinh {
+        NAM, 
+        NU, 
+        KHAC
+    }
+
     private String maNV;
     private String hoTen;
-    private String gioiTinh;
+    private GioiTinh gioiTinh; 
     private String sdt;
     private String diaChi;
     private double thamNien;
@@ -13,7 +20,8 @@ public class nhanvienDTO {
 
     public nhanvienDTO() {
     }
-    public nhanvienDTO(String maNV, String hoTen, String gioiTinh, String sdt, String diaChi, double thamNien, double luong, boolean trangthai) {
+    
+    public nhanvienDTO(String maNV, String hoTen, GioiTinh gioiTinh, String sdt, String diaChi, double thamNien, double luong, boolean trangthai) {
         this.maNV = maNV;
         this.hoTen = hoTen;
         this.gioiTinh = gioiTinh;
@@ -30,8 +38,8 @@ public class nhanvienDTO {
     public String getHoTen() { return hoTen; }
     public void setHoTen(String hoTen) { this.hoTen = hoTen; }
 
-    public String getGioiTinh() { return gioiTinh; }
-    public void setGioiTinh(String gioiTinh) { this.gioiTinh = gioiTinh; }
+    public GioiTinh getGioiTinh() { return gioiTinh; }
+    public void setGioiTinh(GioiTinh gioiTinh) { this.gioiTinh = gioiTinh; }
 
     public String getSdt() { return sdt; }
     public void setSdt(String sdt) { this.sdt = sdt; }
