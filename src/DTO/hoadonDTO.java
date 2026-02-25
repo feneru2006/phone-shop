@@ -1,16 +1,16 @@
 package DTO;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class hoadonDTO {
     private String maHD;
     private String maNV;
     private String maKH;
-    private LocalDate ngayLap;
+    private LocalDateTime ngayLap;
     private double tongTien;
 
     public hoadonDTO() {}
 
-    public hoadonDTO(String maHD, String maNV, String maKH, LocalDate ngayLap, double tongTien) {
+    public hoadonDTO(String maHD, String maNV, String maKH, LocalDateTime ngayLap, double tongTien) {
         this.maHD = maHD;
         this.maNV = maNV;
         this.maKH = maKH;
@@ -27,8 +27,8 @@ public class hoadonDTO {
     public String getMaKH() { return maKH; }
     public void setMaKH(String maKH) { this.maKH = maKH; }
 
-    public LocalDate getNgayLap() { return ngayLap; }
-    public void setNgayLap(LocalDate ngayLap) { this.ngayLap = ngayLap; }
+    public LocalDateTime getNgayLap() { return ngayLap; }
+    public void setNgayLap(LocalDateTime ngayLap) { this.ngayLap = ngayLap; }
 
     public double getTongTien() { return tongTien; }
     public void setTongTien(double tongTien) { this.tongTien = tongTien; }
