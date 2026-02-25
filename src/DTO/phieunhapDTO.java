@@ -1,15 +1,15 @@
 package DTO;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 public class phieunhapDTO {
     private String maPNH;
     private String maNV;
-    private LocalDate ngayNhap;
+    private LocalDateTime ngayNhap;
     private double tongTien;
     private String maNCC;
 
     public phieunhapDTO() {}
 
-    public phieunhapDTO(String maPNH, String maNV, LocalDate ngayNhap, double tongTien, String maNCC) {
+    public phieunhapDTO(String maPNH, String maNV, LocalDateTime ngayNhap, double tongTien, String maNCC) {
         this.maPNH = maPNH;
         this.maNV = maNV;
         this.ngayNhap = ngayNhap;
@@ -23,8 +23,8 @@ public class phieunhapDTO {
     public String getMaNV() { return maNV; }
     public void setMaNV(String maNV) { this.maNV = maNV; }
 
-    public LocalDate getNgayNhap() { return ngayNhap; }
-    public void setNgayNhap(LocalDate ngayNhap) { this.ngayNhap = ngayNhap; }
+    public LocalDateTime getNgayNhap() { return ngayNhap; }
+    public void setNgayNhap(LocalDateTime ngayNhap) { this.ngayNhap = ngayNhap; }
 
     public double getTongTien() { return tongTien; }
     public void setTongTien(double tongTien) { this.tongTien = tongTien; }
