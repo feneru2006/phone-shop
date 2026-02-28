@@ -1,9 +1,8 @@
-package test1;
+package UI;
 
 import com.formdev.flatlaf.FlatLightLaf;
 import DTO.accountDTO;
 import Utility.RolePermission;
-
 
 import javax.swing.*;
 import java.awt.*;

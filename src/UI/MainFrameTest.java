@@ -1,4 +1,4 @@
-package test1;
+package UI;
 
 import com.formdev.flatlaf.FlatLightLaf;
 import javax.swing.*;
@@ -8,6 +8,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import UI.DashboardPanel; // Tích hợp DashboardPanel
+import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
 public class MainFrameTest extends JFrame {
     private final CardLayout cardLayout = new CardLayout();
@@ -31,19 +33,24 @@ public class MainFrameTest extends JFrame {
         setSize(1300, 800);
         setLocationRelativeTo(null);
 
-        // Bố cục tổng thể
         JPanel root = new JPanel(new BorderLayout());
         root.setBackground(BG_APP);
 
-        // 1. Build các thành phần giao diện
         root.add(buildTitleBar(), BorderLayout.NORTH);
         root.add(buildSidebar(), BorderLayout.WEST);
         root.add(buildMainContent(), BorderLayout.CENTER);
 
         setContentPane(root);
         
-        // Khởi tạo các trang nội dung
+        // --- CHỈNH SỬA TẠI ĐÂY ĐỂ HIỂN THỊ DASHBOARD ---
+        // 1. Khởi tạo các trang placeholder trước
         initCards();
+        
+        // 2. Sau đó nạp DashboardPanel thật vào để ghi đè lên trang placeholder "Dashboard"
+        DashboardPanel dashboardPanel = new DashboardPanel(); 
+        contentPanel.add(dashboardPanel, "Dashboard");
+        
+        // 3. Hiển thị Dashboard mặc định
         showCard("Dashboard");
     }
 
@@ -62,29 +69,21 @@ public class MainFrameTest extends JFrame {
         titleBar.setPreferredSize(new Dimension(0, 55));
         titleBar.setBorder(new EmptyBorder(0, 20, 0, 20));
 
-        // Trái: Thương hiệu
-        // 1. Tạo một Panel trung gian (dùng FlowLayout để các thành phần nằm ngang)
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 15));
-        leftPanel.setOpaque(false); // Để Panel này trong suốt, thấy được màu nền TitleBar
+        leftPanel.setOpaque(false);
 
-        // 2. Tạo Label cho Icon 
         JLabel shopicon = new JLabel("🛒");
-        shopicon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 20)); // Font hỗ trợ Emoji
+        shopicon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 20)); 
         shopicon.setForeground(Color.WHITE);
 
-        // 3. Tạo Label cho Tên Shop
         JLabel brand = new JLabel("PHONE SHOP NHÓM 4");
-        brand.setFont(new Font("Segoe UI", Font.BOLD, 16)); // Font cho chữ
+        brand.setFont(new Font("Segoe UI", Font.BOLD, 16)); 
         brand.setForeground(Color.WHITE);
 
-        // 4. Thêm Icon và Chữ vào Panel trung gian
         leftPanel.add(shopicon);
         leftPanel.add(brand);
-
-        // 5. Thêm Panel trung gian vào vùng WEST của TitleBar
         titleBar.add(leftPanel, BorderLayout.WEST);
         
-        // Phải: Thông tin người dùng
         JLabel userLabel = new JLabel("<html><div style='text-align: right;'><b>ADMINISTRATOR</b><br>"
                 + "<font size='2' color='#94A3B8'>Quản trị hệ thống</font></div></html>");
         userLabel.setForeground(Color.WHITE);
@@ -99,20 +98,17 @@ public class MainFrameTest extends JFrame {
         sidebar.setBackground(SIDEBAR_BG);
         sidebar.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, Color.decode("#E2E8F0")));
 
-        // Tiêu đề nhỏ phía trên danh sách menu
         JLabel navLabel = new JLabel("DANH MỤC QUẢN LÝ");
         navLabel.setFont(new Font("Segoe UI", Font.BOLD, 11));
         navLabel.setForeground(TEXT_MUTED);
         navLabel.setBorder(new EmptyBorder(25, 20, 15, 10));
         sidebar.add(navLabel, BorderLayout.NORTH);
 
-        // Panel chứa các nút menu
         JPanel menuContainer = new JPanel();
         menuContainer.setLayout(new BoxLayout(menuContainer, BoxLayout.Y_AXIS));
         menuContainer.setBackground(SIDEBAR_BG);
         menuContainer.setBorder(new EmptyBorder(0, 10, 10, 10));
 
-        // Danh sách menu từ yêu cầu của bạn
         String[] menus = {
             "Dashboard", "Sản phẩm (sanpham)", "Hình ảnh SP (anhsp)", "Chi tiết SP (ctsp)",
             "Loại SP (loai)", "Bán hàng (hoadon)", "Khách hàng (khachhang)", "Nhân viên (nhanvien)",
@@ -143,7 +139,6 @@ public class MainFrameTest extends JFrame {
         JPanel main = new JPanel(new BorderLayout());
         main.setOpaque(false);
 
-        // Sub-header trắng chứa tiêu đề trang và nút công cụ
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(Color.WHITE);
         header.setPreferredSize(new Dimension(0, 60));
@@ -155,7 +150,6 @@ public class MainFrameTest extends JFrame {
         pageTitleLabel.setBorder(new EmptyBorder(0, 25, 0, 0));
         header.add(pageTitleLabel, BorderLayout.WEST);
 
-        // Nút Tìm kiếm giả lập bên phải
         JButton btnSearch = new JButton("🔍 Tìm kiếm nhanh");
         btnSearch.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnSearch.setFocusPainted(false);

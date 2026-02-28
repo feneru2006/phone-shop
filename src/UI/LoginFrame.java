@@ -1,5 +1,4 @@
-package test1;
-
+package UI;
 
 import com.formdev.flatlaf.FlatLightLaf;
 import BUS.AuthService;
@@ -9,6 +8,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
 public class LoginFrame extends JFrame {
     private JTextField txtUsername;
