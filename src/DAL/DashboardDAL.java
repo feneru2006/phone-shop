@@ -17,7 +17,7 @@ import Utility.Validator;
  */
 public class DashboardDAL {
     
-    private Connection conn = DAO.DBConnection.getConnection();
+    private Connection conn = DAL.DAO.DBConnection.getConnection();
 
     public DashboardDTO getDashboardData() {
         DashboardDTO dto = new DashboardDTO();
@@ -85,7 +85,7 @@ public class DashboardDAL {
                     java.sql.Timestamp ts = rsLog.getTimestamp("thoidiem");
                     if (ts != null) {
                         // Chuyển Timestamp -> LocalDateTime -> LocalDate để khớp với logDTO
-                        log.setThoidiem(ts.toLocalDateTime().toLocalDate());
+                        log.setThoidiem(ts.toLocalDateTime());
                     }
                     logs.add(log);
                 }
