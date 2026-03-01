@@ -6,9 +6,11 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Area;
+import java.awt.geom.RoundRectangle2D;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import UI.DashboardPanel; // Tích hợp DashboardPanel
+import UI.DashboardPanel;
 import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
 public class MainFrameTest extends JFrame {
@@ -17,17 +19,19 @@ public class MainFrameTest extends JFrame {
     private final Map<String, NavItem> navItems = new LinkedHashMap<>();
     private JLabel pageTitleLabel;
 
-    // Theme Colors chuẩn hiện đại
-    private static final Color TITLE_BAR_BG = Color.decode("#0F172A"); // Xanh đen đậm (Header)
-    private static final Color BG_APP = Color.decode("#F8FAFF");        // Nền ứng dụng nhạt
-    private static final Color SIDEBAR_BG = Color.decode("#FFFFFF");     // Sidebar trắng
-    private static final Color SIDEBAR_ACTIVE = Color.decode("#2563EB"); // Xanh dương (Active)
-    private static final Color TEXT_MAIN = Color.decode("#1E293B");      // Chữ chính
-    private static final Color TEXT_MUTED = Color.decode("#64748B");    // Chữ mờ (Sub-text)
+    // --- MÀU SẮC THEME ---
+    private static final Color HEADER_BG = Color.decode("#0F172A"); // Xanh đen đậm
+    private static final Color BG_APP = Color.decode("#F8FAFF");
+    private static final Color SIDEBAR_BG = Color.decode("#FFFFFF");
+    private static final Color SIDEBAR_ACTIVE = Color.decode("#2563EB");
+    private static final Color TEXT_MAIN = Color.decode("#1E293B");
+    private static final Color TEXT_MUTED = Color.decode("#64748B");
 
     public MainFrameTest() {
         setupLookAndFeel();
 
+        // Ẩn khung viền mặc định để tự vẽ
+        setUndecorated(true);
         setTitle("PHONE SHOP NHÓM 4 - HỆ THỐNG QUẢN LÝ");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(1300, 800);
@@ -42,15 +46,10 @@ public class MainFrameTest extends JFrame {
 
         setContentPane(root);
         
-        // --- CHỈNH SỬA TẠI ĐÂY ĐỂ HIỂN THỊ DASHBOARD ---
-        // 1. Khởi tạo các trang placeholder trước
         initCards();
+        DashboardPanel dashboard = new DashboardPanel();
+        contentPanel.add(dashboard, "Dashboard");
         
-        // 2. Sau đó nạp DashboardPanel thật vào để ghi đè lên trang placeholder "Dashboard"
-        DashboardPanel dashboardPanel = new DashboardPanel(); 
-        contentPanel.add(dashboardPanel, "Dashboard");
-        
-        // 3. Hiển thị Dashboard mặc định
         showCard("Dashboard");
     }
 
@@ -59,35 +58,81 @@ public class MainFrameTest extends JFrame {
             FlatLightLaf.setup();
             UIManager.put("defaultFont", new Font("Segoe UI", Font.PLAIN, 13));
             UIManager.put("ScrollBar.width", 8);
-            UIManager.put("ScrollBar.thumbArc", 10);
         } catch (Exception ignored) {}
     }
 
+    // --- BUILD TITLE BAR VỚI BO GÓC ---
     private JPanel buildTitleBar() {
-        JPanel titleBar = new JPanel(new BorderLayout());
-        titleBar.setBackground(TITLE_BAR_BG);
-        titleBar.setPreferredSize(new Dimension(0, 55));
-        titleBar.setBorder(new EmptyBorder(0, 20, 0, 20));
+        // Sử dụng RoundedPanel cho titleBar, bo góc trên (topOnly = true)
+        RoundedPanel titleBar = new RoundedPanel(20, HEADER_BG, true);
+        titleBar.setPreferredSize(new Dimension(0, 60));
+        titleBar.setBorder(new EmptyBorder(0, 20, 0, 10));
 
-        JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 15));
-        leftPanel.setOpaque(false);
+        // --- BÊN TRÁI: LOGO & BRAND ---
+        JPanel leftSection = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
+        leftSection.setOpaque(false);
 
-        JLabel shopicon = new JLabel("🛒");
-        shopicon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 20)); 
-        shopicon.setForeground(Color.WHITE);
+        // Icon giỏ hàng
+        JLabel lbCartIcon = new JLabel("🛒"); 
+        lbCartIcon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 20));
+        lbCartIcon.setForeground(Color.WHITE);
+        lbCartIcon.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(255,255,255,50), 1, true),
+            new EmptyBorder(5, 5, 5, 5)
+        ));
 
-        JLabel brand = new JLabel("PHONE SHOP NHÓM 4");
-        brand.setFont(new Font("Segoe UI", Font.BOLD, 16)); 
-        brand.setForeground(Color.WHITE);
+        JLabel lbBrand = new JLabel("PHONE SHOP NHÓM 4");
+        lbBrand.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lbBrand.setForeground(Color.WHITE);
 
-        leftPanel.add(shopicon);
-        leftPanel.add(brand);
-        titleBar.add(leftPanel, BorderLayout.WEST);
+        leftSection.add(lbCartIcon);
+        leftSection.add(lbBrand);
+
+        // --- BÊN PHẢI: USER INFO & CLOSE BUTTON ---
+        JPanel rightSection = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 8));
+        rightSection.setOpaque(false);
+
+        // --- PILLED USER VỚI BO GÓC CAO (30px) ---
+        RoundedPanel userPill = new RoundedPanel(30, Color.decode("#1E293B"));
+        userPill.setPreferredSize(new Dimension(200, 40));
+        userPill.setBorder(new EmptyBorder(0, 10, 0, 10));
         
-        JLabel userLabel = new JLabel("<html><div style='text-align: right;'><b>ADMINISTRATOR</b><br>"
-                + "<font size='2' color='#94A3B8'>Quản trị hệ thống</font></div></html>");
-        userLabel.setForeground(Color.WHITE);
-        titleBar.add(userLabel, BorderLayout.EAST);
+        // --- AVATAR VỚI BO GÓC 100% (TRÒN) ---
+        RoundedPanel avatar = new RoundedPanel(50, Color.decode("#2563EB"));
+        avatar.setPreferredSize(new Dimension(30, 30));
+        JLabel avatarLabel = new JLabel("A", SwingConstants.CENTER);
+        avatarLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        avatarLabel.setForeground(Color.WHITE);
+        avatar.add(avatarLabel, BorderLayout.CENTER);
+        
+        // Text info (Name & Email)
+        JLabel userInfo = new JLabel("<html><div style='color:white; font-weight:bold; font-size:10px;'>ADMINISTRATOR</div>"
+                + "<div style='color:#3B82F6; font-size:9px;'>admin@phoneshop.vn</div></html>");
+        
+        // Icon người nhỏ bên cạnh
+        JLabel userIcon = new JLabel("👤");
+        userIcon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 12));
+        userIcon.setForeground(new Color(255,255,255,150));
+
+        userPill.add(avatar, BorderLayout.WEST);
+        userPill.add(userInfo, BorderLayout.CENTER);
+        userPill.add(userIcon, BorderLayout.EAST);
+
+        // Nút 'X' Close
+        JButton btnClose = new JButton("✕");
+        btnClose.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+        btnClose.setForeground(new Color(255,255,255,150));
+        btnClose.setBorderPainted(false);
+        btnClose.setContentAreaFilled(false);
+        btnClose.setFocusPainted(false);
+        btnClose.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnClose.addActionListener(e -> System.exit(0));
+
+        rightSection.add(userPill);
+        rightSection.add(btnClose);
+
+        titleBar.add(leftSection, BorderLayout.WEST);
+        titleBar.add(rightSection, BorderLayout.EAST);
 
         return titleBar;
     }
@@ -110,11 +155,11 @@ public class MainFrameTest extends JFrame {
         menuContainer.setBorder(new EmptyBorder(0, 10, 10, 10));
 
         String[] menus = {
-            "Dashboard", "Sản phẩm (sanpham)", "Hình ảnh SP (anhsp)", "Chi tiết SP (ctsp)",
-            "Loại SP (loai)", "Bán hàng (hoadon)", "Khách hàng (khachhang)", "Nhân viên (nhanvien)",
-            "Nhập hàng (phieunhap)", "Nhà cung cấp (NCC)", "Bảo hành (Phieubaohanh)",
-            "Khuyến mãi (giamgia)", "Đánh giá (Danhgia)", "Tài khoản (account)",
-            "Phân quyền (nhomquyen)", "Nhật ký (log)"
+            "Dashboard", "Sản phẩm", "Hình ảnh SP", "Chi tiết SP",
+            "Loại SP", "Bán hàng", "Khách hàng", "Nhân viên",
+            "Nhập hàng", "Nhà cung cấp", "Bảo hành",
+            "Khuyến mãi", "Đánh giá", "Tài khoản",
+            "Phân quyền", "Nhật ký"
         };
 
         for (String m : menus) {
@@ -129,7 +174,6 @@ public class MainFrameTest extends JFrame {
 
         JScrollPane scroll = new JScrollPane(menuContainer);
         scroll.setBorder(null);
-        scroll.getVerticalScrollBar().setUnitIncrement(16);
         sidebar.add(scroll, BorderLayout.CENTER);
 
         return sidebar;
@@ -144,24 +188,11 @@ public class MainFrameTest extends JFrame {
         header.setPreferredSize(new Dimension(0, 60));
         header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.decode("#E2E8F0")));
 
-        pageTitleLabel = new JLabel("Trang chủ");
+        pageTitleLabel = new JLabel("Dashboard");
         pageTitleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
         pageTitleLabel.setForeground(TEXT_MAIN);
         pageTitleLabel.setBorder(new EmptyBorder(0, 25, 0, 0));
         header.add(pageTitleLabel, BorderLayout.WEST);
-
-        JButton btnSearch = new JButton("🔍 Tìm kiếm nhanh");
-        btnSearch.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnSearch.setFocusPainted(false);
-        btnSearch.setBackground(SIDEBAR_ACTIVE);
-        btnSearch.setForeground(Color.WHITE);
-        btnSearch.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btnSearch.setMargin(new Insets(8, 15, 8, 15));
-        
-        JPanel btnWrapper = new JPanel(new FlowLayout(FlowLayout.RIGHT, 25, 12));
-        btnWrapper.setOpaque(false);
-        btnWrapper.add(btnSearch);
-        header.add(btnWrapper, BorderLayout.EAST);
 
         contentPanel.setOpaque(false);
         contentPanel.setBorder(new EmptyBorder(25, 25, 25, 25));
@@ -176,7 +207,7 @@ public class MainFrameTest extends JFrame {
             JPanel card = new JPanel(new GridBagLayout());
             card.setBackground(Color.WHITE);
             card.setBorder(BorderFactory.createLineBorder(Color.decode("#E2E8F0"), 1));
-            card.add(new JLabel("Hệ thống đang phát triển nội dung cho: " + key));
+            card.add(new JLabel("Nội dung cho: " + key));
             contentPanel.add(card, key);
         }
     }
@@ -187,7 +218,6 @@ public class MainFrameTest extends JFrame {
         cardLayout.show(contentPanel, name);
     }
 
-    // Lớp nội bộ tùy chỉnh Menu Item
     private class NavItem extends JPanel {
         private final JLabel label;
 
@@ -212,7 +242,39 @@ public class MainFrameTest extends JFrame {
         }
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new MainFrameTest().setVisible(true));
+    // --- LỚP ROUNDEDPANEL DÙNG CHUNG ---
+    class RoundedPanel extends JPanel {
+        private int cornerRadius;
+        private Color backgroundColor;
+        private boolean topOnly = false;
+
+        public RoundedPanel(int cornerRadius, Color backgroundColor) {
+            super(new BorderLayout());
+            this.cornerRadius = cornerRadius;
+            this.backgroundColor = backgroundColor;
+            setOpaque(false);
+        }
+
+        public RoundedPanel(int cornerRadius, Color backgroundColor, boolean topOnly) {
+            this(cornerRadius, backgroundColor);
+            this.topOnly = topOnly;
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(backgroundColor);
+
+            if (topOnly) {
+                Area area = new Area(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius));
+                area.add(new Area(new Rectangle(0, getHeight() / 2, getWidth(), getHeight() / 2)));
+                g2.fill(area);
+            } else {
+                g2.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius));
+            }
+            g2.dispose();
+        }
     }
 }
