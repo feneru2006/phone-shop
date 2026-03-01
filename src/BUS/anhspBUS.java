@@ -1,6 +1,6 @@
 package BUS;
 
-import DAO.anhspDAO;
+import DAL.DAO.anhspDAO;
 import DTO.anhspDTO;
 import java.util.List;
 

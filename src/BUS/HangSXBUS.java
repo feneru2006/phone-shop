@@ -2,7 +2,7 @@ package BUS;
 
 import java.util.List;
 
-import DAO.HangSXDAO;
+import DAL.DAO.HangSXDAO;
 import DTO.hangsxDTO;
 
 public class HangSXBUS {

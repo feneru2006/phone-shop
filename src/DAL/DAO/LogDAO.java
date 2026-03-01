@@ -7,7 +7,7 @@ import DTO.logDTO;
 public class LogDAO {
     public boolean insertLog(logDTO log) {
         String sql = "INSERT INTO log (Malog, accountid, hanhvi, thucthe, chitiethv, thoidiem) VALUES (?, ?, ?, ?, ?, ?)";
-        try (Connection conn = DAO.DBConnection.getConnection();
+        try (Connection conn = DAL.DAO.DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, log.getMalog());

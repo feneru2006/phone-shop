@@ -1,6 +1,6 @@
 package BUS;
 
-import DAO.loaiDAO;
+import DAL.DAO.loaiDAO;
 import DTO.loaiDTO;
 import java.util.List;
 

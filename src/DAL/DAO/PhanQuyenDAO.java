@@ -11,7 +11,7 @@ public class PhanQuyenDAO {
         ArrayList<String> dsChucNang = new ArrayList<>();
         String sql = "SELECT MACN FROM phanquyen WHERE MAQUYEN = ?";
 
-        try (Connection conn = DAO.DBConnection.getConnection();
+        try (Connection conn = DAL.DAO.DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, maQuyen);

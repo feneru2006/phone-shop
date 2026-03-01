@@ -2,7 +2,7 @@ package BUS;
 
 import java.util.List;
 
-import DAO.SanPhamDAO;
+import DAL.DAO.SanPhamDAO;
 import DTO.SanPhamDTO;
 
 public class SanPhamBUS {

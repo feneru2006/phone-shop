@@ -6,7 +6,7 @@ import java.sql.*;
 public class AccountDAO {
     public accountDTO findByUsername(String username) {
         String sql = "SELECT * FROM account WHERE ten = ? LIMIT 1";
-        try (Connection conn = DAO.DBConnection.getConnection();
+        try (Connection conn = DAL.DAO.DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, username);
