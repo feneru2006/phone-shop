@@ -11,93 +11,92 @@ import DTO.SanPhamDTO;
 public class SanPhamDAO {
 
     public List<SanPhamDTO> getAll() {
+
         List<SanPhamDTO> list = new ArrayList<>();
-        String sql = "SELECT * FROM sanpham WHERE isDeleted = FALSE";
+        String sql = "SELECT * FROM sanpham";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                list.add(mapResultSet(rs));
+                list.add(new SanPhamDTO(
+                        rs.getString("MASP"),
+                        rs.getString("tenSP"),
+                        rs.getInt("SLton"),
+                        rs.getDouble("gia"),
+                        rs.getString("trangthai"),
+                        rs.getString("MAloai"),
+                        rs.getString("cauhinh"),
+                        rs.getString("NSX"),
+                        rs.getBoolean("isDeleted")
+                ));
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         return list;
     }
 
-public List<SanPhamDTO> search(String keyword) {
-    List<SanPhamDTO> list = new ArrayList<>();
-    String sql = "SELECT * FROM sanpham WHERE isDeleted = FALSE " +
-                 "AND (MASP LIKE ? OR tenSP LIKE ?)";
+    public boolean insert(SanPhamDTO sp) {
 
-    try (Connection conn = DBConnection.getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql)) {
+        String sql = "INSERT INTO sanpham " +
+                "(MASP, tenSP, SLton, gia, trangthai, MAloai, cauhinh, NSX, isDeleted) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        ps.setString(1, "%" + keyword + "%");
-        ps.setString(2, "%" + keyword + "%");
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
-        ResultSet rs = ps.executeQuery();
+            ps.setString(1, sp.getMaSP());
+            ps.setString(2, sp.getTenSP());
+            ps.setInt(3, sp.getSlTon());
+            ps.setDouble(4, sp.getGia());
+            ps.setString(5, sp.getTrangThai());
+            ps.setString(6, sp.getMaLoai());
+            ps.setString(7, sp.getCauHinh());
+            ps.setString(8, sp.getNsx());
+            ps.setBoolean(9, sp.isDeleted());
 
-        while (rs.next()) {
-            list.add(mapResultSet(rs));
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-    } catch (Exception e) {
-        e.printStackTrace();
+        return false;
     }
-    return list;
-}
 
+    public boolean update(SanPhamDTO sp) {
 
-public boolean insert(SanPhamDTO sp) {
-    String sql = "INSERT INTO sanpham " +
-                 "(MASP, tenSP, SLton, gia, trangthai, MAloai, cauhinh, NSX, isDeleted) " +
-                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "UPDATE sanpham SET tenSP=?, SLton=?, gia=?, trangthai=?, MAloai=?, cauhinh=?, NSX=?, isDeleted=? WHERE MASP=?";
 
-    try (Connection conn = DBConnection.getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
-        setPreparedStatement(ps, sp);
-        return ps.executeUpdate() > 0;
+            ps.setString(1, sp.getTenSP());
+            ps.setInt(2, sp.getSlTon());
+            ps.setDouble(3, sp.getGia());
+            ps.setString(4, sp.getTrangThai());
+            ps.setString(5, sp.getMaLoai());
+            ps.setString(6, sp.getCauHinh());
+            ps.setString(7, sp.getNsx());
+            ps.setBoolean(8, sp.isDeleted());
+            ps.setString(9, sp.getMaSP());
 
-    } catch (Exception e) {
-        e.printStackTrace();
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
-    return false;
-}
-
-
-public boolean update(SanPhamDTO sp) {
-    String sql = "UPDATE sanpham SET tenSP=?, SLton=?, gia=?, trangthai=?, " +
-                 "MAloai=?, cauhinh=?, NSX=?, isDeleted=? WHERE MASP=?";
-
-    try (Connection conn = DBConnection.getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql)) {
-
-        ps.setString(1, sp.getTenSP());
-        ps.setInt(2, sp.getSlTon());
-        ps.setDouble(3, sp.getGia());
-        ps.setString(4, sp.getTrangThai());
-        ps.setString(5, sp.getMaLoai());
-        ps.setString(6, sp.getCauHinh());
-        ps.setString(7, sp.getNsx());
-        ps.setBoolean(8, sp.isDeleted());
-        ps.setString(9, sp.getMaSP());
-
-        return ps.executeUpdate() > 0;
-
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
-    return false;
-}
-
 
     public boolean delete(String maSP) {
-        String sql = "UPDATE sanpham SET isDeleted = TRUE WHERE MASP=?";
+
+        String sql = "DELETE FROM sanpham WHERE MASP=?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -108,33 +107,7 @@ public boolean update(SanPhamDTO sp) {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         return false;
-    }
-
-
-    private SanPhamDTO mapResultSet(ResultSet rs) throws Exception {
-        return new SanPhamDTO(
-                rs.getString("MASP"),
-                rs.getString("tenSP"),
-                rs.getInt("SLton"),
-                rs.getDouble("gia"),
-                rs.getString("trangthai"),
-                rs.getString("MAloai"),
-                rs.getString("cauhinh"),
-                rs.getString("NSX"),
-                rs.getBoolean("isDeleted")
-        );
-    }
-
-    private void setPreparedStatement(PreparedStatement ps, SanPhamDTO sp) throws Exception {
-        ps.setString(1, sp.getMaSP());
-        ps.setString(2, sp.getTenSP());
-        ps.setInt(3, sp.getSlTon());
-        ps.setDouble(4, sp.getGia());
-        ps.setString(5, sp.getTrangThai());
-        ps.setString(6, sp.getMaLoai());
-        ps.setString(7, sp.getCauHinh());
-        ps.setString(8, sp.getNsx());
-        ps.setBoolean(9, sp.isDeleted());
     }
 }
