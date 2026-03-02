@@ -1,4 +1,4 @@
-package DAO;
+package DAL.DAO;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -19,11 +19,35 @@ public class loaiDAO {
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                loaiDTO loai = new loaiDTO(
-                        rs.getString("MALOAI"),
-                        rs.getString("DANHMUC")
-                );
-                list.add(loai);
+                list.add(new loaiDTO(
+                        rs.getString("MAloai"),
+                        rs.getString("danhmuc")
+                ));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public List<loaiDTO> search(String keyword) {
+        List<loaiDTO> list = new ArrayList<>();
+        String sql = "SELECT * FROM loai WHERE MAloai LIKE ? OR danhmuc LIKE ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, "%" + keyword + "%");
+            ps.setString(2, "%" + keyword + "%");
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(new loaiDTO(
+                        rs.getString("MAloai"),
+                        rs.getString("danhmuc")
+                ));
             }
 
         } catch (Exception e) {
@@ -52,7 +76,7 @@ public class loaiDAO {
     }
 
     public boolean update(loaiDTO loai) {
-        String sql = "UPDATE loai SET DANHMUC=? WHERE MALOAI=?";
+        String sql = "UPDATE loai SET danhmuc=? WHERE MAloai=?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -70,7 +94,7 @@ public class loaiDAO {
     }
 
     public boolean delete(String maLoai) {
-        String sql = "DELETE FROM loai WHERE MALOAI=?";
+        String sql = "DELETE FROM loai WHERE MAloai=?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -83,30 +107,5 @@ public class loaiDAO {
         }
 
         return false;
-    }
-
-    public List<loaiDTO> search(String keyword) {
-        List<loaiDTO> list = new ArrayList<>();
-        String sql = "SELECT * FROM loai WHERE MALOAI LIKE ? OR DANHMUC LIKE ?";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, "%" + keyword + "%");
-            ps.setString(2, "%" + keyword + "%");
-
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                list.add(new loaiDTO(
-                        rs.getString("MALOAI"),
-                        rs.getString("DANHMUC")
-                ));
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return list;
     }
 }
