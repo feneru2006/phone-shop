@@ -6,12 +6,9 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Area;
-import java.awt.geom.RoundRectangle2D;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import UI.DashboardPanel;
-import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
 public class MainFrameTest extends JFrame {
     private final CardLayout cardLayout = new CardLayout();
@@ -20,7 +17,7 @@ public class MainFrameTest extends JFrame {
     private JLabel pageTitleLabel;
 
     // --- MÀU SẮC THEME ---
-    private static final Color HEADER_BG = Color.decode("#0F172A"); // Xanh đen đậm
+    private static final Color HEADER_BG = Color.decode("#0F172A"); // Xanh đen đậm (Giống card đầu)
     private static final Color BG_APP = Color.decode("#F8FAFF");
     private static final Color SIDEBAR_BG = Color.decode("#FFFFFF");
     private static final Color SIDEBAR_ACTIVE = Color.decode("#2563EB");
@@ -30,8 +27,6 @@ public class MainFrameTest extends JFrame {
     public MainFrameTest() {
         setupLookAndFeel();
 
-        // Ẩn khung viền mặc định để tự vẽ
-        setUndecorated(true);
         setTitle("PHONE SHOP NHÓM 4 - HỆ THỐNG QUẢN LÝ");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(1300, 800);
@@ -60,12 +55,11 @@ public class MainFrameTest extends JFrame {
             UIManager.put("ScrollBar.width", 8);
         } catch (Exception ignored) {}
     }
-
-    // --- BUILD TITLE BAR VỚI BO GÓC ---
+//---title bar---
     private JPanel buildTitleBar() {
-        // Sử dụng RoundedPanel cho titleBar, bo góc trên (topOnly = true)
-        RoundedPanel titleBar = new RoundedPanel(20, HEADER_BG, true);
-        titleBar.setPreferredSize(new Dimension(0, 60));
+        JPanel titleBar = new JPanel(new BorderLayout());
+        titleBar.setBackground(HEADER_BG);
+        titleBar.setPreferredSize(new Dimension(0, 60)); // Độ cao chuẩn hiện đại
         titleBar.setBorder(new EmptyBorder(0, 20, 0, 10));
 
         // --- BÊN TRÁI: LOGO & BRAND ---
@@ -92,18 +86,20 @@ public class MainFrameTest extends JFrame {
         JPanel rightSection = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 8));
         rightSection.setOpaque(false);
 
-        // --- PILLED USER VỚI BO GÓC CAO (30px) ---
-        RoundedPanel userPill = new RoundedPanel(30, Color.decode("#1E293B"));
-        userPill.setPreferredSize(new Dimension(200, 40));
-        userPill.setBorder(new EmptyBorder(0, 10, 0, 10));
+        // Khối User (Pill design)
+        JPanel userPill = new JPanel(new BorderLayout(10, 0));
+        userPill.setOpaque(true);
+        userPill.setBackground(Color.decode("#1E293B")); // Màu tối hơn một chút
+        userPill.setBorder(new EmptyBorder(5, 15, 5, 15));
         
-        // --- AVATAR VỚI BO GÓC 100% (TRÒN) ---
-        RoundedPanel avatar = new RoundedPanel(50, Color.decode("#2563EB"));
+        // Avatar chữ 'A' xanh dương
+        JLabel avatar = new JLabel("A", SwingConstants.CENTER);
+        avatar.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        avatar.setForeground(Color.WHITE);
         avatar.setPreferredSize(new Dimension(30, 30));
-        JLabel avatarLabel = new JLabel("A", SwingConstants.CENTER);
-        avatarLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        avatarLabel.setForeground(Color.WHITE);
-        avatar.add(avatarLabel, BorderLayout.CENTER);
+        avatar.setOpaque(true);
+        avatar.setBackground(Color.decode("#2563EB")); // Màu xanh active
+        // Bo góc cho avatar (Dùng mẹo UI hoặc vẽ lại, ở đây dùng đơn giản)
         
         // Text info (Name & Email)
         JLabel userInfo = new JLabel("<html><div style='color:white; font-weight:bold; font-size:10px;'>ADMINISTRATOR</div>"
@@ -118,7 +114,7 @@ public class MainFrameTest extends JFrame {
         userPill.add(userInfo, BorderLayout.CENTER);
         userPill.add(userIcon, BorderLayout.EAST);
 
-        // Nút 'X' Close
+        // Nút 'X' Close (Giống ảnh)
         JButton btnClose = new JButton("✕");
         btnClose.setFont(new Font("Segoe UI", Font.PLAIN, 18));
         btnClose.setForeground(new Color(255,255,255,150));
@@ -239,42 +235,6 @@ public class MainFrameTest extends JFrame {
             setBackground(active ? SIDEBAR_ACTIVE : SIDEBAR_BG);
             label.setForeground(active ? Color.WHITE : TEXT_MAIN);
             label.setFont(new Font("Segoe UI", active ? Font.BOLD : Font.PLAIN, 14));
-        }
-    }
-
-    // --- LỚP ROUNDEDPANEL DÙNG CHUNG ---
-    class RoundedPanel extends JPanel {
-        private int cornerRadius;
-        private Color backgroundColor;
-        private boolean topOnly = false;
-
-        public RoundedPanel(int cornerRadius, Color backgroundColor) {
-            super(new BorderLayout());
-            this.cornerRadius = cornerRadius;
-            this.backgroundColor = backgroundColor;
-            setOpaque(false);
-        }
-
-        public RoundedPanel(int cornerRadius, Color backgroundColor, boolean topOnly) {
-            this(cornerRadius, backgroundColor);
-            this.topOnly = topOnly;
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(backgroundColor);
-
-            if (topOnly) {
-                Area area = new Area(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius));
-                area.add(new Area(new Rectangle(0, getHeight() / 2, getWidth(), getHeight() / 2)));
-                g2.fill(area);
-            } else {
-                g2.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius));
-            }
-            g2.dispose();
         }
     }
 }
