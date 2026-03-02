@@ -1,4 +1,4 @@
-package DAO;
+package DAL.DAO;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -19,13 +19,12 @@ public class anhspDAO {
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                anhspDTO anh = new anhspDTO(
+                list.add(new anhspDTO(
                         rs.getString("MAANH"),
                         rs.getString("MASP"),
                         rs.getString("URL"),
-                        rs.getBoolean("Primary")
-                );
-                list.add(anh);
+                        rs.getBoolean("isPrimary")
+                ));
             }
 
         } catch (Exception e) {
@@ -36,7 +35,8 @@ public class anhspDAO {
     }
 
     public boolean insert(anhspDTO anh) {
-        String sql = "INSERT INTO anhsp(MAANH, MASP, url, isPrimary) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO anhsp(MAANH, MASP, URL, isPrimary) VALUES (?, ?, ?, ?)";
+
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -55,7 +55,7 @@ public class anhspDAO {
     }
 
     public boolean update(anhspDTO anh) {
-       String sql = "UPDATE anhsp SET MASP=?, url=?, isPrimary=? WHERE MAANH=?";
+        String sql = "UPDATE anhsp SET MASP=?, URL=?, isPrimary=? WHERE MAANH=?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -88,32 +88,5 @@ public class anhspDAO {
         }
 
         return false;
-    }
-
-    public List<anhspDTO> getByMaSP(String maSP) {
-        List<anhspDTO> list = new ArrayList<>();
-        String sql = "SELECT * FROM anhsp WHERE MASP=?";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, maSP);
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                list.add(new anhspDTO(
-                        rs.getString("MAanh"),
-                        rs.getString("MASP"),
-                        rs.getString("url"),
-                        rs.getBoolean("isPrimary")
-
-                ));
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return list;
     }
 }
