@@ -1,61 +1,101 @@
 package BUS;
 
-import DAO.anhspDAO;
+import java.util.ArrayList;
+
+import DAL.DAO.anhspDAO;
 import DTO.anhspDTO;
-import java.util.List;
 
 public class anhspBUS {
 
     private anhspDAO dao = new anhspDAO();
+    private ArrayList<anhspDTO> list;
 
-    public List<anhspDTO> getAll() {
-        return dao.getAll();
+    public anhspBUS() {
+        list = dao.getAll();
     }
 
-    public List<anhspDTO> getByMaSP(String maSP) {
-        return dao.getByMaSP(maSP);
+    public ArrayList<anhspDTO> getAll() {
+        return list;
     }
 
-    public boolean add(anhspDTO anh) {
+    public boolean add(anhspDTO a) {
 
-        if (anh.getMaAnh() == null || anh.getMaAnh().trim().isEmpty())
-            return false;
-
-        if (anh.getMaSP() == null || anh.getMaSP().trim().isEmpty())
-            return false;
-
-        if (anh.getUrl() == null || anh.getUrl().trim().isEmpty())
-            return false;
-
-        if (anh.isPrimary()) {
-            List<anhspDTO> list = dao.getByMaSP(anh.getMaSP());
-            for (anhspDTO a : list) {
-                if (a.isPrimary()) {
-                    a.setPrimary(false);
-                    dao.update(a);
-                }
-            }
+        for (anhspDTO x : list) {
+            if (x.getMaAnh().equals(a.getMaAnh()))
+                return false; 
         }
 
-        return dao.insert(anh);
+        list.add(a);
+        return true;
     }
 
-    public boolean update(anhspDTO anh) {
+    public boolean update(anhspDTO a) {
 
-        if (anh.isPrimary()) {
-            List<anhspDTO> list = dao.getByMaSP(anh.getMaSP());
-            for (anhspDTO a : list) {
-                if (!a.getMaAnh().equals(anh.getMaAnh()) && a.isPrimary()) {
-                    a.setPrimary(false);
-                    dao.update(a);
-                }
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getMaAnh().equals(a.getMaAnh())) {
+                list.set(i, a);
+                return true;
             }
         }
-
-        return dao.update(anh);
+        return false;
     }
 
     public boolean delete(String maAnh) {
-        return dao.delete(maAnh);
+
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getMaAnh().equals(maAnh)) {
+                list.remove(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean saveToDatabase() {
+
+        try {
+
+            ArrayList<anhspDTO> dbList = dao.getAll();
+
+            for (anhspDTO ram : list) {
+
+                boolean exists = false;
+
+                for (anhspDTO db : dbList) {
+                    if (db.getMaAnh().equals(ram.getMaAnh())) {
+                        dao.update(ram);
+                        exists = true;
+                        break;
+                    }
+                }
+
+                if (!exists) {
+                    dao.insert(ram);
+                }
+            }
+
+            for (anhspDTO db : dbList) {
+
+                boolean stillExists = false;
+
+                for (anhspDTO ram : list) {
+                    if (ram.getMaAnh().equals(db.getMaAnh())) {
+                        stillExists = true;
+                        break;
+                    }
+                }
+
+                if (!stillExists) {
+                    dao.delete(db.getMaAnh());
+                }
+            }
+
+            return true;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 }
