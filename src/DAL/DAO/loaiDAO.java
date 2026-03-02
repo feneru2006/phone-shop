@@ -11,6 +11,7 @@ import DTO.loaiDTO;
 public class loaiDAO {
 
     public List<loaiDTO> getAll() {
+
         List<loaiDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM loai";
 
@@ -28,37 +29,13 @@ public class loaiDAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return list;
-    }
-
-    public List<loaiDTO> search(String keyword) {
-        List<loaiDTO> list = new ArrayList<>();
-        String sql = "SELECT * FROM loai WHERE MAloai LIKE ? OR danhmuc LIKE ?";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, "%" + keyword + "%");
-            ps.setString(2, "%" + keyword + "%");
-
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                list.add(new loaiDTO(
-                        rs.getString("MAloai"),
-                        rs.getString("danhmuc")
-                ));
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         return list;
     }
 
     public boolean insert(loaiDTO loai) {
-        String sql = "INSERT INTO loai VALUES (?, ?)";
+
+        String sql = "INSERT INTO loai (MAloai, danhmuc) VALUES (?, ?)";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -76,6 +53,7 @@ public class loaiDAO {
     }
 
     public boolean update(loaiDTO loai) {
+
         String sql = "UPDATE loai SET danhmuc=? WHERE MAloai=?";
 
         try (Connection conn = DBConnection.getConnection();
@@ -94,6 +72,7 @@ public class loaiDAO {
     }
 
     public boolean delete(String maLoai) {
+
         String sql = "DELETE FROM loai WHERE MAloai=?";
 
         try (Connection conn = DBConnection.getConnection();
