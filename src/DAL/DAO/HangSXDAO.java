@@ -1,4 +1,4 @@
-package DAO;
+package DAL.DAO;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -19,11 +19,10 @@ public class HangSXDAO {
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                hangsxDTO hang = new hangsxDTO(
+                list.add(new hangsxDTO(
                         rs.getString("MANSX"),
                         rs.getString("TENTH")
-                );
-                list.add(hang);
+                ));
             }
 
         } catch (Exception e) {
@@ -96,6 +95,7 @@ public class HangSXDAO {
             ps.setString(2, "%" + keyword + "%");
 
             ResultSet rs = ps.executeQuery();
+
             while (rs.next()) {
                 list.add(new hangsxDTO(
                         rs.getString("MANSX"),
