@@ -52,6 +52,15 @@ public class LoginFrame extends JFrame {
         txtPassword = new JPasswordField();
         txtPassword.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
 
+        checkPassword = new JCheckBox("Hiện mật khẩu");
+        checkPassword.addActionListener(e -> {
+            if(checkPassword.isSelected()){
+                txtPassword.setEchoChar((char)0);
+            }else {
+                txtPassword.setEchoChar('⬤');
+            }
+        });
+
         btnLogin = new JButton("ĐĂNG NHẬP");
         btnLogin.setBackground(Color.decode("#2563EB"));
         btnLogin.setForeground(Color.WHITE);
@@ -67,6 +76,8 @@ public class LoginFrame extends JFrame {
         panel.add(Box.createVerticalStrut(20));
         panel.add(new JLabel("Mật khẩu:"));
         panel.add(txtPassword);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(checkPassword);
         panel.add(Box.createVerticalStrut(30));
         panel.add(btnLogin);
 
