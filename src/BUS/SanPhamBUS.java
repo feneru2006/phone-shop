@@ -1,5 +1,7 @@
+
 package BUS;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import DAL.DAO.SanPhamDAO;
@@ -8,62 +10,102 @@ import DTO.SanPhamDTO;
 public class SanPhamBUS {
 
     private SanPhamDAO spDAO = new SanPhamDAO();
+    private List<SanPhamDTO> dsSanPham = new ArrayList<>();
+
+    public SanPhamBUS() {
+        dsSanPham = spDAO.getAll();
+    }
 
     public List<SanPhamDTO> getAll() {
-        return spDAO.getAll();
+        return dsSanPham;
+    }
+
+    public List<SanPhamDTO> timKiem(String keyword) {
+
+        List<SanPhamDTO> result = new ArrayList<>();
+
+        for (SanPhamDTO sp : dsSanPham) {
+            if (sp.getMaSP().toLowerCase().contains(keyword.toLowerCase()) ||
+                sp.getTenSP().toLowerCase().contains(keyword.toLowerCase())) {
+
+                result.add(sp);
+            }
+        }
+
+        return result;
     }
 
     public boolean themSanPham(SanPhamDTO sp) {
 
-        if (sp.getMaSP().trim().isEmpty()) {
-            System.out.println("Mã sản phẩm không được rỗng!");
-            return false;
+        for (SanPhamDTO item : dsSanPham) {
+            if (item.getMaSP().equalsIgnoreCase(sp.getMaSP())) {
+                return false;
+            }
         }
 
-        if (sp.getTenSP().trim().isEmpty()) {
-            System.out.println("Tên sản phẩm không được rỗng!");
-            return false;
-        }
-
-        if (sp.getGia() <= 0) {
-            System.out.println("Giá phải lớn hơn 0!");
-            return false;
-        }
-
-        if (sp.getSlTon() < 0) {
-            System.out.println("Số lượng tồn không hợp lệ!");
-            return false;
-        }
-
-        if (sp.getCauHinh().trim().isEmpty()) {
-            System.out.println("Cấu hình không được rỗng!");
-            return false;
-        }
-
-        return spDAO.insert(sp);
+        dsSanPham.add(sp);
+        return true;
     }
 
     public boolean suaSanPham(SanPhamDTO sp) {
 
-        if (sp.getGia() <= 0) return false;
-        if (sp.getSlTon() < 0) return false;
+        for (int i = 0; i < dsSanPham.size(); i++) {
+            if (dsSanPham.get(i).getMaSP().equalsIgnoreCase(sp.getMaSP())) {
+                dsSanPham.set(i, sp);
+                return true;
+            }
+        }
 
-        return spDAO.update(sp);
+        return false;
     }
 
     public boolean xoaSanPham(String maSP) {
-        return spDAO.delete(maSP);
+
+        return dsSanPham.removeIf(sp ->
+                sp.getMaSP().equalsIgnoreCase(maSP));
     }
 
-    public List<SanPhamDTO> timKiem(String keyword) {
-        return spDAO.search(keyword);
+    public boolean saveToDatabase() {
+
+        List<SanPhamDTO> dbList = spDAO.getAll();
+
+        for (SanPhamDTO sp : dsSanPham) {
+
+            boolean exists = false;
+
+            for (SanPhamDTO db : dbList) {
+                if (db.getMaSP().equalsIgnoreCase(sp.getMaSP())) {
+                    spDAO.update(sp);
+                    exists = true;
+                    break;
+                }
+            }
+
+            if (!exists) {
+                spDAO.insert(sp);
+            }
+        }
+
+        for (SanPhamDTO db : dbList) {
+
+            boolean stillExists = false;
+
+            for (SanPhamDTO sp : dsSanPham) {
+                if (sp.getMaSP().equalsIgnoreCase(db.getMaSP())) {
+                    stillExists = true;
+                    break;
+                }
+            }
+
+            if (!stillExists) {
+                spDAO.delete(db.getMaSP());
+            }
+        }
+
+        return true;
     }
 
-    public List<SanPhamDTO> getSanPhamSapHetHang(int minStock) {
-        return spDAO.getSanPhamSapHetHang(minStock);
-    }
-
-    public boolean isSapHetHang(SanPhamDTO sp, int minStock) {
-        return sp.getSlTon() <= minStock;
+    public void reload() {
+        dsSanPham = spDAO.getAll();
     }
 }

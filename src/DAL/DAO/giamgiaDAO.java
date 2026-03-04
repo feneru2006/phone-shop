@@ -3,8 +3,7 @@ package DAL.DAO;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.sql.Timestamp;      
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +13,7 @@ public class giamgiaDAO {
 
     // ================= INSERT =================
     public boolean insert(giamgiaDTO gg) {
-        String sql = "INSERT INTO ctgg (MAGG, dotGG, batdau, ketthuc) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO giamgia (MAGG, dotGG, batdau, ketthuc) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -37,7 +36,7 @@ public class giamgiaDAO {
     // ================= GET ALL =================
     public List<giamgiaDTO> getAll() {
         List<giamgiaDTO> list = new ArrayList<>();
-        String sql = "SELECT * FROM ctgg";
+        String sql = "SELECT * FROM giamgia";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -62,7 +61,7 @@ public class giamgiaDAO {
 
     // ================= UPDATE =================
     public boolean update(giamgiaDTO gg) {
-        String sql = "UPDATE ctgg SET dotGG=?, batdau=?, ketthuc=? WHERE MAGG=?";
+        String sql = "UPDATE giamgia SET dotGG=?, batdau=?, ketthuc=? WHERE MAGG=?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -82,7 +81,7 @@ public class giamgiaDAO {
 
     // ================= DELETE =================
     public boolean delete(String maGG) {
-        String sql = "DELETE FROM ctgg WHERE MAGG=?";
+        String sql = "DELETE FROM giamgia WHERE MAGG=?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -98,7 +97,7 @@ public class giamgiaDAO {
 
     // ================= FIND BY ID =================
     public giamgiaDTO findById(String maGG) {
-        String sql = "SELECT * FROM ctgg WHERE MAGG = ?";
+        String sql = "SELECT * FROM giamgia WHERE MAGG = ?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

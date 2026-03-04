@@ -22,11 +22,13 @@ public class AuthService {
         accountDTO user = accountDAO.findByUsername(username.trim());
         if (user == null) return null;
 
+        //dung ham bam
+        String harshInput = Utility.SecurityPass.maHoa(password);
         // Kt pass dùng user.getPass() từ accountDTO
-        if (!user.getPass().equals(password)) {
+        if (!user.getPass().equals(harshInput)) {
             return null;
         }
-
+        
         // Lấy danh sách quyền dùng user.getQuyen() từ accountDTO
         ArrayList<String> listPerms = phanQuyenDAO.getChucNangByMaQuyen(user.getQuyen());
         Set<String> permsSet = new HashSet<>(listPerms);
@@ -40,4 +42,5 @@ public class AuthService {
     public void logout() {
         RolePermission.clear();
     }
+
 }

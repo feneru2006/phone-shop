@@ -4,12 +4,12 @@ package UI;
 import com.formdev.flatlaf.FlatLightLaf;
 import BUS.AuthService;
 import DTO.accountDTO;
+import Utility.SecurityPass;
 import Utility.Validator;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
 public class LoginFrame extends JFrame {
     private JTextField txtUsername;
@@ -93,5 +93,6 @@ public class LoginFrame extends JFrame {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
+        // System.out.println(SecurityPass.maHoa("admin1"));
     }
 }
