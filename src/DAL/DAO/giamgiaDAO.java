@@ -119,4 +119,21 @@ public class giamgiaDAO {
         }
         return null;
     }
+    public String getLastMaGG() {
+    String sql = "SELECT MAGG FROM GIAMGIA ORDER BY MAGG DESC LIMIT 1";
+
+    try (Connection conn = DBConnection.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+
+        if (rs.next()) {
+            return rs.getString("MAGG");
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return null;
+}
 }

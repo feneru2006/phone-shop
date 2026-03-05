@@ -5,6 +5,7 @@ import DAL.DAO.PhieubaohanhDAO;
 import Utility.Validator;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PhieubaohanhBUS {
@@ -108,10 +109,20 @@ public class PhieubaohanhBUS {
     // ===============================
     // Kiểm tra còn bảo hành không
     // ===============================
-    public boolean isStillValid(PhieubaohanhDTO bh) {
+    public List<PhieubaohanhDTO> searchByMaBH(String keyword){
 
-        LocalDate ngayHetHan = bh.getNgayBD().plusMonths(bh.getThoiHan());
+    List<PhieubaohanhDTO> result = new ArrayList<>();
 
-        return LocalDate.now().isBefore(ngayHetHan);
+    List<PhieubaohanhDTO> list = bhDAO.getAll();
+
+    for(PhieubaohanhDTO bh : list){
+
+        if(bh.getMaBH().toLowerCase().contains(keyword.toLowerCase())){
+            result.add(bh);
+        }
+
     }
+
+    return result;
+}
 }

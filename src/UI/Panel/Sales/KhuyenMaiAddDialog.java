@@ -38,7 +38,8 @@ public class KhuyenMaiAddDialog extends JDialog {
         JPanel form = new JPanel(new GridLayout(5, 2, 10, 10));
         form.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        txtMa = new JTextField();
+        txtMa = new JTextField(ggBUS.generateNewMaGG());
+        txtMa.setEditable(false);
         txtTen = new JTextField();
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");

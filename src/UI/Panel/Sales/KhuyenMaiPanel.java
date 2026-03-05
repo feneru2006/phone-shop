@@ -45,7 +45,7 @@ public class KhuyenMaiPanel extends JPanel {
         btnAdd.addActionListener(e -> openAddDialog());
 
         JPanel top = new JPanel(new BorderLayout());
-        top.setBorder(BorderFactory.createEmptyBorder(20,20,10,20));
+        top.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
         top.setBackground(Color.WHITE);
         top.add(lblTitle, BorderLayout.WEST);
         top.add(btnAdd, BorderLayout.EAST);
@@ -53,16 +53,34 @@ public class KhuyenMaiPanel extends JPanel {
         add(top, BorderLayout.NORTH);
 
         String[] cols = {
-                "MAGG","ĐỢT GG","BẮT ĐẦU","KẾT THÚC","TRẠNG THÁI","THAO TÁC"
+                "MAGG", "ĐỢT GG", "BẮT ĐẦU", "KẾT THÚC", "TRẠNG THÁI", "THAO TÁC"
         };
 
-        model = new DefaultTableModel(cols,0){
-            public boolean isCellEditable(int r,int c){
-                return c==5;
+        model = new DefaultTableModel(cols, 0) {
+            public boolean isCellEditable(int r, int c) {
+                return c == 5;
             }
         };
 
         table = new JTable(model);
+
+        table.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseMoved(java.awt.event.MouseEvent e) {
+
+                int col = table.columnAtPoint(e.getPoint());
+
+                if (col == 5) { // cột THAO TÁC
+                    table.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                } else {
+                    table.setCursor(Cursor.getDefaultCursor());
+                    table.setFocusable(false);
+                    table.setRowSelectionAllowed(false);
+                    table.setCellSelectionEnabled(false);
+                    table.getTableHeader().setReorderingAllowed(false);
+                    table.getTableHeader().setResizingAllowed(false);
+                }
+            }
+        });
         table.setRowHeight(60);
         table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -97,32 +115,35 @@ public class KhuyenMaiPanel extends JPanel {
 
         JPanel center = new JPanel(new BorderLayout());
         center.setBackground(Color.WHITE);
-        center.add(scroll,BorderLayout.CENTER);
-        center.add(pagination,BorderLayout.SOUTH);
+        center.add(scroll, BorderLayout.CENTER);
+        center.add(pagination, BorderLayout.SOUTH);
 
         add(center, BorderLayout.CENTER);
     }
 
-    public void loadData(){
+    public void loadData() {
 
         List<giamgiaDTO> list = ggBUS.getAll();
 
         int totalRows = list.size();
         totalPages = (int) Math.ceil((double) totalRows / rowsPerPage);
 
-        if(totalPages == 0) totalPages = 1;
-        if(currentPage > totalPages) currentPage = totalPages;
-        if(currentPage < 1) currentPage = 1;
+        if (totalPages == 0)
+            totalPages = 1;
+        if (currentPage > totalPages)
+            currentPage = totalPages;
+        if (currentPage < 1)
+            currentPage = 1;
 
         int start = (currentPage - 1) * rowsPerPage;
         int end = Math.min(start + rowsPerPage, totalRows);
 
         model.setRowCount(0);
 
-        for(int i=start; i<end; i++){
+        for (int i = start; i < end; i++) {
             giamgiaDTO gg = list.get(i);
 
-            model.addRow(new Object[]{
+            model.addRow(new Object[] {
                     gg.getMAGG(),
                     gg.getdotGG(),
                     gg.getBatdau(),
@@ -137,97 +158,92 @@ public class KhuyenMaiPanel extends JPanel {
         btnNext.setEnabled(currentPage < totalPages);
     }
 
-    private String getStatus(giamgiaDTO gg){
+    private String getStatus(giamgiaDTO gg) {
         LocalDateTime now = LocalDateTime.now();
 
-        if(now.isBefore(gg.getBatdau())) return "Sắp diễn ra";
-        if(now.isAfter(gg.getKetthuc())) return "Đã kết thúc";
+        if (now.isBefore(gg.getBatdau()))
+            return "Sắp diễn ra";
+        if (now.isAfter(gg.getKetthuc()))
+            return "Đã kết thúc";
         return "Đang hoạt động";
     }
 
-    public void editRow(int row){
+    public void editRow(int row) {
 
-    String ma = model.getValueAt(row, 0).toString();
-    String ten = model.getValueAt(row, 1).toString();
-    String bd = model.getValueAt(row, 2).toString();
-    String kt = model.getValueAt(row, 3).toString();
+        String ma = model.getValueAt(row, 0).toString();
+        String ten = model.getValueAt(row, 1).toString();
+        String bd = model.getValueAt(row, 2).toString();
+        String kt = model.getValueAt(row, 3).toString();
 
-    JTextField txtTen = new JTextField(ten);
-    JTextField txtBD = new JTextField(bd);
-    JTextField txtKT = new JTextField(kt);
+        JTextField txtTen = new JTextField(ten);
+        JTextField txtBD = new JTextField(bd);
+        JTextField txtKT = new JTextField(kt);
 
-    Object[] message = {
-            "Tên đợt:", txtTen,
-            "Bắt đầu (yyyy-MM-ddTHH:mm):", txtBD,
-            "Kết thúc (yyyy-MM-ddTHH:mm):", txtKT
-    };
+        Object[] message = {
+                "Tên đợt:", txtTen,
+                "Bắt đầu (yyyy-MM-ddTHH:mm):", txtBD,
+                "Kết thúc (yyyy-MM-ddTHH:mm):", txtKT
+        };
 
-    int option = JOptionPane.showConfirmDialog(
-            this,
-            message,
-            "Sửa giảm giá",
-            JOptionPane.OK_CANCEL_OPTION
-    );
+        int option = JOptionPane.showConfirmDialog(
+                this,
+                message,
+                "Sửa giảm giá",
+                JOptionPane.OK_CANCEL_OPTION);
 
-    if (option == JOptionPane.OK_OPTION) {
-        try {
+        if (option == JOptionPane.OK_OPTION) {
+            try {
 
-            giamgiaDTO gg = new giamgiaDTO(
-                    ma,
-                    txtTen.getText(),
-                    LocalDateTime.parse(txtBD.getText()),
-                    LocalDateTime.parse(txtKT.getText())
-            );
+                giamgiaDTO gg = new giamgiaDTO(
+                        ma,
+                        txtTen.getText(),
+                        LocalDateTime.parse(txtBD.getText()),
+                        LocalDateTime.parse(txtKT.getText()));
 
-            if (ggBUS.update(gg)) {
-                JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
-                loadData();
-            } else {
-                JOptionPane.showMessageDialog(this, "Cập nhật thất bại!");
+                if (ggBUS.update(gg)) {
+                    JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
+                    loadData();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Cập nhật thất bại!");
+                }
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this,
+                        "Sai định dạng ngày!\nVí dụ đúng: 2024-06-01T07:00");
             }
-
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Sai định dạng ngày!\nVí dụ đúng: 2024-06-01T07:00");
         }
     }
-}
 
-    public void viewDetail(int row){
-        String maGG = model.getValueAt(row,0).toString();
+    public void viewDetail(int row) {
+        String maGG = model.getValueAt(row, 0).toString();
 
-        KhuyenMaiDetailDialog dialog =
-                new KhuyenMaiDetailDialog(
-                        (Frame) SwingUtilities.getWindowAncestor(this),
-                        maGG
-                );
+        KhuyenMaiDetailDialog dialog = new KhuyenMaiDetailDialog(
+                (Frame) SwingUtilities.getWindowAncestor(this),
+                maGG);
 
         dialog.setVisible(true);
     }
 
-    public void deleteRow(int row){
+    public void deleteRow(int row) {
 
-        String maGG = model.getValueAt(row,0).toString();
+        String maGG = model.getValueAt(row, 0).toString();
 
         int confirm = JOptionPane.showConfirmDialog(
                 this,
                 "Bạn có chắc chắn muốn xóa khuyến mãi " + maGG + " ?",
                 "XÁC NHẬN XÓA",
                 JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE
-        );
+                JOptionPane.WARNING_MESSAGE);
 
-        if(confirm == JOptionPane.YES_OPTION){
+        if (confirm == JOptionPane.YES_OPTION) {
             ggBUS.delete(maGG);
             loadData();
         }
     }
 
-    private void openAddDialog(){
-        KhuyenMaiAddDialog dialog =
-                new KhuyenMaiAddDialog(
-                        (Frame) SwingUtilities.getWindowAncestor(this)
-                );
+    private void openAddDialog() {
+        KhuyenMaiAddDialog dialog = new KhuyenMaiAddDialog(
+                (Frame) SwingUtilities.getWindowAncestor(this));
         dialog.setVisible(true);
         loadData();
     }

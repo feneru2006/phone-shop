@@ -30,4 +30,4 @@ public class LogBUS {
             System.err.println("Loi ghi log: " + e.getMessage());
         }
     }
-}
+}   

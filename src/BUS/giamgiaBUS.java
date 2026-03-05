@@ -81,4 +81,16 @@ public class giamgiaBUS {
 
         return ggDAO.delete(maGG);
     }
+    public String generateNewMaGG() {
+    String last = ggDAO.getLastMaGG(); // ví dụ trả về GG09
+
+    if (last == null) {
+        return "GG01";
+    }
+
+    int num = Integer.parseInt(last.substring(2)); // lấy 09
+    num++;
+
+    return String.format("GG%02d", num); // GG10
+}
 }

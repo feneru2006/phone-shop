@@ -10,7 +10,7 @@ public class KhuyenMaiActionRenderer extends JPanel implements TableCellRenderer
     JButton btnView = new JButton("Xem");
     JButton btnDelete = new JButton("Xóa");
 
-    public KhuyenMaiActionRenderer(){
+    public KhuyenMaiActionRenderer() {
 
         setLayout(new GridBagLayout());
         setOpaque(true);
@@ -32,11 +32,11 @@ public class KhuyenMaiActionRenderer extends JPanel implements TableCellRenderer
     }
 
     public Component getTableCellRendererComponent(
-            JTable table,Object value,
-            boolean isSelected,boolean hasFocus,
-            int row,int column){
+            JTable table, Object value,
+            boolean isSelected, boolean hasFocus,
+            int row, int column) {
 
-        if(isSelected)
+        if (isSelected)
             setBackground(table.getSelectionBackground());
         else
             setBackground(Color.WHITE);
