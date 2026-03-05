@@ -108,4 +108,19 @@ public class SanPhamBUS {
     public void reload() {
         dsSanPham = spDAO.getAll();
     }
+
+    public SanPhamDTO getById(String maSP) {
+
+    if (dsSanPham == null || dsSanPham.isEmpty()) {
+        reload();
+    }
+
+    for (SanPhamDTO sp : dsSanPham) {
+        if (sp.getMaSP().equalsIgnoreCase(maSP)) {
+            return sp;
+        }
+    }
+
+    return null;
+}
 }

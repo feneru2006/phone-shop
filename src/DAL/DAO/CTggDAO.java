@@ -106,4 +106,30 @@ public class CTggDAO {
         }
         return false;
     }
+
+    public List<CTggDTO> getByMaGG(String maGG) {
+
+    List<CTggDTO> list = new ArrayList<>();
+    String sql = "SELECT * FROM CTgg WHERE MAGG = ?";
+
+    try (Connection conn = DBConnection.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setString(1, maGG);
+        ResultSet rs = ps.executeQuery();
+
+        while (rs.next()) {
+            list.add(new CTggDTO(
+                    rs.getString("MAGG"),
+                    rs.getString("MASP"),
+                    rs.getInt("PHANTRAMGG")
+            ));
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return list;
+}
 }

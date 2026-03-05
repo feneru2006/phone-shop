@@ -54,7 +54,7 @@ public class MainFrameTest extends JFrame {
         contentPanel.add(dashboard, "Dashboard");
 
         //
-        KhuyenMaiView giamgia = new KhuyenMaiView();
+        KhuyenMaiPanel giamgia = new KhuyenMaiPanel();
         contentPanel.add(giamgia,"Khuyến mãi");
         
         // 3. Hiển thị Dashboard lên đầu tiên

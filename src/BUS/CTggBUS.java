@@ -100,4 +100,18 @@ public class CTggBUS {
 
         return ctggDAO.deleteByMAGG(maGG);
     }
+
+    // ==============================
+// Lấy danh sách sản phẩm theo mã giảm giá
+// ==============================
+public List<CTggDTO> getByMaGG(String maGG) {
+
+    if (!Validator.isValidCode(maGG)) {
+        throw new IllegalArgumentException(
+            Validator.invalidFormatMessage("Mã giảm giá")
+        );
+    }
+
+    return ctggDAO.getByMaGG(maGG);
+}
 }
