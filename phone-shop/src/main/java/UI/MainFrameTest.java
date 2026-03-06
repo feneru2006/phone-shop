@@ -168,6 +168,7 @@ public class MainFrameTest extends JFrame {
             {"Nhà cung cấp", "🏭 Nhà cung cấp"},
             {"Bảo hành", "🛠️ Bảo hành"},
             {"Khuyến mãi", "🎁 Khuyến mãi"},
+            {"Đánh giá", "⭐ Đánh giá"},
             {"Tài khoản", "🔐 Tài khoản"},
             {"Phân quyền", "🔑 Phân quyền"},
             {"Nhật ký", "📜 Nhật ký"}
