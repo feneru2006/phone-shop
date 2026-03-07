@@ -9,7 +9,6 @@ import DTO.ChitietSPDTO;
 
 public class CtspDAO {
 
-    // Lấy toàn bộ danh sách các máy (IMEI) trong kho
     public List<ChitietSPDTO> getAll() {
         List<ChitietSPDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM ctsp";
@@ -33,7 +32,6 @@ public class CtspDAO {
         return list;
     }
 
-    // Lấy danh sách IMEI theo một mã Sản Phẩm cụ thể (Ví dụ: Lấy tất cả mã IMEI của iPhone 15)
     public List<ChitietSPDTO> getByMaSP(String maSP) {
         List<ChitietSPDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM ctsp WHERE MASP = ?";
@@ -84,7 +82,7 @@ public class CtspDAO {
 
             ps.setString(1, ctsp.getMaSP());
             ps.setString(2, ctsp.getMaNCC());
-            ps.setString(3, ctsp.getTinhtrang()); // Thường dùng để cập nhật từ "Sẵn có" thành "Đã bán" hoặc "Bảo hành"
+            ps.setString(3, ctsp.getTinhtrang()); 
             ps.setString(4, ctsp.getMaCTPN());
             ps.setString(5, ctsp.getMaCTSP());
 
@@ -107,7 +105,6 @@ public class CtspDAO {
         }
         return false;
     }
-    // Lấy tất cả IMEI thuộc về một Chi Tiết Phiếu Nhập cụ thể
     public List<ChitietSPDTO> getByMaCTPN(String maCTPN) {
         List<ChitietSPDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM ctsp WHERE MACTPN = ?";
@@ -133,4 +130,5 @@ public class CtspDAO {
         return list;
     }
     
+
 }
