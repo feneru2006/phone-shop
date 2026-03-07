@@ -36,14 +36,12 @@ public class PhieuNhapDAO {
         return list;
     }
 
-    // Gộp 3 bước vào 1 Transaction để đảm bảo tính toàn vẹn dữ liệu
     public boolean thucHienNhapHang(phieunhapDTO pn, List<CTphieunhapDTO> listCTPN, List<ChitietSPDTO> listIMEI) {
         Connection conn = null;
         try {
             conn = DBConnection.getConnection();
-            conn.setAutoCommit(false); // Bắt buộc: Tắt auto commit để chạy Transaction
+            conn.setAutoCommit(false); 
 
-            // 1. Lưu Phiếu Nhập
             String sqlPN = "INSERT INTO phieunhap(MAPNH, MANV, Ngaynhap, tongtien, MANCC) VALUES (?, ?, ?, ?, ?)";
             try (PreparedStatement psPN = conn.prepareStatement(sqlPN)) {
                 psPN.setString(1, pn.getMaPNH());
@@ -54,7 +52,6 @@ public class PhieuNhapDAO {
                 psPN.executeUpdate();
             }
 
-            // 2. Lưu Chi tiết phiếu nhập (Add Batch)
             String sqlCTPN = "INSERT INTO CTphieunhap(MACTPN, MASP, MAPNH, SL, dongia) VALUES (?, ?, ?, ?, ?)";
             try (PreparedStatement psCTPN = conn.prepareStatement(sqlCTPN)) {
                 for (CTphieunhapDTO ct : listCTPN) {
@@ -68,7 +65,6 @@ public class PhieuNhapDAO {
                 psCTPN.executeBatch();
             }
 
-            // 3. Lưu từng máy cụ thể (IMEI) vào kho
             String sqlCTSP = "INSERT INTO ctsp(MACTSP, MASP, MANCC, tinhtrang, MACTPN) VALUES (?, ?, ?, 'Sẵn có', ?)";
             try (PreparedStatement psCTSP = conn.prepareStatement(sqlCTSP)) {
                 for (ChitietSPDTO imei : listIMEI) {
@@ -97,7 +93,6 @@ public class PhieuNhapDAO {
         }
     }
     
-    // --- 1. TÌM PHIẾU NHẬP THEO ID (MÃ PHIẾU) ---
     public phieunhapDTO getById(String maPNH) {
         phieunhapDTO result = null;
         String sql = "SELECT * FROM phieunhap WHERE MAPNH = ?";
@@ -123,8 +118,6 @@ public class PhieuNhapDAO {
         return result;
     }
 
-    // --- 2. SỬA PHIẾU NHẬP ---
-    // Lưu ý: Thường chỉ cho phép sửa Nhân viên lập, Nhà cung cấp hoặc Tổng tiền. Không sửa Ngày nhập hay Mã Phiếu.
     public boolean update(phieunhapDTO pn) {
         String sql = "UPDATE phieunhap SET MANV=?, tongtien=?, MANCC=? WHERE MAPNH=?";
         
@@ -143,10 +136,7 @@ public class PhieuNhapDAO {
         return false;
     }
 
-    // --- 3. XÓA PHIẾU NHẬP ---
     public boolean delete(String maPNH) {
-        // CẢNH BÁO: Vì bảng phieunhap liên kết rất chặt với CTphieunhap và ctsp. 
-        // Lệnh xóa này chỉ thành công nếu bạn đã xóa hoặc dọn dẹp xong dữ liệu ở các bảng con.
         String sql = "DELETE FROM phieunhap WHERE MAPNH=?";
         
         try (Connection conn = DBConnection.getConnection();
@@ -160,11 +150,7 @@ public class PhieuNhapDAO {
         }
         return false;
     }
-    // ==========================================================
-    // CÁC HÀM BỔ SUNG: CHI TIẾT, TÌM KIẾM & THỐNG KÊ
-    // ==========================================================
 
-    // 1. Lấy danh sách Chi tiết phiếu nhập
     public List<CTphieunhapDTO> getChiTietPhieuNhap(String maPNH) {
         List<CTphieunhapDTO> listCT = new ArrayList<>();
         String sql = "SELECT * FROM CTphieunhap WHERE MAPNH = ?";
@@ -191,7 +177,6 @@ public class PhieuNhapDAO {
         return listCT;
     }
 
-    // 2. Thống kê tổng tiền nhập hàng theo tháng/năm
     public double getTongTienNhapTrongThang(int month, int year) {
         String sql = "SELECT SUM(tongtien) AS TongTien FROM phieunhap WHERE MONTH(Ngaynhap) = ? AND YEAR(Ngaynhap) = ?";
         double tongTien = 0;
@@ -211,4 +196,5 @@ public class PhieuNhapDAO {
         }
         return tongTien;
     }
+
 }
