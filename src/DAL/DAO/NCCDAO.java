@@ -9,7 +9,6 @@ import DTO.NCCDTO;
 
 public class NCCDAO {
     
-    // Lấy toàn bộ dữ liệu từ Database
     public List<NCCDTO> getAll() {
         List<NCCDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM NCC";
@@ -78,4 +77,5 @@ public class NCCDAO {
         }
         return false;
     }
+
 }
