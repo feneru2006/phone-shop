@@ -10,11 +10,13 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
 public class LoginFrame extends JFrame {
     private JTextField txtUsername;
     private JPasswordField txtPassword;
     private JButton btnLogin;
+    private JCheckBox checkPassword;
     private final AuthService authService = new AuthService();
 
     public LoginFrame() {
@@ -42,31 +44,53 @@ public class LoginFrame extends JFrame {
         panel.setBackground(Color.WHITE);
         panel.setBorder(new EmptyBorder(40, 40, 40, 40));
 
-        JLabel lblTitle = new JLabel("ĐĂNG NHẬP");
+        JLabel lblTitle = new JLabel("ĐĂNG NHẬP", SwingConstants.CENTER);
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        lblTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lblTitle.setAlignmentX(Component.LEFT_ALIGNMENT); 
+        lblTitle.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40)); 
+
+        JLabel lblUser = new JLabel("Tên đăng nhập:");
+        lblUser.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         txtUsername = new JTextField();
         txtUsername.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        
+        txtUsername.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JLabel lblPass = new JLabel("Mật khẩu:");
+        lblPass.setAlignmentX(Component.LEFT_ALIGNMENT);
+
         txtPassword = new JPasswordField();
         txtPassword.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        txtPassword.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        checkPassword = new JCheckBox("Hiện mật khẩu");
+        checkPassword.setBackground(Color.WHITE);
+        checkPassword.setAlignmentX(Component.LEFT_ALIGNMENT);
+        checkPassword.addActionListener(e -> {
+            if(checkPassword.isSelected()){
+                txtPassword.setEchoChar((char)0);
+            } else {
+                txtPassword.setEchoChar('⬤');
+            }
+        });
 
         btnLogin = new JButton("ĐĂNG NHẬP");
         btnLogin.setBackground(Color.decode("#2563EB"));
         btnLogin.setForeground(Color.WHITE);
         btnLogin.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
+        btnLogin.setAlignmentX(Component.LEFT_ALIGNMENT);
         btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
         btnLogin.addActionListener(this::handleLogin);
 
         panel.add(lblTitle);
         panel.add(Box.createVerticalStrut(40));
-        panel.add(new JLabel("Tên đăng nhập:"));
+        panel.add(lblUser);
         panel.add(txtUsername);
         panel.add(Box.createVerticalStrut(20));
-        panel.add(new JLabel("Mật khẩu:"));
+        panel.add(lblPass);
         panel.add(txtPassword);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(checkPassword);
         panel.add(Box.createVerticalStrut(30));
         panel.add(btnLogin);
 
@@ -93,6 +117,5 @@ public class LoginFrame extends JFrame {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
-        // System.out.println(SecurityPass.maHoa("admi3"));
     }
 }

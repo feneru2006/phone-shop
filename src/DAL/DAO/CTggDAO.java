@@ -12,7 +12,7 @@ public class CTggDAO {
 
     // ================= INSERT =================
     public boolean insert(CTggDTO ctgg) {
-        String sql = "INSERT INTO ctgg (MAGG, MASP, phantramgg) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO ctgg (MAGG, MASP, phantramgg, giasaugiam) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -20,6 +20,7 @@ public class CTggDAO {
             ps.setString(1, ctgg.getMAGG());
             ps.setString(2, ctgg.getMaSP());
             ps.setInt(3, ctgg.getPhantramgg());
+            ps.setDouble(4, ctgg.getGiasaugiam());
 
             return ps.executeUpdate() > 0;
 
@@ -42,7 +43,8 @@ public class CTggDAO {
                 CTggDTO ctgg = new CTggDTO(
                         rs.getString("MAGG"),
                         rs.getString("MASP"),
-                        rs.getInt("phantramgg")
+                        rs.getInt("phantramgg"),
+                        rs.getDouble("giasaugiam")
                 );
                 list.add(ctgg);
             }
@@ -55,23 +57,25 @@ public class CTggDAO {
     }
 
     // ================= UPDATE =================
-    public boolean update(CTggDTO ctgg) {
-        String sql = "UPDATE ctgg SET phantramgg=? WHERE MAGG=? AND MASP=?";
+public boolean update(CTggDTO ctgg) {
 
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+    String sql = "UPDATE ctgg SET phantramgg=?, giasaugiam=? WHERE MAGG=? AND MASP=?";
 
-            ps.setInt(1, ctgg.getPhantramgg());
-            ps.setString(2, ctgg.getMAGG());
-            ps.setString(3, ctgg.getMaSP());
+    try (Connection conn = DBConnection.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            return ps.executeUpdate() > 0;
+        ps.setInt(1, ctgg.getPhantramgg());
+        ps.setDouble(2, ctgg.getGiasaugiam());
+        ps.setString(3, ctgg.getMAGG());
+        ps.setString(4, ctgg.getMaSP());
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
+        return ps.executeUpdate() > 0;
+
+    } catch (Exception e) {
+        e.printStackTrace();
     }
+    return false;
+}
 
     // ================= DELETE =================
     public boolean delete(String maGG, String maSP) {
@@ -121,8 +125,9 @@ public class CTggDAO {
         while (rs.next()) {
             list.add(new CTggDTO(
                     rs.getString("MAGG"),
-                    rs.getString("MASP"),
-                    rs.getInt("PHANTRAMGG")
+                        rs.getString("MASP"),
+                        rs.getInt("phantramgg"),
+                        rs.getDouble("giasaugiam")
             ));
         }
 

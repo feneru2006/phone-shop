@@ -4,13 +4,15 @@ public class CTggDTO {
     private String MAGG; 
     private String MaSP; 
     private int phantramgg;
+    private double giasaugiam;
     
     public CTggDTO(){}
 
-    public CTggDTO(String mAGG, String maSP, int phantramgg) {
+    public CTggDTO(String mAGG, String maSP, int phantramgg, double giasaugiam) {
         MAGG = mAGG;
         MaSP = maSP;
         this.phantramgg = phantramgg;
+        this.giasaugiam = giasaugiam;
     }
 
     public String getMAGG() {
@@ -35,5 +37,13 @@ public class CTggDTO {
 
     public void setPhantramgg(int phantramgg) {
         this.phantramgg = phantramgg;
-    }     
+    }
+
+    public double getGiasaugiam() {
+        return giasaugiam;
+    }
+
+    public void setGiasaugiam(double giasaugiam) {
+        this.giasaugiam = giasaugiam;
+    }
 }

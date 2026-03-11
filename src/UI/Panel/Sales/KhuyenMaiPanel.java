@@ -185,13 +185,18 @@ public class KhuyenMaiPanel extends JPanel {
                 "Kết thúc (yyyy-MM-ddTHH:mm):", txtKT
         };
 
-        int option = JOptionPane.showConfirmDialog(
-                this,
-                message,
-                "Sửa giảm giá",
-                JOptionPane.OK_CANCEL_OPTION);
+        while (true) {
 
-        if (option == JOptionPane.OK_OPTION) {
+            int option = JOptionPane.showConfirmDialog(
+                    this,
+                    message,
+                    "Sửa giảm giá",
+                    JOptionPane.OK_CANCEL_OPTION);
+
+            if (option != JOptionPane.OK_OPTION) {
+                break;
+            }
+
             try {
 
                 giamgiaDTO gg = new giamgiaDTO(
@@ -203,13 +208,42 @@ public class KhuyenMaiPanel extends JPanel {
                 if (ggBUS.update(gg)) {
                     JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
                     loadData();
-                } else {
-                    JOptionPane.showMessageDialog(this, "Cập nhật thất bại!");
+                    break;
                 }
 
+            }
+
+            catch (IllegalArgumentException ex) {
+
+                JOptionPane.showMessageDialog(this, ex.getMessage());
+
+                String msg = ex.getMessage();
+
+                if (msg.contains("Tên")) {
+                    SwingUtilities.invokeLater(() -> {
+                        txtTen.requestFocusInWindow();
+                        txtTen.selectAll();
+                    });
+                } else if (msg.contains("Bắt đầu")) {
+                    SwingUtilities.invokeLater(() -> {
+                        txtBD.requestFocusInWindow();
+                        txtBD.selectAll();
+                    });
+                } else if (msg.contains("Kết thúc")) {
+                    SwingUtilities.invokeLater(() -> {
+                        txtKT.requestFocusInWindow();
+                        txtKT.selectAll();
+                    });
+                }
             } catch (Exception ex) {
+
                 JOptionPane.showMessageDialog(this,
                         "Sai định dạng ngày!\nVí dụ đúng: 2024-06-01T07:00");
+
+                SwingUtilities.invokeLater(() -> {
+                    txtBD.requestFocusInWindow();
+                    txtBD.selectAll();
+                });
             }
         }
     }
@@ -242,9 +276,12 @@ public class KhuyenMaiPanel extends JPanel {
     }
 
     private void openAddDialog() {
-        KhuyenMaiAddDialog dialog = new KhuyenMaiAddDialog(
-                (Frame) SwingUtilities.getWindowAncestor(this));
-        dialog.setVisible(true);
-        loadData();
-    }
+    KhuyenMaiAddDialog dialog =
+        new KhuyenMaiAddDialog(
+            (Frame) SwingUtilities.getWindowAncestor(this),
+            ggBUS);   // truyền BUS
+
+    dialog.setVisible(true);
+    loadData();
+}
 }

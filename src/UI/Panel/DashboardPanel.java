@@ -28,13 +28,10 @@ public class DashboardPanel extends JPanel {
     private final DashboardDAL dashboardDAL = new DashboardDAL();
     private final ReportService reportService = new ReportService();
     
-    // UI Components
     private JLabel lblTotalProduct, lblTotalRevenue, lblTotalStaff;
     private JTable logTable, revenueDailyTable, revenueMonthlyTable, lowStockTable;
     private DefaultTableModel logModel, dailyModel, monthlyModel, lowStockModel;
     private JPanel chartLinePanel, chartPiePanel;
-
-    // ScrollPane chính
     private JScrollPane scrollPane;
     private JPanel mainContainer;
 
@@ -42,37 +39,28 @@ public class DashboardPanel extends JPanel {
         setLayout(new BorderLayout());
         setBackground(Color.decode("#F8FAFF"));
 
-        // Container chính chứa nội dung sẽ cuộn
         mainContainer = new JPanel();
         mainContainer.setLayout(new BorderLayout(15, 15));
         mainContainer.setBackground(Color.decode("#F8FAFF"));
         mainContainer.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        // 1. Top Section: Stats Cards
         initStatsCards();
-
-        // 2. Center Section: Analysis
         initAnalysisSection();
-
-        // 3. Bottom Section: Tables
         initTableSection();
 
-        // Tích hợp ScrollPane
         scrollPane = new JScrollPane(mainContainer);
         scrollPane.setBorder(null);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16); // Tăng tốc độ cuộn chuột
-        scrollPane.setBackground(Color.decode("#F8FAFF"));
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         scrollPane.getViewport().setBackground(Color.decode("#F8FAFF"));
         
         add(scrollPane, BorderLayout.CENTER);
-
         refreshData();
     }
 
     private void initStatsCards() {
         JPanel container = new JPanel(new GridLayout(1, 3, 15, 0));
         container.setOpaque(false);
-        container.setPreferredSize(new Dimension(0, 100)); // Chiều cao gọn
+        container.setPreferredSize(new Dimension(0, 100));
 
         lblTotalProduct = new JLabel("0");
         container.add(createCard("TỔNG SẢN PHẨM", lblTotalProduct, Color.decode("#3B82F6"), "📦"));
@@ -89,13 +77,11 @@ public class DashboardPanel extends JPanel {
     private void initAnalysisSection() {
         JPanel mainAnalysis = new JPanel(new GridLayout(1, 2, 15, 0));
         mainAnalysis.setOpaque(false);
-        // Cố định chiều cao khối giữa để thanh cuộn hoạt động
         mainAnalysis.setPreferredSize(new Dimension(0, 520)); 
 
-        // --- KHỐI BÊN TRÁI: DOANH SỐ 30 NGÀY VỪA QUA ---
+        // Khối trái
         JPanel leftBox = new JPanel(new BorderLayout(0, 10));
         leftBox.setOpaque(false);
-
         chartLinePanel = new RoundedPanel(20, Color.WHITE);
         chartLinePanel.setLayout(new BorderLayout());
         chartLinePanel.setPreferredSize(new Dimension(0, 250));
@@ -103,23 +89,18 @@ public class DashboardPanel extends JPanel {
         RoundedPanel dailyBox = new RoundedPanel(20, Color.WHITE);
         dailyBox.setBorder(new EmptyBorder(12, 15, 12, 15));
         dailyBox.setLayout(new BorderLayout());
-        JLabel lbDaily = new JLabel("📊 CHI TIẾT DOANH THU 30 NGÀY GẦN NHẤT");
-        lbDaily.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        lbDaily.setBorder(new EmptyBorder(0, 0, 8, 0));
+        dailyBox.add(createTitleWithIcon("📊", "CHI TIẾT DOANH THU 30 NGÀY GẦN NHẤT"), BorderLayout.NORTH);
         
-        dailyModel = new DefaultTableModel(new String[]{"Ngày", "Doanh thu (VNĐ)"}, 0);
+        dailyModel = createNonEditableModel(new String[]{"Ngày", "Doanh thu (VNĐ)"});
         revenueDailyTable = createStyledTable(dailyModel);
-        
-        dailyBox.add(lbDaily, BorderLayout.NORTH);
         dailyBox.add(new JScrollPane(revenueDailyTable), BorderLayout.CENTER);
 
         leftBox.add(chartLinePanel, BorderLayout.NORTH);
         leftBox.add(dailyBox, BorderLayout.CENTER);
 
-        // --- KHỐI BÊN PHẢI: TỶ TRỌNG & DOANH THU THÁNG ---
+        // Khối phải
         JPanel rightBox = new JPanel(new BorderLayout(0, 10));
         rightBox.setOpaque(false);
-
         chartPiePanel = new RoundedPanel(20, Color.WHITE);
         chartPiePanel.setLayout(new BorderLayout());
         chartPiePanel.setPreferredSize(new Dimension(0, 250));
@@ -127,14 +108,10 @@ public class DashboardPanel extends JPanel {
         RoundedPanel monthlyBox = new RoundedPanel(20, Color.WHITE);
         monthlyBox.setBorder(new EmptyBorder(12, 15, 12, 15));
         monthlyBox.setLayout(new BorderLayout());
-        JLabel lbMonthly = new JLabel("📈 THỐNG KÊ DOANH THU THEO THÁNG");
-        lbMonthly.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        lbMonthly.setBorder(new EmptyBorder(0, 0, 8, 0));
+        monthlyBox.add(createTitleWithIcon("📈", "THỐNG KÊ DOANH THU THEO THÁNG"), BorderLayout.NORTH);
 
-        monthlyModel = new DefaultTableModel(new String[]{"Tháng/Năm", "Tổng doanh thu"}, 0);
+        monthlyModel = createNonEditableModel(new String[]{"Tháng/Năm", "Tổng doanh thu"});
         revenueMonthlyTable = createStyledTable(monthlyModel);
-        
-        monthlyBox.add(lbMonthly, BorderLayout.NORTH);
         monthlyBox.add(new JScrollPane(revenueMonthlyTable), BorderLayout.CENTER);
 
         rightBox.add(chartPiePanel, BorderLayout.NORTH);
@@ -148,53 +125,73 @@ public class DashboardPanel extends JPanel {
     private void initTableSection() {
         JPanel bottomPanel = new JPanel(new BorderLayout(15, 0));
         bottomPanel.setOpaque(false);
-        bottomPanel.setPreferredSize(new Dimension(0, 250)); // Chiều cao bảng nhật ký
+        bottomPanel.setPreferredSize(new Dimension(0, 250));
 
-        // 1. Nhật ký hệ thống (4 cột gốc)
+        // Nhật ký
         RoundedPanel logContainer = new RoundedPanel(20, Color.WHITE);
         logContainer.setLayout(new BorderLayout());
         logContainer.setBorder(new EmptyBorder(12, 15, 12, 15));
-        JLabel logTitle = new JLabel("📝 NHẬT KÝ HỆ THỐNG GẦN ĐÂY");
-        logTitle.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        logTitle.setBorder(new EmptyBorder(0, 0, 8, 0));
+        logContainer.add(createTitleWithIcon("📝", "NHẬT KÝ HỆ THỐNG GẦN ĐÂY"), BorderLayout.NORTH);
         
-        logModel = new DefaultTableModel(new String[]{"Hành vi", "Thực thể", "Chi tiết", "Thời điểm"}, 0);
+        logModel = createNonEditableModel(new String[]{"Hành vi", "Thực thể", "Chi tiết", "Thời điểm"});
         logTable = createStyledTable(logModel);
-        logContainer.add(logTitle, BorderLayout.NORTH);
         logContainer.add(new JScrollPane(logTable), BorderLayout.CENTER);
-        
         bottomPanel.add(logContainer, BorderLayout.CENTER);
 
-        // 2. Sản phẩm sắp hết hàng (Kho <= 5)
+        // Tồn kho
         RoundedPanel stockContainer = new RoundedPanel(20, Color.WHITE);
         stockContainer.setPreferredSize(new Dimension(380, 0));
         stockContainer.setLayout(new BorderLayout());
         stockContainer.setBorder(new EmptyBorder(12, 15, 12, 15));
-        JLabel stockTitle = new JLabel("⚠️ CẢNH BÁO TỒN KHO (≤ 5)");
-        stockTitle.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        JLabel stockTitle = createTitleWithIcon("⚠️", "CẢNH BÁO TỒN KHO (≤ 5)");
         stockTitle.setForeground(Color.RED);
-        stockTitle.setBorder(new EmptyBorder(0, 0, 8, 0));
-
-        lowStockModel = new DefaultTableModel(new String[]{"Tên Sản Phẩm", "Tồn kho"}, 0);
-        lowStockTable = createStyledTable(lowStockModel);
-        
         stockContainer.add(stockTitle, BorderLayout.NORTH);
+
+        lowStockModel = createNonEditableModel(new String[]{"Tên Sản Phẩm", "Tồn kho"});
+        lowStockTable = createStyledTable(lowStockModel);
         stockContainer.add(new JScrollPane(lowStockTable), BorderLayout.CENTER);
         
         bottomPanel.add(stockContainer, BorderLayout.EAST);
         mainContainer.add(bottomPanel, BorderLayout.SOUTH);
     }
 
+    // --- HÀM TẠO MODEL KHÔNG CHO SỬA ---
+    private DefaultTableModel createNonEditableModel(String[] columns) {
+        return new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+    }
+
+    // --- HÀM TẠO TABLE "CHỈ NHÌN" ---
     private JTable createStyledTable(DefaultTableModel model) {
         JTable table = new JTable(model);
         table.setRowHeight(32);
         table.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
-        table.getTableHeader().setBackground(Color.WHITE);
+        table.getTableHeader().setReorderingAllowed(false); // Không cho kéo đổi cột
+        table.getTableHeader().setResizingAllowed(false);   // Không cho chỉnh độ rộng cột
+        
+        // Cấu hình để KHÔNG THỂ TƯƠNG TÁC
+        table.setFocusable(false);             // Không nhận tiêu điểm (không hiện viền ô)
+        table.setRowSelectionAllowed(false);    // Không cho chọn hàng
+        table.setCellSelectionEnabled(false);   // Không cho chọn ô (ngăn to đen)
+        table.setIntercellSpacing(new Dimension(0, 0));
+        
         table.setShowVerticalLines(false);
         table.setGridColor(Color.decode("#F1F5F9"));
         return table;
     }
+
+    private JLabel createTitleWithIcon(String icon, String text) {
+        JLabel label = new JLabel("<html><font face='Segoe UI Emoji'>" + icon + "</font> &nbsp;<font face='Segoe UI'>" + text + "</font></html>");
+        label.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        return label;
+    }
+
+    // (Giữ nguyên các hàm refreshData, updateCharts, createCard, RoundedPanel từ bản cũ của bạn)
+    // ... [Hàm refreshData, updateLineChart, updatePieChart, createCard, RoundedPanel] ...
 
     public void refreshData() {
         try {
@@ -204,7 +201,6 @@ public class DashboardPanel extends JPanel {
                 lblTotalStaff.setText(String.valueOf(dto.getTongNhanVien()));
                 lblTotalRevenue.setText(String.format("%,.0f VNĐ", dto.getTongDoanhThu()));
 
-                // Nhật ký 4 cột
                 logModel.setRowCount(0);
                 DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM HH:mm");
                 for (logDTO log : dto.getDanhSachLog()) {
@@ -214,8 +210,6 @@ public class DashboardPanel extends JPanel {
                     });
                 }
             }
-
-            // Dữ liệu Doanh số 30 ngày (Khối trái)
             dailyModel.setRowCount(0);
             List<ReportRevenueRow> dayData = reportService.getRevenueList(LocalDate.now().minusDays(30), LocalDate.now());
             if (dayData != null) {
@@ -226,16 +220,10 @@ public class DashboardPanel extends JPanel {
                     });
                 }
             }
-
-            // Dữ liệu Doanh thu tháng (Khối phải)
             monthlyModel.setRowCount(0);
-            // Thêm dữ liệu mẫu hoặc gọi service tại đây
             monthlyModel.addRow(new Object[]{"Tháng 02/2026", "142,500,000"});
             monthlyModel.addRow(new Object[]{"Tháng 01/2026", "128,000,000"});
-
-            // Sản phẩm sắp hết hàng
             lowStockModel.setRowCount(0);
-            // Thêm dữ liệu mẫu hoặc gọi từ DAL
             lowStockModel.addRow(new Object[]{"iPhone 15 Pro Max 256GB", "2"});
             lowStockModel.addRow(new Object[]{"Sạc dự phòng Anker 20k", "5"});
 
@@ -278,25 +266,20 @@ public class DashboardPanel extends JPanel {
         RoundedPanel card = new RoundedPanel(20, color);
         card.setLayout(new BorderLayout());
         card.setBorder(new EmptyBorder(10, 15, 10, 15));
-
         JLabel lblTitle = new JLabel(title);
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 11));
         lblTitle.setForeground(new Color(255, 255, 255, 180));
-
         valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
         valueLabel.setForeground(Color.WHITE);
-
         JLabel lblIcon = new JLabel(icon);
-        lblIcon.setFont(new Font("Segoe UI Symbol", Font.PLAIN, 32));
+        lblIcon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 32));
         lblIcon.setForeground(new Color(255, 255, 255, 60));
-
         card.add(lblTitle, BorderLayout.NORTH);
         card.add(valueLabel, BorderLayout.CENTER);
         card.add(lblIcon, BorderLayout.EAST);
         return card;
     }
 
-    // Lớp hỗ trợ bo góc panel
     class RoundedPanel extends JPanel {
         private int radius;
         private Color bgColor;

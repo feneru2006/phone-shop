@@ -1,56 +1,63 @@
 package BUS;
 
+import java.util.ArrayList;
 import java.util.List;
+
 import DAL.DAO.CTggDAO;
 import DTO.CTggDTO;
 import Utility.Validator;
 
 public class CTggBUS {
 
-    private CTggDAO ctggDAO;
+    private CTggDAO ctggDAO = new CTggDAO();
+    private List<CTggDTO> dsCTGG = new ArrayList<>();
 
     public CTggBUS() {
-        ctggDAO = new CTggDAO();
+        dsCTGG = ctggDAO.getAll();
     }
 
-    // ==============================
-    // Lấy toàn bộ danh sách chi tiết giảm giá
-    // ==============================
     public List<CTggDTO> getAll() {
-        return ctggDAO.getAll();
+        return dsCTGG;
+    }
+
+    public void reload() {
+        dsCTGG = ctggDAO.getAll();
     }
 
     // ==============================
-    // Thêm sản phẩm vào đợt giảm giá
+    // ADD
     // ==============================
     public boolean add(CTggDTO ctgg) {
 
-        // Kiểm tra mã giảm giá
         if (!Validator.isValidCode(ctgg.getMAGG())) {
             throw new IllegalArgumentException(
-                Validator.invalidFormatMessage("Mã giảm giá")
-            );
+                    Validator.invalidFormatMessage("Mã giảm giá"));
         }
 
-        // Kiểm tra mã sản phẩm
         if (!Validator.isValidCode(ctgg.getMaSP())) {
             throw new IllegalArgumentException(
-                Validator.invalidFormatMessage("Mã sản phẩm")
-            );
+                    Validator.invalidFormatMessage("Mã sản phẩm"));
         }
 
-        // Kiểm tra phần trăm giảm giá (0-100)
         if (!Validator.isValidPercent(ctgg.getPhantramgg())) {
             throw new IllegalArgumentException(
-                Validator.invalidPercentMessage()
-            );
+                    Validator.invalidPercentMessage());
         }
 
-        return ctggDAO.insert(ctgg);
+        // thêm vào list trước
+        dsCTGG.add(ctgg);
+
+        // insert DB
+        if (!ctggDAO.insert(ctgg)) {
+            dsCTGG.remove(ctgg); // rollback
+            return false;
+        }
+
+        return true;
     }
 
     // ==============================
-    // Cập nhật phần trăm giảm giá
+    // UPDATE
     // ==============================
     public boolean update(CTggDTO ctgg) {
 
@@ -58,21 +65,39 @@ public class CTggBUS {
             !Validator.isValidCode(ctgg.getMaSP())) {
 
             throw new IllegalArgumentException(
-                "Thiếu hoặc sai thông tin mã cập nhật!"
-            );
+                    "Thiếu hoặc sai thông tin mã cập nhật!");
         }
 
         if (!Validator.isValidPercent(ctgg.getPhantramgg())) {
             throw new IllegalArgumentException(
-                Validator.invalidPercentMessage()
-            );
+                    Validator.invalidPercentMessage());
         }
 
-        return ctggDAO.update(ctgg);
+        for (int i = 0; i < dsCTGG.size(); i++) {
+
+            CTggDTO old = dsCTGG.get(i);
+
+            if (old.getMAGG().equals(ctgg.getMAGG()) &&
+                old.getMaSP().equals(ctgg.getMaSP())) {
+
+                // update list trước
+                dsCTGG.set(i, ctgg);
+
+                // update DB
+                if (!ctggDAO.update(ctgg)) {
+                    dsCTGG.set(i, old); // rollback
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // ==============================
-    // Xóa 1 sản phẩm khỏi đợt giảm giá
+    // DELETE 1 PRODUCT
     // ==============================
     public boolean delete(String maGG, String maSP) {
 
@@ -80,38 +105,80 @@ public class CTggBUS {
             !Validator.isValidCode(maSP)) {
 
             throw new IllegalArgumentException(
-                "Thông tin mã không hợp lệ!"
-            );
+                    "Thông tin mã không hợp lệ!");
         }
 
-        return ctggDAO.delete(maGG, maSP);
+        for (int i = 0; i < dsCTGG.size(); i++) {
+
+            CTggDTO ct = dsCTGG.get(i);
+
+            if (ct.getMAGG().equals(maGG) &&
+                ct.getMaSP().equals(maSP)) {
+
+                dsCTGG.remove(i);
+
+                if (!ctggDAO.delete(maGG, maSP)) {
+                    dsCTGG.add(i, ct); // rollback
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // ==============================
-    // Xóa toàn bộ sản phẩm của 1 đợt
+    // DELETE ALL BY MAGG
     // ==============================
     public boolean deleteByMAGG(String maGG) {
 
         if (!Validator.isValidCode(maGG)) {
             throw new IllegalArgumentException(
-                Validator.invalidFormatMessage("Mã giảm giá")
-            );
+                    Validator.invalidFormatMessage("Mã giảm giá"));
         }
 
-        return ctggDAO.deleteByMAGG(maGG);
+        List<CTggDTO> removed = new ArrayList<>();
+
+        for (int i = dsCTGG.size() - 1; i >= 0; i--) {
+
+            if (dsCTGG.get(i).getMAGG().equals(maGG)) {
+                removed.add(dsCTGG.get(i));
+                dsCTGG.remove(i);
+            }
+        }
+
+        if (!ctggDAO.deleteByMAGG(maGG)) {
+            dsCTGG.addAll(removed); // rollback
+            return false;
+        }
+
+        return true;
     }
 
     // ==============================
-// Lấy danh sách sản phẩm theo mã giảm giá
-// ==============================
-public List<CTggDTO> getByMaGG(String maGG) {
+    // GET BY MAGG
+    // ==============================
+    public List<CTggDTO> getByMaGG(String maGG) {
 
-    if (!Validator.isValidCode(maGG)) {
-        throw new IllegalArgumentException(
-            Validator.invalidFormatMessage("Mã giảm giá")
-        );
+        if (!Validator.isValidCode(maGG)) {
+            throw new IllegalArgumentException(
+                    Validator.invalidFormatMessage("Mã giảm giá"));
+        }
+
+        List<CTggDTO> result = new ArrayList<>();
+
+        if (dsCTGG == null) {
+            reload();
+        }
+
+        for (CTggDTO ct : dsCTGG) {
+            if (ct.getMAGG().equals(maGG)) {
+                result.add(ct);
+            }
+        }
+
+        return result;
     }
-
-    return ctggDAO.getByMaGG(maGG);
-}
 }

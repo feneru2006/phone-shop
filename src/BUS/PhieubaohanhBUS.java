@@ -73,6 +73,7 @@ public class PhieubaohanhBUS {
             throw new IllegalArgumentException(
                     Validator.invalidFormatMessage("Mã bảo hành"));
         }
+        
 
         updateTrangThaiLogic(bh);
 
@@ -95,14 +96,14 @@ public class PhieubaohanhBUS {
     // ===============================
     // Logic tự động cập nhật trạng thái
     // ===============================
-    private void updateTrangThaiLogic(PhieubaohanhDTO bh) {
+    public void updateTrangThaiLogic(PhieubaohanhDTO bh) {
 
         LocalDate ngayHetHan = bh.getNgayBD().plusMonths(bh.getThoiHan());
 
         if (LocalDate.now().isAfter(ngayHetHan)) {
             bh.setTrangthai("Hết hạn");
         } else {
-            bh.setTrangthai("Còn hiệu lực");
+            bh.setTrangthai("Kích hoạt");
         }
     }
 

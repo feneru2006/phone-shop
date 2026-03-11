@@ -20,12 +20,13 @@ public class KhuyenMaiAddDialog extends JDialog {
     private JTable tableSP;
     private DefaultTableModel modelSP;
 
-    private giamgiaBUS ggBUS = new giamgiaBUS();
     private CTggBUS ctggBUS = new CTggBUS();
     private SanPhamBUS spBUS = new SanPhamBUS();
+    private giamgiaBUS ggBUS;
 
-    public KhuyenMaiAddDialog(Frame parent) {
+    public KhuyenMaiAddDialog(Frame parent, giamgiaBUS ggBUS) {
         super(parent, "TẠO KHUYẾN MÃI", true);
+        this.ggBUS = ggBUS;
         setSize(700, 500);
         setLocationRelativeTo(parent);
         initUI();
@@ -38,8 +39,8 @@ public class KhuyenMaiAddDialog extends JDialog {
         JPanel form = new JPanel(new GridLayout(5, 2, 10, 10));
         form.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        txtMa = new JTextField(ggBUS.generateNewMaGG());
-        txtMa.setEditable(false);
+        txtMa = new JTextField(ggBUS.generateMaGG());
+        txtMa.setEditable(true);
         txtTen = new JTextField();
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
@@ -98,39 +99,48 @@ public class KhuyenMaiAddDialog extends JDialog {
         }
     }
 
-    private void savePromotion() {
+private void savePromotion() {
 
-        try {
-            giamgiaDTO gg = new giamgiaDTO(
-                    txtMa.getText(),
-                    txtTen.getText(),
-                    LocalDateTime.parse(txtBD.getText()),
-                    LocalDateTime.parse(txtKT.getText()));
+    try {
 
-            ggBUS.add(gg);
+        giamgiaDTO gg = new giamgiaDTO(
+                txtMa.getText(),
+                txtTen.getText(),
+                LocalDateTime.parse(txtBD.getText()),
+                LocalDateTime.parse(txtKT.getText()));
 
-            int percent = Integer.parseInt(txtPercent.getText());
+        ggBUS.add(gg);
 
-            for (int i = 0; i < tableSP.getRowCount(); i++) {
-                Boolean checked = (Boolean) tableSP.getValueAt(i, 0);
+        int percent = Integer.parseInt(txtPercent.getText());
 
-                if (checked != null && checked) {
-                    String masp = tableSP.getValueAt(i, 1).toString();
+        for (int i = 0; i < tableSP.getRowCount(); i++) {
 
-                    CTggDTO ct = new CTggDTO(
-                            txtMa.getText(),
-                            masp,
-                            percent);
+            Boolean checked = (Boolean) tableSP.getValueAt(i, 0);
 
-                    ctggBUS.add(ct);
-                }
+            if (checked != null && checked) {
+
+                String masp = tableSP.getValueAt(i, 1).toString();
+
+                double price = spBUS.getGiaByMaSP(masp);
+
+                double giasaugiam = price * (1 - percent / 100.0);
+
+                CTggDTO ct = new CTggDTO(
+                        txtMa.getText(),
+                        masp,
+                        percent,
+                        giasaugiam
+                );
+
+                ctggBUS.add(ct);
             }
-
-            JOptionPane.showMessageDialog(this, "Tạo thành công!");
-            dispose();
-
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Lỗi dữ liệu!");
         }
+
+        JOptionPane.showMessageDialog(this, "Tạo thành công!");
+        dispose();
+
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(this, "Lỗi dữ liệu!");
     }
+}
 }

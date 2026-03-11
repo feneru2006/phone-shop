@@ -211,7 +211,7 @@ public class BaoHanhPanel extends JPanel {
         for (int i = start; i < end; i++) {
 
             PhieubaohanhDTO bh = fullList.get(i);
-
+            bhBUS.updateTrangThaiLogic(bh);
             model.addRow(new Object[] {
                     bh.getMaBH(),
                     bh.getMaCTHD(),
@@ -220,7 +220,7 @@ public class BaoHanhPanel extends JPanel {
                     bh.getThoiHan(),
                     bh.getTrangthai()
             });
-
+            
         }
 
         int totalPage = (int) Math.ceil((double) fullList.size() / pageSize);
@@ -300,6 +300,8 @@ public class BaoHanhPanel extends JPanel {
 
                     loadData();
 
+                }else{
+                    JOptionPane.showMessageDialog(this, "Thêm thất bại");
                 }
 
             } catch (Exception ex) {

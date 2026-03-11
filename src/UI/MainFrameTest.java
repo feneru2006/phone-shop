@@ -3,8 +3,9 @@ package UI;
 import com.formdev.flatlaf.FlatLightLaf;
 
 import UI.Panel.DashboardPanel;
-import UI.Panel.Sales.KhuyenMaiPanel;
 import UI.Panel.BaoHanh.BaoHanhPanel;
+import UI.Panel.Sales.KhuyenMaiPanel;
+
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -59,6 +60,10 @@ public class MainFrameTest extends JFrame {
         //
         BaoHanhPanel baohanh = new BaoHanhPanel();
         contentPanel.add(baohanh,"Bảo hành");
+        //
+        TaiKhoanUI taikhoan = new TaiKhoanUI();
+        contentPanel.add(taikhoan,"Tài khoản");
+        
         // 3. Hiển thị Dashboard lên đầu tiên
         showCard("Dashboard");
     }
@@ -221,7 +226,8 @@ public class MainFrameTest extends JFrame {
 
     private void initCards() {
         for (String key : navItems.keySet()) {
-            if (key.equals("Dashboard") || key.equals("Khuyến mãi") || key.equals("Bảo hành")) continue; 
+            if (key.equals("Dashboard") || key.equals("Khuyến mãi") ||
+             key.equals("Bảo hành") || key.equals("Tài khoản")) continue; 
 
             JPanel card = new JPanel(new GridBagLayout());
             card.setBackground(Color.WHITE);
