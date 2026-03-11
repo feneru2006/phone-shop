@@ -5,6 +5,7 @@ import DTO.accountDTO;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -59,7 +60,7 @@ public class TaiKhoanUI extends JPanel {
     }
 
     // ==========================================================
-    // 2. TẠO GIAO DIỆN
+    // 2. TẠO GIAO DIỆN CHÍNH
     // ==========================================================
     private JPanel createTabPanel() {
         JPanel tabPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
@@ -108,7 +109,7 @@ public class TaiKhoanUI extends JPanel {
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(Color.decode("#EFF6FF"));
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10); // Bo góc icon 10px
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
                 super.paintComponent(g);
             }
         };
@@ -120,9 +121,6 @@ public class TaiKhoanUI extends JPanel {
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 20));
         lblTitle.setForeground(Color.decode("#0F172A"));
 
-        // =======================================================
-        // Bo góc tối đa cho Badge "SYSTEM LIVE" thành hình viên thuốc (pill)
-        // =======================================================
         leftFlow.add(lblIcon);
         leftFlow.add(lblTitle);
 
@@ -130,9 +128,9 @@ public class TaiKhoanUI extends JPanel {
         rightFlow.setOpaque(false);
 
         JButton btnThem = createStyledButton("+  THÊM MỚI", "#2563EB", "#FFFFFF");
-        btnThem.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Nút thêm mới được click!");
-        });
+
+        // --- GỌI FORM THÊM MỚI KHI ẤN NÚT ---
+        btnThem.addActionListener(e -> showAddAccountDialog());
 
         rightFlow.add(btnThem);
 
@@ -142,9 +140,6 @@ public class TaiKhoanUI extends JPanel {
     }
 
     private JPanel createTablePanel() {
-        // =======================================================
-        // Bo góc cho khung chứa bảng dữ liệu (12px)
-        // =======================================================
         JPanel tableContainer = new JPanel(new BorderLayout()) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -175,13 +170,8 @@ public class TaiKhoanUI extends JPanel {
         table.setShowVerticalLines(false);
         table.setShowHorizontalLines(true);
         table.setGridColor(Color.decode("#F1F5F9"));
-
-        // Chỉ chọn 1 hàng tại một thời điểm
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        // =======================================================
-        // CĂN CHỈNH STYLE VÀ KHÓA VỊ TRÍ CỘT CHO HEADER
-        // =======================================================
         table.getTableHeader().setDefaultRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -190,48 +180,31 @@ public class TaiKhoanUI extends JPanel {
                 label.setFont(new Font("Segoe UI", Font.BOLD, 12));
                 label.setForeground(Color.decode("#475569"));
 
-                // Nếu là cột "THAO TÁC" (cột số 4) -> Căn giữa
                 if (column == 4) {
                     label.setHorizontalAlignment(SwingConstants.CENTER);
                     label.setBorder(new MatteBorder(0, 0, 1, 0, Color.decode("#E2E8F0")));
-                }
-                // Các cột khác -> Căn trái & lùi vào 20px (Padding)
-                else {
+                } else {
                     label.setHorizontalAlignment(SwingConstants.LEFT);
                     label.setBorder(BorderFactory.createCompoundBorder(
                             new MatteBorder(0, 0, 1, 0, Color.decode("#E2E8F0")),
                             new EmptyBorder(0, 20, 0, 0)
                     ));
                 }
-
                 return label;
             }
         });
         table.getTableHeader().setPreferredSize(new Dimension(0, 40));
         table.getTableHeader().setReorderingAllowed(false);
+        table.getTableHeader().setResizingAllowed(false);
 
-        // =======================================================
-        // XỬ LÝ HIGHLIGHT 2 MÀU (Ô ĐƯỢC CHỌN VÀ HÀNG ĐƯỢC CHỌN)
-        // =======================================================
         DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-
-                // Set padding rỗng để ghi đè làm mất đi viền focus chấm chấm mặc định của Java
                 setBorder(new EmptyBorder(0, 20, 0, 0));
-
-                // Tô màu
-                if (hasFocus) {
-                    // Màu cho ô chính xác đang được click (Xanh lam pastel rất nhạt)
-                    c.setBackground(Color.decode("#DBEAFE"));
-                } else if (isSelected) {
-                    // Màu cho các ô còn lại trên cùng hàng được chọn (Xám xanh siêu nhạt)
-                    c.setBackground(Color.decode("#F1F5F9"));
-                } else {
-                    // Màu mặc định
-                    c.setBackground(Color.WHITE);
-                }
+                if (hasFocus) c.setBackground(Color.decode("#DBEAFE"));
+                else if (isSelected) c.setBackground(Color.decode("#F1F5F9"));
+                else c.setBackground(Color.WHITE);
 
                 c.setForeground(Color.decode("#334155"));
                 setFont(new Font("Segoe UI", Font.PLAIN, 13));
@@ -243,14 +216,24 @@ public class TaiKhoanUI extends JPanel {
             table.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
         }
 
-        // GÁN BỘ RENDERER VÀ EDITOR ĐỂ TẠO NÚT BẤM VÀ HIGHLIGHT CHO CỘT 4
         table.getColumnModel().getColumn(4).setCellRenderer(new TableActionCellRender());
         table.getColumnModel().getColumn(4).setCellEditor(new TableActionCellEditor(table));
 
+        table.getColumnModel().getColumn(0).setMinWidth(80);
+        table.getColumnModel().getColumn(0).setMaxWidth(80);
         table.getColumnModel().getColumn(0).setPreferredWidth(80);
+
+        table.getColumnModel().getColumn(1).setMinWidth(250);
         table.getColumnModel().getColumn(1).setPreferredWidth(250);
+
+        table.getColumnModel().getColumn(2).setMinWidth(200);
         table.getColumnModel().getColumn(2).setPreferredWidth(200);
+
+        table.getColumnModel().getColumn(3).setMinWidth(100);
         table.getColumnModel().getColumn(3).setPreferredWidth(100);
+
+        table.getColumnModel().getColumn(4).setMinWidth(180);
+        table.getColumnModel().getColumn(4).setMaxWidth(180);
         table.getColumnModel().getColumn(4).setPreferredWidth(180);
 
         JScrollPane scrollPane = new JScrollPane(table);
@@ -271,9 +254,129 @@ public class TaiKhoanUI extends JPanel {
         }
     }
 
-    // =======================================================
-    // Tùy chỉnh vẽ bo góc cho Button
-    // =======================================================
+    // ==========================================================
+    // 3. FORM THÊM TÀI KHOẢN MỚI VÀ CÁC THÀNH PHẦN BỔ TRỢ
+    // ==========================================================
+    private void showAddAccountDialog() {
+        // Tạo cửa sổ Dialog hiển thị đè lên trên
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Thêm tài khoản mới", true);
+        dialog.setSize(420, 480);
+        dialog.setLocationRelativeTo(this);
+        dialog.setLayout(new BorderLayout());
+        dialog.getContentPane().setBackground(Color.WHITE);
+
+        // Header Form
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBackground(Color.decode("#2563EB"));
+        headerPanel.setBorder(new EmptyBorder(15, 20, 15, 20));
+        JLabel lblTitle = new JLabel("THÊM TÀI KHOẢN MỚI");
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lblTitle.setForeground(Color.WHITE);
+        headerPanel.add(lblTitle, BorderLayout.CENTER);
+        dialog.add(headerPanel, BorderLayout.NORTH);
+
+        // Phần Body chứa các trường nhập liệu
+        JPanel bodyPanel = new JPanel();
+        bodyPanel.setLayout(new BoxLayout(bodyPanel, BoxLayout.Y_AXIS));
+        bodyPanel.setBackground(Color.WHITE);
+        bodyPanel.setBorder(new EmptyBorder(25, 30, 25, 30));
+
+        JTextField txtId = createModernTextField();
+        JTextField txtTen = createModernTextField();
+
+        JPasswordField txtPass = new JPasswordField();
+        txtPass.setBorder(txtId.getBorder());
+        txtPass.setPreferredSize(new Dimension(200, 38));
+        txtPass.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+        // Combo Box chọn nhóm quyền hạn
+        JComboBox<String> cbQuyen = new JComboBox<>(new String[]{"AD", "QL", "NV","ST"});
+        cbQuyen.setBackground(Color.WHITE);
+        cbQuyen.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        cbQuyen.setPreferredSize(new Dimension(200, 38));
+
+        bodyPanel.add(createInputGroup("Mã tài khoản (ID):", txtId));
+        bodyPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        bodyPanel.add(createInputGroup("Tên đăng nhập:", txtTen));
+        bodyPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        bodyPanel.add(createInputGroup("Mật khẩu:", txtPass));
+        bodyPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        bodyPanel.add(createInputGroup("Quyền hạn:", cbQuyen));
+
+        dialog.add(bodyPanel, BorderLayout.CENTER);
+
+        // Footer Form (Chứa nút Hủy và Lưu)
+        JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 15));
+        footerPanel.setBackground(Color.decode("#F8FAFC"));
+        footerPanel.setBorder(new MatteBorder(1, 0, 0, 0, Color.decode("#E2E8F0")));
+
+        JButton btnHuy = createStyledButton("Hủy bỏ", "#94A3B8", "#FFFFFF");
+        JButton btnLuu = createStyledButton("Lưu tài khoản", "#10B981", "#FFFFFF");
+
+        btnHuy.addActionListener(e -> dialog.dispose());
+
+        // Logic xử lý khi bấm LƯU
+        btnLuu.addActionListener(e -> {
+            String id = txtId.getText().trim();
+            String ten = txtTen.getText().trim();
+            String pass = new String(txtPass.getPassword());
+            String quyen = cbQuyen.getSelectedItem().toString();
+
+            if (id.isEmpty() || ten.isEmpty() || pass.isEmpty()) {
+                JOptionPane.showMessageDialog(dialog, "Vui lòng nhập đầy đủ thông tin!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            try {
+                // TODO: Gọi AccountDAO để lưu vào database
+                // accountDTO newAcc = new accountDTO();
+                // newAcc.setId(id);
+                // newAcc.setTen(ten);
+                // newAcc.setPass(hashPassword(pass));
+                // newAcc.setQuyen(quyen);
+                // accountDAO.insert(newAcc);
+
+                // Tạm thời hiển thị lên bảng ngay lập tức
+                model.addRow(new Object[]{id, ten, "********", quyen, ""});
+
+                JOptionPane.showMessageDialog(dialog, "Thêm tài khoản thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                dialog.dispose();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(dialog, "Đã có lỗi xảy ra khi lưu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        footerPanel.add(btnHuy);
+        footerPanel.add(btnLuu);
+        dialog.add(footerPanel, BorderLayout.SOUTH);
+
+        dialog.setVisible(true);
+    }
+
+    private JPanel createInputGroup(String labelText, JComponent inputComponent) {
+        JPanel panel = new JPanel(new BorderLayout(0, 5));
+        panel.setOpaque(false);
+
+        JLabel label = new JLabel(labelText);
+        label.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        label.setForeground(Color.decode("#475569"));
+
+        panel.add(label, BorderLayout.NORTH);
+        panel.add(inputComponent, BorderLayout.CENTER);
+        return panel;
+    }
+
+    private JTextField createModernTextField() {
+        JTextField tf = new JTextField();
+        tf.setPreferredSize(new Dimension(200, 38));
+        tf.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tf.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(Color.decode("#CBD5E1"), 1, true),
+                new EmptyBorder(5, 10, 5, 10)
+        ));
+        return tf;
+    }
+
     private JButton createStyledButton(String text, String bgColor, String fgColor) {
         JButton btn = new JButton(text) {
             @Override
@@ -281,7 +384,7 @@ public class TaiKhoanUI extends JPanel {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(getBackground());
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10); // Bo góc nút bấm
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
                 super.paintComponent(g2);
                 g2.dispose();
             }
@@ -291,14 +394,14 @@ public class TaiKhoanUI extends JPanel {
         btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btn.setFocusPainted(false);
         btn.setBorderPainted(false);
-        btn.setContentAreaFilled(false); // Quan trọng để hiển thị màu bo góc nền dưới
+        btn.setContentAreaFilled(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn.setBorder(new EmptyBorder(8, 15, 8, 15));
         return btn;
     }
 
     // =========================================================================
-    // CÁC LỚP BỔ TRỢ ĐỂ TẠO NÚT BẤM TRONG JTABLE (SỬA, PHÂN QUYỀN, XÓA)
+    // 4. CÁC LỚP RENDERER VÀ EDITOR CHO BẢNG
     // =========================================================================
     private class ActionPanel extends JPanel {
         JButton btnRole, btnDel;
@@ -334,11 +437,10 @@ public class TaiKhoanUI extends JPanel {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             ActionPanel actionPanel = new ActionPanel();
 
-            // Xử lý màu cho cột thao tác đồng bộ với các cột khác
             if (hasFocus) {
-                actionPanel.setBackground(Color.decode("#DBEAFE")); // Ô đang click
+                actionPanel.setBackground(Color.decode("#DBEAFE"));
             } else if (isSelected) {
-                actionPanel.setBackground(Color.decode("#F1F5F9")); // Hàng đang chọn
+                actionPanel.setBackground(Color.decode("#F1F5F9"));
             } else {
                 actionPanel.setBackground(Color.WHITE);
             }
@@ -357,7 +459,6 @@ public class TaiKhoanUI extends JPanel {
 
             actionPanel.btnRole.addActionListener(e -> {
                 fireEditingStopped();
-                // CHUYỂN TRANG
                 if (navListener != null) {
                     navListener.goToPhanQuyen(currentAccountId);
                 } else {
@@ -376,8 +477,7 @@ public class TaiKhoanUI extends JPanel {
 
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            currentAccountId = table.getValueAt(row, 0).toString(); // Lấy ID
-            // Khi ô Thao tác đang trong trạng thái Editor (bị click vào) thì tô màu highlight của cell
+            currentAccountId = table.getValueAt(row, 0).toString();
             actionPanel.setBackground(Color.decode("#DBEAFE"));
             return actionPanel;
         }
