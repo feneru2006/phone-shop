@@ -2,6 +2,7 @@ package BUS;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import DAL.DAO.SanPhamDAO;
 import DTO.SanPhamDTO;
@@ -15,13 +16,16 @@ public class SanPhamBUS {
     }
 
     public List<SanPhamDTO> getAll() {
-        return dsSanPham;
+        return dsSanPham.stream()
+                .filter(sp -> !sp.isDeleted())
+                .collect(Collectors.toList());
     }
+
     public List<SanPhamDTO> timKiem(String tieuChi, String keyword) {
         List<SanPhamDTO> result = new ArrayList<>();
         String key = keyword.toLowerCase().trim();
 
-        for (SanPhamDTO sp : dsSanPham) {
+        for (SanPhamDTO sp : getAll()) {
             boolean match = false;
             switch (tieuChi) {
                 case "Mã SP":
@@ -47,7 +51,7 @@ public class SanPhamBUS {
     }
 
     public boolean themSanPham(SanPhamDTO sp) {
-        if (sp.getSlTon() < 0 || sp.getGia() < 0) return false;
+        if (sp.getSlTon() < 0 || sp.getGia() < 0 || sp.getPhanTramLoiNhuan() < 0) return false;
         for (SanPhamDTO item : dsSanPham) {
             if (item.getMaSP().equalsIgnoreCase(sp.getMaSP())) {
                 return false;
@@ -58,7 +62,7 @@ public class SanPhamBUS {
     }
 
     public boolean suaSanPham(SanPhamDTO sp) {
-        if (sp.getSlTon() < 0 || sp.getGia() < 0) return false;
+        if (sp.getSlTon() < 0 || sp.getGia() < 0 || sp.getPhanTramLoiNhuan() < 0) return false;
         for (int i = 0; i < dsSanPham.size(); i++) {
             if (dsSanPham.get(i).getMaSP().equalsIgnoreCase(sp.getMaSP())) {
                 dsSanPham.set(i, sp);
@@ -69,7 +73,13 @@ public class SanPhamBUS {
     }
 
     public boolean xoaSanPham(String maSP) {
-        return dsSanPham.removeIf(sp -> sp.getMaSP().equalsIgnoreCase(maSP));
+        for (SanPhamDTO sp : dsSanPham) {
+            if (sp.getMaSP().equalsIgnoreCase(maSP)) {
+                sp.setDeleted(true); 
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean saveToDatabase() {
@@ -78,22 +88,14 @@ public class SanPhamBUS {
             boolean exists = false;
             for (SanPhamDTO db : dbList) {
                 if (db.getMaSP().equalsIgnoreCase(sp.getMaSP())) {
-                    spDAO.update(sp);
+                    spDAO.update(sp); 
                     exists = true;
                     break;
                 }
             }
-            if (!exists) spDAO.insert(sp);
-        }
-        for (SanPhamDTO db : dbList) {
-            boolean stillExists = false;
-            for (SanPhamDTO sp : dsSanPham) {
-                if (sp.getMaSP().equalsIgnoreCase(db.getMaSP())) {
-                    stillExists = true;
-                    break;
-                }
+            if (!exists && !sp.isDeleted()) {
+                spDAO.insert(sp);
             }
-            if (!stillExists) spDAO.delete(db.getMaSP());
         }
         return true;
     }
