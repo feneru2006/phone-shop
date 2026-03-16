@@ -48,7 +48,7 @@ public class Main {
 
                 // Cấp toàn bộ quyền để hiển thị đầy đủ Menu trên MainFrameTest
                 Set<String> fullPerms = new HashSet<>(Arrays.asList(
-                    "Dashboard", "Sản phẩm", "Nhân viên", "Khách hàng", "Bảo hành", "Hóa đơn"
+                    "Dashboard", "Sản phẩm", "Nhân viên", "Khách hàng", "Bảo hành", "Hóa đơn", "Phân quyền"
                 ));
 
                 // Nạp vào hệ thống RolePermission để các trang khác có thể dùng
