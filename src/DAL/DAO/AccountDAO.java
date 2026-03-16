@@ -46,4 +46,52 @@ public class AccountDAO {
         }
         return list;
     }
+
+    public boolean insert(accountDTO acc) {
+        String sql = "INSERT INTO account (id, ten, pass, quyen) VALUES (?, ?, ?, ?)";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, acc.getId());
+            ps.setString(2, acc.getTen());
+            ps.setString(3, acc.getPass());
+            ps.setString(4, acc.getQuyen());
+
+            return ps.executeUpdate() > 0; // Trả về true nếu chèn thành công ít nhất 1 dòng
+        } catch (SQLException e) {
+            // Nếu báo lỗi Foreign Key, khả năng cao là ID (Mã NV) chưa tồn tại trong bảng nhanvien
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean update(accountDTO acc) {
+        String sql = "UPDATE account SET ten = ?, pass = ?, quyen = ? WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, acc.getTen());
+            ps.setString(2, acc.getPass());
+            ps.setString(3, acc.getQuyen());
+            ps.setString(4, acc.getId());
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean delete(String id) {
+        String sql = "DELETE FROM account WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }
