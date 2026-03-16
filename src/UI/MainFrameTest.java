@@ -49,6 +49,8 @@ public class MainFrameTest extends JFrame {
         initCards();
         DashboardPanel dashboard = new DashboardPanel();
         contentPanel.add(dashboard, "Dashboard");
+        contentPanel.add(new PhanQuyenUI(),"Phân quyền");
+        contentPanel.add(new TaiKhoanUI(), "Tài khoản");
         
         showCard("Dashboard");
     }
