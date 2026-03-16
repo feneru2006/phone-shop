@@ -15,6 +15,7 @@ public class LoginFrame extends JFrame {
     private JTextField txtUsername;
     private JPasswordField txtPassword;
     private JButton btnLogin;
+    private JCheckBox checkPassword;
     private final AuthService authService = new AuthService();
 
     public LoginFrame() {
