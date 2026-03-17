@@ -240,6 +240,7 @@ public class PhanQuyenUI extends JPanel {
         table.setRowHeight(60);
         table.setShowVerticalLines(true);
         table.setShowHorizontalLines(true);
+        table.getTableHeader().setReorderingAllowed(false);
         table.setGridColor(Color.decode("#F1F5F9"));
         table.setSelectionBackground(Color.decode("#EFF6FF"));
         table.setSelectionForeground(Color.BLACK);
