@@ -6,6 +6,7 @@ import DTO.DashboardDTO;
 import DTO.ReportProduct;
 import DTO.ReportRevenueRow;
 import DTO.logDTO;
+import UI.Utils.UIUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -78,23 +79,6 @@ public class DashboardPanel extends JPanel {
         filterStatistics(); 
     }
 
-    private JPanel createTitlePanel(String emoji, String text, int fontSize, Color fgColor) {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        panel.setOpaque(false);
-        
-        JLabel lbIcon = new JLabel(emoji);
-        lbIcon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, fontSize + 2)); 
-        lbIcon.setForeground(fgColor);
-        
-        JLabel lbText = new JLabel(text);
-        lbText.setFont(new Font("Segoe UI", Font.BOLD, fontSize));
-        lbText.setForeground(fgColor);
-        
-        panel.add(lbIcon);
-        panel.add(lbText);
-        return panel;
-    }
-
     private void initStatsCards() {
         JPanel container = new JPanel(new GridLayout(1, 3, 18, 0)); 
         container.setOpaque(false);
@@ -121,7 +105,8 @@ public class DashboardPanel extends JPanel {
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
         
-        JPanel titlePanel = createTitlePanel("📈", "THỐNG KÊ DOANH SỐ", 22, Color.WHITE);
+        // Gọi hàm từ UIUtils
+        JPanel titlePanel = UIUtils.createTitlePanel("src/main/java/resources/fire.png", "THỐNG KÊ DOANH SỐ", 22, Color.WHITE);
         headerPanel.add(titlePanel, BorderLayout.WEST); 
 
         JPanel dateFilterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
@@ -150,8 +135,8 @@ public class DashboardPanel extends JPanel {
 
         RoundedPanel lineBox = new RoundedPanel(20, Color.WHITE);
         lineBox.setLayout(new BorderLayout());
-        lineBox.setBorder(new EmptyBorder(15, 15, 15, 15)); 
-        JPanel lineTitlePanel = createTitlePanel("📈", "DOANH THU THEO NGÀY", 18, Color.BLACK);
+        lineBox.setBorder(new EmptyBorder(15, 5, 10, 8)); 
+        JPanel lineTitlePanel = UIUtils.createTitlePanel("src/main/java/resources/chart_line.png", "DOANH THU THEO NGÀY", 18, Color.BLACK);
         lineTitlePanel.setBorder(new EmptyBorder(0, 0, 10, 0));
         chartLinePanel = new JPanel(new BorderLayout());
         chartLinePanel.setOpaque(false);
@@ -161,7 +146,7 @@ public class DashboardPanel extends JPanel {
         RoundedPanel pieBox = new RoundedPanel(20, Color.WHITE);
         pieBox.setLayout(new BorderLayout());
         pieBox.setBorder(new EmptyBorder(15, 15, 15, 15)); 
-        JPanel pieTitlePanel = createTitlePanel("🍰", "TỶ TRỌNG SẢN PHẨM", 18, Color.BLACK);
+        JPanel pieTitlePanel = UIUtils.createTitlePanel("src/main/java/resources/chart_pie.png", "TỶ TRỌNG SẢN PHẨM", 18, Color.BLACK);
         pieTitlePanel.setBorder(new EmptyBorder(0, 0, 10, 0));
         chartPiePanel = new JPanel(new BorderLayout());
         chartPiePanel.setOpaque(false);
@@ -184,13 +169,13 @@ public class DashboardPanel extends JPanel {
         // Header bảng trái chứa Tiêu đề và Nút chuyển đổi
         JPanel revenueHeader = new JPanel(new BorderLayout());
         revenueHeader.setOpaque(false);
-        JPanel revenueTitlePanel = createTitlePanel("📋", "DOANH THU THEO NGÀY", 18, Color.BLACK);
+        JPanel revenueTitlePanel = UIUtils.createTitlePanel("src/main/java/resources/clipboard.png", "DOANH THU THEO NGÀY", 18, Color.BLACK);
         
         btnToggleRevenue = new JButton("Xem theo Tháng");
         btnToggleRevenue.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btnToggleRevenue.setFocusPainted(false);
         btnToggleRevenue.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnToggleRevenue.setBackground(Color.decode("#F1F5F9")); // Nền xám nhạt cho nút
+        btnToggleRevenue.setBackground(Color.decode("#F1F5F9")); 
         
         // Logic bấm để đổi bảng và tiêu đề
         btnToggleRevenue.addActionListener(e -> {
@@ -210,7 +195,6 @@ public class DashboardPanel extends JPanel {
         revenueHeader.add(btnToggleRevenue, BorderLayout.EAST);
         revenueHeader.setBorder(new EmptyBorder(0, 0, 10, 0));
 
-        // Dùng CardLayout để chứa 2 bảng
         revenueCardLayout = new CardLayout();
         revenueCards = new JPanel(revenueCardLayout);
         revenueCards.setOpaque(false);
@@ -230,7 +214,7 @@ public class DashboardPanel extends JPanel {
         RoundedPanel productBox = new RoundedPanel(20, Color.WHITE);
         productBox.setLayout(new BorderLayout());
         productBox.setBorder(new EmptyBorder(15, 15, 15, 15)); 
-        JPanel productTitlePanel = createTitlePanel("📦", "DOANH THU TỪNG SẢN PHẨM", 18, Color.BLACK);
+        JPanel productTitlePanel = UIUtils.createTitlePanel("src/main/java/resources/box.png", "DOANH THU TỪNG SẢN PHẨM", 18, Color.BLACK);
         productTitlePanel.setBorder(new EmptyBorder(0, 0, 10, 0));
         
         productModel = createNonEditableModel(new String[]{"Tên Sản Phẩm", "Doanh thu (VNĐ)"});
@@ -257,7 +241,7 @@ public class DashboardPanel extends JPanel {
         RoundedPanel logContainer = new RoundedPanel(20, Color.WHITE);
         logContainer.setLayout(new BorderLayout());
         logContainer.setBorder(new EmptyBorder(15, 15, 15, 15)); 
-        JPanel logTitlePanel = createTitlePanel("📝", "NHẬT KÝ HỆ THỐNG GẦN ĐÂY", 16, Color.BLACK);
+        JPanel logTitlePanel = UIUtils.createTitlePanel("src/main/java/resources/log.png", "NHẬT KÝ HỆ THỐNG GẦN ĐÂY", 16, Color.BLACK);
         logTitlePanel.setBorder(new EmptyBorder(0, 0, 10, 0));
         logModel = createNonEditableModel(new String[]{"Hành vi", "Thực thể", "Chi tiết", "Thời điểm"});
         logTable = createStyledTable(logModel, false);
@@ -269,7 +253,7 @@ public class DashboardPanel extends JPanel {
         stockContainer.setPreferredSize(new Dimension(480, 0));
         stockContainer.setLayout(new BorderLayout());
         stockContainer.setBorder(new EmptyBorder(15, 20, 15, 15)); 
-        JPanel stockTitlePanel = createTitlePanel("⚠️", "CẢNH BÁO TỒN KHO", 16, Color.RED);
+        JPanel stockTitlePanel = UIUtils.createTitlePanel("src/main/java/resources/warning.png", "CẢNH BÁO TỒN KHO", 16, Color.RED);
         stockTitlePanel.setBorder(new EmptyBorder(0, 0, 10, 0));
         lowStockModel = createNonEditableModel(new String[]{"Tên Sản Phẩm", "Số lượng"});
         lowStockTable = createStyledTable(lowStockModel, false);
@@ -327,7 +311,6 @@ public class DashboardPanel extends JPanel {
         if (startDate == null || endDate == null) return;
 
         try {
-            // Cập nhật bảng theo Ngày
             List<ReportRevenueRow> dayData = reportService.getRevenueList(startDate, endDate);
             dailyModel.setRowCount(0);
             if (dayData != null) {
@@ -336,7 +319,6 @@ public class DashboardPanel extends JPanel {
                 }
             }
             
-            // Cập nhật bảng theo Tháng
             monthlyModel.setRowCount(0);
             List<Object[]> monthData = reportService.getMonthlyRevenueList(startDate, endDate);
             if (monthData != null) {
@@ -346,7 +328,6 @@ public class DashboardPanel extends JPanel {
                 }
             }
             
-            // Cập nhật bảng Doanh thu theo Sản phẩm (Lấy top 50 để lấp vào bảng hiển thị)
             productModel.setRowCount(0);
             List<ReportProduct> prodData = reportService.getTopProducts(startDate, endDate, 50); 
             if (prodData != null) {
