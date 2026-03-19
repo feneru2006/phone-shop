@@ -292,7 +292,16 @@ public class TaiKhoanUI extends JPanel {
         txtPass.setPreferredSize(new Dimension(200, 38));
         txtPass.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
-        JComboBox<String> cbQuyen = new JComboBox<>(new String[]{"AD", "CC", "M","PM","SA","WM"});
+        // [SỬA]: Thêm chú thích cho các quyền
+        String[] danhSachQuyen = {
+                "AD - Admin",
+                "CC - Chăm sóc khách hàng",
+                "M - Quản lý",
+                "PM - Quản lý sản phẩm",
+                "SA - Nhân viên bán hàng",
+                "WM - Quản lý kho"
+        };
+        JComboBox<String> cbQuyen = new JComboBox<>(danhSachQuyen);
         cbQuyen.setBackground(Color.WHITE);
         cbQuyen.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         cbQuyen.setPreferredSize(new Dimension(200, 38));
@@ -320,7 +329,10 @@ public class TaiKhoanUI extends JPanel {
             String id = txtId.getText().trim();
             String ten = txtTen.getText().trim();
             String pass = new String(txtPass.getPassword());
-            String quyen = cbQuyen.getSelectedItem().toString();
+
+            // [SỬA]: Cắt lấy mã quyền
+            String quyenFull = cbQuyen.getSelectedItem().toString();
+            String quyen = quyenFull.split(" - ")[0].trim();
 
             if (id.isEmpty() || ten.isEmpty() || pass.isEmpty()) {
                 JOptionPane.showMessageDialog(dialog, "Vui lòng nhập đầy đủ thông tin!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
@@ -469,11 +481,27 @@ public class TaiKhoanUI extends JPanel {
         bodyPanel.setBackground(Color.WHITE);
         bodyPanel.setBorder(new EmptyBorder(25, 30, 25, 30));
 
-        JComboBox<String> cbQuyen = new JComboBox<>(new String[]{"AD", "CC", "M","PM","SA","WM"});
+        // [SỬA]: Thêm chú thích cho các quyền
+        String[] danhSachQuyen = {
+                "AD - Admin",
+                "CC - Chăm sóc khách hàng",
+                "M - Quản lý",
+                "PM - Quản lý sản phẩm",
+                "SA - Nhân viên bán hàng",
+                "WM - Quản lý kho"
+        };
+        JComboBox<String> cbQuyen = new JComboBox<>(danhSachQuyen);
         cbQuyen.setBackground(Color.WHITE);
         cbQuyen.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         cbQuyen.setPreferredSize(new Dimension(200, 38));
-        cbQuyen.setSelectedItem(oldQuyen); // Mặc định chọn quyền cũ
+
+        // [SỬA]: Tìm và chọn đúng quyền cũ
+        for (int i = 0; i < cbQuyen.getItemCount(); i++) {
+            if (cbQuyen.getItemAt(i).startsWith(oldQuyen)) {
+                cbQuyen.setSelectedIndex(i);
+                break;
+            }
+        }
 
         bodyPanel.add(createInputGroup("Chọn quyền mới cho ID: " + id, cbQuyen));
         dialog.add(bodyPanel, BorderLayout.CENTER);
@@ -488,7 +516,8 @@ public class TaiKhoanUI extends JPanel {
         btnHuy.addActionListener(e -> dialog.dispose());
 
         btnLuu.addActionListener(e -> {
-            String newQuyen = cbQuyen.getSelectedItem().toString();
+            // [SỬA]: Cắt lấy mã quyền trước dấu "-"
+            String newQuyen = cbQuyen.getSelectedItem().toString().split(" - ")[0].trim();
             try {
                 // Lấy lại Account từ DB để giữ nguyên mật khẩu cũ
                 accountDTO acc = accountDAO.findByUsername(ten);
@@ -712,8 +741,6 @@ public class TaiKhoanUI extends JPanel {
                     String id = table.getValueAt(row, 0).toString();
                     String ten = table.getValueAt(row, 1).toString();
                     String quyen = table.getValueAt(row, 3).toString();
-
-                    // Nút này giờ chỉ hiện form đổi Pass/Tên, ko còn ô Quyền
                     showEditAccountDialog(id, ten, quyen);
                 }
             });
