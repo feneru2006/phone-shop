@@ -2,6 +2,7 @@ package DAL.DAO;
 
 import DTO.accountDTO;
 import java.sql.*;
+import java.util.ArrayList;
 
 public class AccountDAO {
     public accountDTO findByUsername(String username) {
@@ -47,6 +48,29 @@ public class AccountDAO {
         return list;
     }
 
+    public ArrayList<accountDTO> selectByRole(String maQuyen) {
+        ArrayList<accountDTO> list = new ArrayList<>();
+        String sql = "SELECT * FROM account WHERE quyen = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, maQuyen);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new accountDTO(
+                            rs.getString("id"),
+                            rs.getString("ten"),
+                            rs.getString("pass"),
+                            rs.getString("quyen")
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     public boolean insert(accountDTO acc) {
         String sql = "INSERT INTO account (id, ten, pass, quyen) VALUES (?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
@@ -59,7 +83,6 @@ public class AccountDAO {
 
             return ps.executeUpdate() > 0; // Trả về true nếu chèn thành công ít nhất 1 dòng
         } catch (SQLException e) {
-            // Nếu báo lỗi Foreign Key, khả năng cao là ID (Mã NV) chưa tồn tại trong bảng nhanvien
             e.printStackTrace();
         }
         return false;
