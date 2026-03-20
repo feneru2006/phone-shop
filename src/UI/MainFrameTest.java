@@ -53,7 +53,9 @@ public class MainFrameTest extends JFrame {
         // 2. Add Dashboard thật của bạn vào
         DashboardPanel dashboard = new DashboardPanel();
         contentPanel.add(dashboard, "Dashboard");
-
+        contentPanel.add(new TaiKhoanUI(), "Tài khoản");
+        contentPanel.add(new PhanQuyenUI(), "Phân quyền");
+        
         //
         KhuyenMaiPanel giamgia = new KhuyenMaiPanel();
         contentPanel.add(giamgia,"Khuyến mãi");
