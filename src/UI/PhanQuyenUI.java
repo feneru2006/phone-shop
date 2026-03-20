@@ -1,6 +1,8 @@
 package UI;
 
+import DAL.DAO.AccountDAO;
 import DAL.DAO.DBConnection;
+import DTO.accountDTO;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -10,6 +12,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -21,6 +24,15 @@ import java.util.Set;
 
 public class PhanQuyenUI extends JPanel {
 
+    // [THÊM MỚI]: Đưa các biến này lên cấp độ Class để hàm Save có thể lấy dữ liệu
+    private DefaultTableModel mainModel;
+    private List<String> maCNList;
+    private List<String> tenCNList;
+    private List<String[]> nhomQuyenList;
+
+    // [THÊM MỚI]: Vùng chứa bảng để khi thêm/xóa có thể tải lại bảng mà không bị đè UI
+    private JPanel tableContainer;
+
     // ==========================================================
     // 1. CÁC HÀM KHỞI TẠO (CONSTRUCTORS)
     // ==========================================================
@@ -29,7 +41,13 @@ public class PhanQuyenUI extends JPanel {
         setBackground(Color.decode("#F3F4F6"));
         setBorder(new EmptyBorder(20, 20, 20, 20));
 
+        // Khởi tạo vùng chứa
+        tableContainer = new JPanel(new BorderLayout());
+        tableContainer.setOpaque(false);
+
         initTopPanel();
+        add(tableContainer, BorderLayout.CENTER); // Đưa vùng chứa vào giữa
+
         initTripleTableMatrix();
     }
 
@@ -57,8 +75,12 @@ public class PhanQuyenUI extends JPanel {
         JPanel btnGroup = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         btnGroup.setOpaque(false);
 
-        JButton btnSave = createStyledButton("Lưu thay đổi", "#10B981"); // Thêm nút lưu
+        JButton btnSave = createStyledButton("Lưu thay đổi", "#10B981");
         JButton btnAdd = createStyledButton("Tạo nhóm quyền mới", "#3B82F6");
+
+        // [CHỨC NĂNG LƯU VÀ TẠO MỚI]
+        btnSave.addActionListener(e -> savePermissions());
+        btnAdd.addActionListener(e -> showAddRoleDialog());
 
         btnGroup.add(btnSave);
         btnGroup.add(btnAdd);
@@ -72,33 +94,33 @@ public class PhanQuyenUI extends JPanel {
     // 3. KHỞI TẠO BẢNG CHIA 3 PHẦN TỪ DATABASE
     // ==========================================================
     private void initTripleTableMatrix() {
+        // [THÊM MỚI]: Clear container trước khi vẽ lại
+        tableContainer.removeAll();
+
         JPanel whiteBox = new JPanel(new BorderLayout());
         whiteBox.setBackground(Color.WHITE);
         whiteBox.setBorder(new LineBorder(Color.decode("#E2E8F0"), 1));
 
         // --- FETCH DỮ LIỆU TỪ DATABASE ---
-        List<String> maCNList = new ArrayList<>();
-        List<String> tenCNList = new ArrayList<>();
-        List<String[]> nhomQuyenList = new ArrayList<>();
+        maCNList = new ArrayList<>();
+        tenCNList = new ArrayList<>();
+        nhomQuyenList = new ArrayList<>();
         Map<String, Set<String>> phanQuyenMap = new HashMap<>();
 
         try (Connection conn = DBConnection.getConnection();
              Statement stmt = conn.createStatement()) {
 
-            // 1. Lấy danh sách chức năng (Các cột)
             ResultSet rsCN = stmt.executeQuery("SELECT MACN, tenCN FROM chucnang ORDER BY MACN");
             while (rsCN.next()) {
                 maCNList.add(rsCN.getString("MACN"));
                 tenCNList.add(rsCN.getString("tenCN"));
             }
 
-            // 2. Lấy danh sách nhóm quyền (Các dòng)
             ResultSet rsNQ = stmt.executeQuery("SELECT MAQUYEN, tenQUYEN FROM nhomquyen ORDER BY MAQUYEN");
             while (rsNQ.next()) {
                 nhomQuyenList.add(new String[]{rsNQ.getString("MAQUYEN"), rsNQ.getString("tenQUYEN")});
             }
 
-            // 3. Lấy ma trận phân quyền
             ResultSet rsPQ = stmt.executeQuery("SELECT MAQUYEN, MACN FROM phanquyen");
             while (rsPQ.next()) {
                 String mq = rsPQ.getString("MAQUYEN");
@@ -110,7 +132,7 @@ public class PhanQuyenUI extends JPanel {
             JOptionPane.showMessageDialog(this, "Lỗi kết nối CSDL: " + e.getMessage());
         }
 
-        int numCN = maCNList.size(); // Sẽ tự động là 6 cột (CN01 -> CN06) theo DB
+        int numCN = maCNList.size();
         String[] allCols = new String[numCN + 2];
         allCols[0] = "Tên nhóm quyền";
         for (int i = 0; i < numCN; i++) {
@@ -118,27 +140,23 @@ public class PhanQuyenUI extends JPanel {
         }
         allCols[numCN + 1] = "Thao tác";
 
-        // --- ĐỔ DỮ LIỆU VÀO MẢNG ---
         Object[][] data = new Object[nhomQuyenList.size()][numCN + 2];
         for (int i = 0; i < nhomQuyenList.size(); i++) {
             String maQuyen = nhomQuyenList.get(i)[0];
             String tenQuyen = nhomQuyenList.get(i)[1];
 
-            // Cột đầu tiên: Tên nhóm quyền và Mã
             data[i][0] = "<html><b>" + tenQuyen + "</b><br><font color='gray'>" + maQuyen + "</font></html>";
 
-            // Các cột Checkbox ở giữa
             Set<String> perms = phanQuyenMap.getOrDefault(maQuyen, new HashSet<>());
             for (int j = 0; j < numCN; j++) {
                 data[i][j + 1] = perms.contains(maCNList.get(j));
             }
 
-            // Cột Thao tác cuối cùng
             data[i][numCN + 1] = "";
         }
 
-        // --- TẠO MODEL DÙNG CHUNG ---
-        DefaultTableModel model = new DefaultTableModel(data, allCols) {
+        // Dùng biến Class mainModel thay vì model local
+        mainModel = new DefaultTableModel(data, allCols) {
             @Override
             public Class<?> getColumnClass(int col) {
                 if (col >= 1 && col <= numCN) return Boolean.class;
@@ -147,11 +165,10 @@ public class PhanQuyenUI extends JPanel {
 
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column >= 1; // Cho phép edit checkbox và cột thao tác
+                return column >= 1;
             }
         };
 
-        // --- TẠO CHỈ SỐ CỘT CHO 3 BẢNG CON ---
         int[] leftIndices = {0};
         int[] centerIndices = new int[numCN];
         for (int i = 0; i < numCN; i++) {
@@ -159,22 +176,18 @@ public class PhanQuyenUI extends JPanel {
         }
         int[] rightIndices = {numCN + 1};
 
-        // --- KHỞI TẠO 3 BẢNG ---
-        JTable leftTable = createSubTable(model, leftIndices);
-        JTable centerTable = createSubTable(model, centerIndices);
-        JTable rightTable = createSubTable(model, rightIndices);
+        JTable leftTable = createSubTable(mainModel, leftIndices);
+        JTable centerTable = createSubTable(mainModel, centerIndices);
+        JTable rightTable = createSubTable(mainModel, rightIndices);
 
-        // Format Bảng Trái
         leftTable.getColumnModel().getColumn(0).setPreferredWidth(200);
         leftTable.getColumnModel().getColumn(0).setHeaderValue(getHtmlHeader("Nhóm quyền", "Mã quyền"));
 
-        // Format Bảng Phải
-        rightTable.getColumnModel().getColumn(0).setPreferredWidth(160);
+        rightTable.getColumnModel().getColumn(0).setPreferredWidth(180);
         rightTable.getColumnModel().getColumn(0).setHeaderValue("THAO TÁC");
         rightTable.getColumnModel().getColumn(0).setCellRenderer(new ActionButtonsRenderer());
         rightTable.getColumnModel().getColumn(0).setCellEditor(new ActionButtonsEditor(rightTable, nhomQuyenList));
 
-        // Format Bảng Giữa (Tự động lấy tên chức năng từ DB)
         centerTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         for (int i = 0; i < numCN; i++) {
             centerTable.getColumnModel().getColumn(i).setPreferredWidth(140);
@@ -189,7 +202,6 @@ public class PhanQuyenUI extends JPanel {
         centerScroll.setBorder(BorderFactory.createEmptyBorder());
         centerScroll.getViewport().setBackground(Color.WHITE);
 
-        // --- BỐ TRÍ LAYOUT ---
         JPanel mainContent = new JPanel(new BorderLayout());
         mainContent.setOpaque(false);
 
@@ -206,12 +218,183 @@ public class PhanQuyenUI extends JPanel {
         mainContent.add(rightPanel, BorderLayout.EAST);
 
         whiteBox.add(mainContent, BorderLayout.CENTER);
-        add(whiteBox, BorderLayout.CENTER);
+
+        // [THÊM MỚI]: Đưa whitebox vào container và refresh UI
+        tableContainer.add(whiteBox, BorderLayout.CENTER);
+        tableContainer.revalidate();
+        tableContainer.repaint();
+    }
+
+    // ==========================================================
+    // LOGIC DATABASE XỬ LÝ LƯU & TẠO MỚI (CHỨC NĂNG MỚI)
+    // ==========================================================
+
+    private void savePermissions() {
+        int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn cập nhật tất cả phân quyền?", "Xác nhận lưu", JOptionPane.YES_NO_OPTION);
+        if (confirm != JOptionPane.YES_OPTION) return;
+
+        try (Connection conn = DBConnection.getConnection()) {
+            conn.setAutoCommit(false);
+
+            // 1. Xóa toàn bộ dữ liệu phân quyền cũ
+            String sqlDelete = "DELETE FROM phanquyen";
+            conn.prepareStatement(sqlDelete).executeUpdate();
+
+            // 2. Chèn lại dựa trên các checkbox đang tích
+            String sqlInsert = "INSERT INTO phanquyen (MAQUYEN, MACN) VALUES (?, ?)";
+            PreparedStatement ps = conn.prepareStatement(sqlInsert);
+
+            for (int i = 0; i < mainModel.getRowCount(); i++) {
+                String maQuyen = nhomQuyenList.get(i)[0];
+                for (int j = 0; j < maCNList.size(); j++) {
+                    Boolean isChecked = (Boolean) mainModel.getValueAt(i, j + 1);
+                    if (isChecked != null && isChecked) {
+                        ps.setString(1, maQuyen);
+                        ps.setString(2, maCNList.get(j));
+                        ps.addBatch();
+                    }
+                }
+            }
+            ps.executeBatch();
+            conn.commit();
+            JOptionPane.showMessageDialog(this, "Đã lưu ma trận phân quyền thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi khi lưu dữ liệu: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void showAddRoleDialog() {
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Tạo nhóm quyền mới", true);
+        dialog.setSize(420, 320);
+        dialog.setLocationRelativeTo(this);
+        dialog.setLayout(new BorderLayout());
+        dialog.getContentPane().setBackground(Color.WHITE);
+
+        // Header
+        JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 15));
+        header.setBackground(Color.decode("#3B82F6"));
+        JLabel title = new JLabel("THÊM NHÓM QUYỀN MỚI");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        title.setForeground(Color.WHITE);
+        header.add(title);
+        dialog.add(header, BorderLayout.NORTH);
+
+        // Body
+        JPanel body = new JPanel(new GridLayout(4, 1, 5, 5));
+        body.setBackground(Color.WHITE);
+        body.setBorder(new EmptyBorder(20, 30, 20, 30));
+
+        JTextField txtMa = new JTextField();
+        txtMa.setPreferredSize(new Dimension(200, 35));
+        JTextField txtTen = new JTextField();
+        txtTen.setPreferredSize(new Dimension(200, 35));
+
+        JLabel lblMa = new JLabel("Mã nhóm quyền (VD: AD, WM):");
+        lblMa.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        JLabel lblTen = new JLabel("Tên nhóm quyền:");
+        lblTen.setFont(new Font("Segoe UI", Font.BOLD, 13));
+
+        body.add(lblMa);
+        body.add(txtMa);
+        body.add(lblTen);
+        body.add(txtTen);
+        dialog.add(body, BorderLayout.CENTER);
+
+        // Footer
+        JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 10));
+        footer.setBackground(Color.decode("#F8FAFC"));
+        footer.setBorder(new LineBorder(Color.decode("#E2E8F0"), 1));
+
+        JButton btnSubmit = createStyledButton("Lưu nhóm quyền", "#3B82F6");
+        btnSubmit.addActionListener(e -> {
+            String ma = txtMa.getText().trim().toUpperCase();
+            String ten = txtTen.getText().trim();
+
+            if (ma.isEmpty() || ten.isEmpty()) {
+                JOptionPane.showMessageDialog(dialog, "Vui lòng nhập đủ thông tin!");
+                return;
+            }
+
+            try (Connection conn = DBConnection.getConnection()) {
+                String sql = "INSERT INTO nhomquyen (MAQUYEN, tenQUYEN) VALUES (?, ?)";
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ps.setString(1, ma);
+                ps.setString(2, ten);
+                ps.executeUpdate();
+
+                JOptionPane.showMessageDialog(dialog, "Thêm nhóm quyền thành công!");
+                dialog.dispose();
+                initTripleTableMatrix(); // Tự động load lại bảng
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(dialog, "Lỗi: " + ex.getMessage());
+            }
+        });
+
+        JButton btnClose = createStyledButton("Hủy", "#94A3B8");
+        btnClose.addActionListener(e -> dialog.dispose());
+
+        footer.add(btnClose);
+        footer.add(btnSubmit);
+        dialog.add(footer, BorderLayout.SOUTH);
+
+        dialog.setVisible(true);
     }
 
     // ==========================================================
     // 4. CÁC HÀM TIỆN ÍCH (HELPER METHODS)
     // ==========================================================
+
+    private void showUsersInRoleDialog(String maQuyen, String tenQuyen) {
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Danh sách nhân viên", true);
+        dialog.setSize(550, 450);
+        dialog.setLocationRelativeTo(this);
+        dialog.setLayout(new BorderLayout());
+        dialog.getContentPane().setBackground(Color.WHITE);
+
+        // Header Panel
+        JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 15));
+        header.setBackground(Color.decode("#6366F1"));
+        JLabel title = new JLabel("Nhân viên thuộc nhóm: " + tenQuyen.toUpperCase());
+        title.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        title.setForeground(Color.WHITE);
+        header.add(title);
+        dialog.add(header, BorderLayout.NORTH);
+
+        // Table
+        String[] cols = {"Mã Nhân Viên", "Tên Đăng Nhập", "Mã Quyền"};
+        DefaultTableModel modelUsers = new DefaultTableModel(cols, 0);
+        JTable tblUsers = new JTable(modelUsers);
+        tblUsers.setRowHeight(35);
+        tblUsers.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
+
+        // Fetch data
+        AccountDAO accDAO = new AccountDAO();
+        List<accountDTO> list = accDAO.selectByRole(maQuyen);
+        for (accountDTO acc : list) {
+            modelUsers.addRow(new Object[]{acc.getId(), acc.getTen(), acc.getQuyen()});
+        }
+
+        if (list.isEmpty()) {
+            modelUsers.addRow(new Object[]{"", "Chưa có nhân viên nào", ""});
+        }
+
+        JScrollPane scroll = new JScrollPane(tblUsers);
+        scroll.setBorder(new EmptyBorder(10, 10, 10, 10));
+        scroll.getViewport().setBackground(Color.WHITE);
+        dialog.add(scroll, BorderLayout.CENTER);
+
+        // Footer
+        JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 10));
+        footer.setBackground(Color.decode("#F8FAFC"));
+        JButton btnClose = createStyledButton("Đóng", "#94A3B8");
+        btnClose.addActionListener(e -> dialog.dispose());
+        footer.add(btnClose);
+        dialog.add(footer, BorderLayout.SOUTH);
+
+        dialog.setVisible(true);
+    }
+
     private JTable createSubTable(DefaultTableModel mainModel, int[] columnIndices) {
         DefaultTableModel subModel = new DefaultTableModel(mainModel.getRowCount(), columnIndices.length) {
             @Override
@@ -232,7 +415,7 @@ public class PhanQuyenUI extends JPanel {
 
             @Override
             public Object getValueAt(int row, int col) {
-                return mainModel.getValueAt(row, columnIndices[col]);
+                return mainModel.getValueAt(row, col >= 0 ? columnIndices[col] : 0);
             }
         };
 
@@ -285,18 +468,21 @@ public class PhanQuyenUI extends JPanel {
         public ActionButtonsRenderer() {
             setLayout(new FlowLayout(FlowLayout.CENTER, 8, 15));
             setOpaque(true);
-            JLabel lblDetail = new JLabel("Chi tiết");
+
+            JLabel lblUsers = new JLabel("👥");
             JLabel lblEdit = new JLabel("✏");
             JLabel lblDel = new JLabel("🗑");
 
-            lblDetail.setForeground(Color.BLUE);
-            lblDetail.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+            lblUsers.setForeground(Color.decode("#6366F1"));
+            lblUsers.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 18));
+
             lblEdit.setForeground(Color.decode("#10B981"));
             lblEdit.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 16));
+
             lblDel.setForeground(Color.RED);
             lblDel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 16));
 
-            add(lblDetail);
+            add(lblUsers);
             add(lblEdit);
             add(lblDel);
         }
@@ -313,7 +499,7 @@ public class PhanQuyenUI extends JPanel {
     // ==========================================================
     class ActionButtonsEditor extends DefaultCellEditor {
         private JPanel panel;
-        private JButton btnDetail, btnEdit, btnDel;
+        private JButton btnUsers, btnEdit, btnDel;
         private JTable table;
         private List<String[]> nhomQuyenList;
 
@@ -325,18 +511,20 @@ public class PhanQuyenUI extends JPanel {
             panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 15));
             panel.setOpaque(true);
 
-            btnDetail = createIconButton("Chi tiết", Color.BLUE);
+            btnUsers = createIconButton("👥", Color.decode("#6366F1"));
             btnEdit = createIconButton("✏", Color.decode("#10B981"));
             btnDel = createIconButton("🗑", Color.RED);
 
+            btnUsers.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 18));
             btnEdit.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 16));
             btnDel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 16));
 
-            btnDetail.addActionListener(e -> {
+            btnUsers.addActionListener(e -> {
                 fireEditingStopped();
                 int row = table.getSelectedRow();
                 String maQuyen = nhomQuyenList.get(row)[0];
-                JOptionPane.showMessageDialog(panel, "Đang xem chi tiết Mã Quyền: " + maQuyen);
+                String tenQuyen = nhomQuyenList.get(row)[1];
+                showUsersInRoleDialog(maQuyen, tenQuyen);
             });
 
             btnEdit.addActionListener(e -> {
@@ -346,17 +534,31 @@ public class PhanQuyenUI extends JPanel {
                 JOptionPane.showMessageDialog(panel, "Sửa quyền cho Mã: " + maQuyen);
             });
 
+            // [THÊM LOGIC XÓA]
             btnDel.addActionListener(e -> {
                 fireEditingStopped();
                 int row = table.getSelectedRow();
                 String maQuyen = nhomQuyenList.get(row)[0];
-                int confirm = JOptionPane.showConfirmDialog(panel, "Xóa nhóm quyền " + maQuyen + "?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+                int confirm = JOptionPane.showConfirmDialog(panel,
+                        "Xóa nhóm quyền " + maQuyen + " sẽ xóa luôn toàn bộ quyền hạn liên quan.\nTiếp tục?",
+                        "Cảnh báo", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+
                 if (confirm == JOptionPane.YES_OPTION) {
-                    System.out.println("Thực hiện lệnh xóa nhóm quyền: " + maQuyen);
+                    try (Connection conn = DBConnection.getConnection()) {
+                        String sql = "DELETE FROM nhomquyen WHERE MAQUYEN = ?";
+                        PreparedStatement ps = conn.prepareStatement(sql);
+                        ps.setString(1, maQuyen);
+                        ps.executeUpdate();
+
+                        JOptionPane.showMessageDialog(panel, "Đã xóa nhóm quyền: " + maQuyen);
+                        initTripleTableMatrix(); // Tự động load lại bảng
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(panel, "Lỗi khi xóa: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    }
                 }
             });
 
-            panel.add(btnDetail);
+            panel.add(btnUsers);
             panel.add(btnEdit);
             panel.add(btnDel);
         }
