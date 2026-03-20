@@ -69,4 +69,28 @@ public class ReportDAO {
         }
         return list;
     }
+    
+    public List<Object[]> getMonthlyRevenueReport(LocalDate fromDate, LocalDate toDate) throws SQLException {
+        List<Object[]> list = new ArrayList<>();
+        // Giả sử dùng MySQL, dùng DATE_FORMAT để nhóm theo Tháng/Năm
+        String sql = "SELECT DATE_FORMAT(h.ngaylap, '%m/%Y') AS month_year, " +
+                     "SUM(cthd.Thanhtien) AS total_revenue " +
+                     "FROM hoadon h " +
+                     "JOIN CTHD cthd ON h.MAHD = cthd.MAHD " +
+                     "WHERE h.ngaylap >= ? AND h.ngaylap < ? " +
+                     "GROUP BY DATE_FORMAT(h.ngaylap, '%m/%Y') ORDER BY h.ngaylap ASC";
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setTimestamp(1, Timestamp.valueOf(fromDate.atStartOfDay()));
+            ps.setTimestamp(2, Timestamp.valueOf(toDate.plusDays(1).atStartOfDay()));
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                String monthYear = rs.getString("month_year");
+                BigDecimal rev = rs.getBigDecimal("total_revenue");
+                list.add(new Object[] { "Tháng " + monthYear, rev });
+            }
+        }
+        return list;
+    }
 }

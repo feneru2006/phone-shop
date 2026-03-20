@@ -63,7 +63,12 @@ public class MainFrameTest extends JFrame {
         //
         TaiKhoanUI taikhoan = new TaiKhoanUI();
         contentPanel.add(taikhoan,"Tài khoản");
-        
+        //
+        SanPhamPanel sanpham = new SanPhamPanel();
+        contentPanel.add(sanpham,"Sản phẩm");
+        //
+        PhanQuyenUI phanquyen = new PhanQuyenUI();
+        contentPanel.add(phanquyen,"Phân quyền");
         // 3. Hiển thị Dashboard lên đầu tiên
         showCard("Dashboard");
     }
@@ -227,7 +232,7 @@ public class MainFrameTest extends JFrame {
     private void initCards() {
         for (String key : navItems.keySet()) {
             if (key.equals("Dashboard") || key.equals("Khuyến mãi") ||
-             key.equals("Bảo hành") || key.equals("Tài khoản")) continue; 
+             key.equals("Bảo hành") || key.equals("Tài khoản") || key.equals("Sản phẩm") || key.equals("Phân quyền")) continue; 
 
             JPanel card = new JPanel(new GridBagLayout());
             card.setBackground(Color.WHITE);

@@ -6,6 +6,7 @@ import DTO.PhieubaohanhDTO;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.ArrayList;
@@ -36,167 +37,212 @@ public class BaoHanhPanel extends JPanel {
         setBackground(Color.WHITE);
 
         initUI();
+        bhBUS.updateAllTrangThai();
         loadData();
     }
 
-    private void initUI() {
+private void initUI() {
 
-        /* ===== TITLE ===== */
+    /* ===== TITLE ===== */
 
-        JLabel lblTitle = new JLabel("QUẢN LÝ BẢO HÀNH");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
+    JLabel lblTitle = new JLabel("QUẢN LÝ BẢO HÀNH");
+    lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
+    lblTitle.setForeground(new Color(30, 41, 59));
 
-        /* ===== SEARCH ===== */
+    /* ===== SEARCH ===== */
 
-        txtSearch = new JTextField(20);
+    txtSearch = new JTextField(20);
+    txtSearch.setPreferredSize(new Dimension(200, 35));
+    txtSearch.setBorder(BorderFactory.createLineBorder(new Color(220,220,220)));
 
-        txtSearch.setPreferredSize(new Dimension(200, 35));
+    txtSearch.getDocument().addDocumentListener(new DocumentListener() {
 
-        txtSearch.getDocument().addDocumentListener(new DocumentListener() {
+        public void insertUpdate(DocumentEvent e) { search(); }
+        public void removeUpdate(DocumentEvent e) { search(); }
+        public void changedUpdate(DocumentEvent e) { search(); }
 
-            public void insertUpdate(DocumentEvent e) {
-                search();
+    });
+
+    /* ===== BUTTON ADD ===== */
+
+    JButton btnAdd = new JButton("+ THÊM");
+    btnAdd.setBackground(new Color(59,130,246));
+    btnAdd.setForeground(Color.WHITE);
+    btnAdd.setFocusPainted(false);
+    btnAdd.setBorder(BorderFactory.createEmptyBorder(8,16,8,16));
+    btnAdd.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    btnAdd.addActionListener(e -> openAddDialog());
+
+    /* ===== TOP PANEL ===== */
+
+    JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+    left.setBackground(Color.WHITE);
+    left.add(lblTitle);
+
+    JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+    right.setBackground(Color.WHITE);
+    right.add(new JLabel("Tìm kiếm:"));
+    right.add(txtSearch);
+    right.add(btnAdd);
+
+    JPanel top = new JPanel(new BorderLayout());
+    top.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
+    top.setBackground(Color.WHITE);
+    top.add(left, BorderLayout.WEST);
+    top.add(right, BorderLayout.EAST);
+
+    add(top, BorderLayout.NORTH);
+
+    /* ===== TABLE ===== */
+
+    String[] cols = {
+            "MABH",
+            "MACTHD",
+            "MAKH",
+            "NGÀY BD",
+            "THỜI HẠN",
+            "TRẠNG THÁI"
+    };
+
+    model = new DefaultTableModel(cols, 0) {
+        public boolean isCellEditable(int r, int c) {
+            return false;
+        }
+    };
+
+    table = new JTable(model);
+    table.setRowSelectionAllowed(false);
+    table.setColumnSelectionAllowed(false);
+    table.setCellSelectionEnabled(false);
+    table.setFocusable(false);
+
+    table.setRowHeight(42);
+    table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+    table.setBackground(Color.WHITE);
+    table.setSelectionBackground(new Color(241,245,249));
+
+    /* ===== HEADER STYLE ===== */
+
+    table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+    table.getTableHeader().setBackground(new Color(51,65,85));
+    table.getTableHeader().setForeground(Color.WHITE);
+    table.getTableHeader().setPreferredSize(new Dimension(0, 36));
+
+    ((DefaultTableCellRenderer) table.getTableHeader()
+            .getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER);
+
+    table.setShowVerticalLines(false);
+    table.setGridColor(new Color(240,240,240));
+    table.setIntercellSpacing(new Dimension(0,0));
+    table.getTableHeader().setReorderingAllowed(false);
+
+    /* ===== TABLE PANEL ===== */
+
+    JPanel tablePanel = new JPanel(new BorderLayout());
+    tablePanel.setBackground(Color.WHITE);
+    tablePanel.setBorder(BorderFactory.createLineBorder(new Color(220,220,220)));
+
+    JScrollPane scroll = new JScrollPane(table);
+    scroll.setBorder(null);
+
+    tablePanel.add(scroll, BorderLayout.CENTER);
+
+    add(tablePanel, BorderLayout.CENTER);
+
+    /* ===== PAGINATION ===== */
+
+    btnPrev = new JButton("<<");
+    btnNext = new JButton(">>");
+
+    lblPage = new JLabel("Page 1");
+
+    btnPrev.addActionListener(e -> {
+        if (currentPage > 1) {
+            currentPage--;
+            showPage();
+        }
+    });
+
+    btnNext.addActionListener(e -> {
+        if (currentPage * pageSize < fullList.size()) {
+            currentPage++;
+            showPage();
+        }
+    });
+
+    JPanel bottom = new JPanel();
+    bottom.setBackground(Color.WHITE);
+    bottom.setBorder(BorderFactory.createEmptyBorder(10,10,20,10));
+
+    bottom.add(btnPrev);
+    bottom.add(lblPage);
+    bottom.add(btnNext);
+
+    add(bottom, BorderLayout.SOUTH);
+
+    /* ===== ROW BORDER RENDERER ===== */
+
+    table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+
+        @Override
+        public Component getTableCellRendererComponent(
+                JTable table, Object value, boolean isSelected,
+                boolean hasFocus, int row, int column) {
+
+            Component c = super.getTableCellRendererComponent(
+                    table, value, isSelected, hasFocus, row, column);
+
+            String status = table.getValueAt(row, 5).toString();
+
+            if (!isSelected) {
+
+                c.setBackground(row % 2 == 0 ? Color.WHITE : new Color(248,250,252));
+
+                if (status.equals("Đang bao hành")) {
+
+                    ((JComponent) c).setBorder(
+                            BorderFactory.createMatteBorder(0,0,2,0,new Color(187,247,208)));
+
+                } else {
+
+                    ((JComponent) c).setBorder(
+                            BorderFactory.createMatteBorder(0,0,2,0,new Color(254,202,202)));
+                }
             }
 
-            public void removeUpdate(DocumentEvent e) {
-                search();
-            }
+            setHorizontalAlignment(JLabel.CENTER);
 
-            public void changedUpdate(DocumentEvent e) {
-                search();
-            }
-
-        });
-
-        /* ===== BUTTON ADD ===== */
-
-        JButton btnAdd = new JButton("+ THÊM");
-
-        btnAdd.setBackground(new Color(37, 99, 235));
-        btnAdd.setForeground(Color.WHITE);
-        btnAdd.setFocusPainted(false);
-        btnAdd.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        btnAdd.addActionListener(e -> openAddDialog());
-
-        /* ===== TOP PANEL ===== */
-
-        JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        left.setBackground(Color.WHITE);
-
-        left.add(lblTitle);
-
-        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-        right.setBackground(Color.WHITE);
-
-        right.add(new JLabel("Tìm MABH:"));
-        right.add(txtSearch);
-        right.add(btnAdd);
-
-        JPanel top = new JPanel(new BorderLayout());
-        top.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
-        top.setBackground(Color.WHITE);
-
-        top.add(left, BorderLayout.WEST);
-        top.add(right, BorderLayout.EAST);
-
-        add(top, BorderLayout.NORTH);
-
-        /* ===== TABLE ===== */
-
-        String[] cols = {
-                "MABH",
-                "MACTHD",
-                "MAKH",
-                "NGÀY BD",
-                "THỜI HẠN",
-                "TRẠNG THÁI"
-        };
-
-        model = new DefaultTableModel(cols, 0) {
-
-            public boolean isCellEditable(int r, int c) {
-                return false;
-            }
-
-        };
-
-        table = new JTable(model);
-
-        table.setRowHeight(45);
-        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-
-        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
-
-        table.setSelectionBackground(new Color(229, 231, 235));
-
-        // JScrollPane scroll = new JScrollPane(table);
-        // scroll.setBorder(BorderFactory.createEmptyBorder(10,20,10,20));   Đây là khi tôi bỏ khung
-
-        // add(scroll,BorderLayout.CENTER);
-        JPanel tablePanel = new JPanel(new BorderLayout());
-        tablePanel.setBackground(Color.WHITE);
-
-        // tạo khung
-        tablePanel.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200)));
-
-        JScrollPane scroll = new JScrollPane(table);
-        scroll.setBorder(null);
-
-        tablePanel.add(scroll, BorderLayout.CENTER);
-
-        add(tablePanel, BorderLayout.CENTER);
-
-        /* ===== PAGINATION ===== */
-
-        btnPrev = new JButton("<<");
-        btnNext = new JButton(">>");
-
-        lblPage = new JLabel("Page 1");
-
-        btnPrev.addActionListener(e -> {
-
-            if (currentPage > 1) {
-
-                currentPage--;
-
-                showPage();
-            }
-
-        });
-
-        btnNext.addActionListener(e -> {
-
-            if (currentPage * pageSize < fullList.size()) {
-
-                currentPage++;
-
-                showPage();
-            }
-
-        });
-
-        JPanel bottom = new JPanel();
-        bottom.setBackground(Color.WHITE);
-        bottom.setBorder(BorderFactory.createEmptyBorder(10, 10, 20, 10));
-
-        bottom.add(btnPrev);
-        bottom.add(lblPage);
-        bottom.add(btnNext);
-
-        add(bottom, BorderLayout.SOUTH);
-    }
-
+            return c;
+        }
+    });
+}
     /* ================= LOAD DATA ================= */
 
-    private void loadData() {
+   private void loadData() {
 
-        fullList = bhBUS.getAll();
+    fullList = bhBUS.getAll();
 
-        currentPage = 1;
-
-        showPage();
+    // cập nhật trạng thái trước
+    for (PhieubaohanhDTO bh : fullList) {
+        bhBUS.updateTrangThaiLogic(bh);
     }
+
+    // sắp xếp: còn bảo hành lên trước
+    fullList.sort((a, b) -> {
+
+        if (a.getTrangthai().equals(b.getTrangthai()))
+            return 0;
+
+        if (a.getTrangthai().equals("Đang bao hành"))
+            return -1;
+
+        return 1;
+    });
+
+    currentPage = 1;
+
+    showPage();
+}
 
     /* ================= SHOW PAGE ================= */
 
@@ -220,7 +266,7 @@ public class BaoHanhPanel extends JPanel {
                     bh.getThoiHan(),
                     bh.getTrangthai()
             });
-            
+
         }
 
         int totalPage = (int) Math.ceil((double) fullList.size() / pageSize);
@@ -232,22 +278,47 @@ public class BaoHanhPanel extends JPanel {
 
     private void search() {
 
-        String keyword = txtSearch.getText();
+    String keyword = txtSearch.getText().toLowerCase().trim();
 
-        if (keyword.isEmpty()) {
+    List<PhieubaohanhDTO> all = bhBUS.getAll();
 
-            fullList = bhBUS.getAll();
+    if (keyword.isEmpty()) {
+        fullList = all;
+    } else {
 
-        } else {
+        fullList = new ArrayList<>();
 
-            fullList = bhBUS.searchByMaBH(keyword);
+        for (PhieubaohanhDTO bh : all) {
 
+            bhBUS.updateTrangThaiLogic(bh);
+
+            if (bh.getMaBH().toLowerCase().contains(keyword) ||
+                    bh.getMaCTHD().toLowerCase().contains(keyword) ||
+                    bh.getMaKH().toLowerCase().contains(keyword) ||
+                    String.valueOf(bh.getThoiHan()).contains(keyword) ||
+                    bh.getTrangthai().toLowerCase().contains(keyword)) {
+
+                fullList.add(bh);
+            }
         }
-
-        currentPage = 1;
-
-        showPage();
     }
+
+    // ===== SORT: Đang bao hành lên trước =====
+    fullList.sort((a, b) -> {
+
+        if (a.getTrangthai().equals(b.getTrangthai()))
+            return 0;
+
+        if (a.getTrangthai().equals("Đang bao hành"))
+            return -1;
+
+        return 1;
+    });
+
+    currentPage = 1;
+
+    showPage();
+}
 
     /* ================= ADD ================= */
 
@@ -300,7 +371,7 @@ public class BaoHanhPanel extends JPanel {
 
                     loadData();
 
-                }else{
+                } else {
                     JOptionPane.showMessageDialog(this, "Thêm thất bại");
                 }
 

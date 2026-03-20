@@ -11,10 +11,6 @@ import DTO.logDTO;
 import Utility.DateUtils;
 import Utility.Validator;
 
-/**
- * Data Access Layer cho Dashboard
- * Đã sửa lỗi tương thích giữa LocalDateTime và LocalDate
- */
 public class DashboardDAL {
     
     private Connection conn = DAL.DAO.DBConnection.getConnection();
@@ -35,7 +31,7 @@ public class DashboardDAL {
                 if (rsSP.next()) dto.setTongSanPham(rsSP.getInt(1));
             }
 
-            // 2. Tổng doanh thu (Sử dụng Validator kiểm tra số không âm)
+            // 2. Tổng doanh thu
             String sqlDT = "SELECT SUM(tongtien) FROM hoadon";
             try (PreparedStatement psDT = conn.prepareStatement(sqlDT);
                  ResultSet rsDT = psDT.executeQuery()) {
@@ -81,10 +77,8 @@ public class DashboardDAL {
                     log.setThucthe(rsLog.getString("thucthe"));
                     log.setChitiethv(rsLog.getString("chitiethv"));
                     
-                    // XỬ LÝ LỖI CHUYỂN ĐỔI:
                     java.sql.Timestamp ts = rsLog.getTimestamp("thoidiem");
                     if (ts != null) {
-                        // Chuyển Timestamp -> LocalDateTime -> LocalDate để khớp với logDTO
                         log.setThoidiem(ts.toLocalDateTime());
                     }
                     logs.add(log);
@@ -94,5 +88,25 @@ public class DashboardDAL {
             System.err.println("Lỗi lấy Log: " + e.getMessage());
         }
         return logs;
+    }
+    
+    public ArrayList<Object[]> getLowStockProducts(int threshold) {
+        ArrayList<Object[]> list = new ArrayList<>();
+        // Đã sửa soluongton thành SLton
+        String sql = "SELECT tenSP, SLton FROM sanpham WHERE SLton <= ? AND isDeleted = 0 ORDER BY SLton ASC";
+        
+        // Sử dụng biến conn của class thay vì tạo mới để tránh lỗi rò rỉ kết nối
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, threshold);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    // Đọc đúng tên cột SLton
+                    list.add(new Object[]{ rs.getString("tenSP"), rs.getInt("SLton") });
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi tải sản phẩm sắp hết hàng: " + e.getMessage());
+        }
+        return list;
     }
 }

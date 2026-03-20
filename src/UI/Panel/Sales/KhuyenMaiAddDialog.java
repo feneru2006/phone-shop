@@ -16,7 +16,7 @@ import java.util.List;
 
 public class KhuyenMaiAddDialog extends JDialog {
 
-    private JTextField txtMa, txtTen, txtBD, txtKT, txtPercent;
+    private JTextField txtMa, txtTen, txtBD, txtDays, txtPercent;
     private JTable tableSP;
     private DefaultTableModel modelSP;
 
@@ -41,24 +41,30 @@ public class KhuyenMaiAddDialog extends JDialog {
 
         txtMa = new JTextField(ggBUS.generateMaGG());
         txtMa.setEditable(true);
+
         txtTen = new JTextField();
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
-
         LocalDateTime now = LocalDateTime.now();
 
         txtBD = new JTextField(now.format(formatter));
-        txtKT = new JTextField(now.plusDays(7).format(formatter));
+
+        txtDays = new JTextField("7");
+
         txtPercent = new JTextField("10");
 
         form.add(new JLabel("Mã GG:"));
         form.add(txtMa);
+
         form.add(new JLabel("Tên đợt:"));
         form.add(txtTen);
+
         form.add(new JLabel("Bắt đầu:"));
         form.add(txtBD);
-        form.add(new JLabel("Kết thúc:"));
-        form.add(txtKT);
+
+        form.add(new JLabel("Thời hạn (ngày):"));
+        form.add(txtDays);
+
         form.add(new JLabel("% Giảm:"));
         form.add(txtPercent);
 
@@ -67,12 +73,37 @@ public class KhuyenMaiAddDialog extends JDialog {
         modelSP = new DefaultTableModel(
                 new String[] { "Chọn", "MASP", "Tên SP" }, 0) {
 
-            public Class<?> getColumnClass(int col) {
-                return col == 0 ? Boolean.class : String.class;
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                if (columnIndex == 0)
+                    return Boolean.class;
+                return String.class;
+            }
+
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column == 0; // CHỈ cho phép tick checkbox
             }
         };
 
         tableSP = new JTable(modelSP);
+        tableSP.setRowHeight(40);
+        tableSP.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tableSP.setSelectionBackground(new Color(220, 240, 255));
+        tableSP.setSelectionForeground(Color.BLACK);
+
+        tableSP.setShowGrid(false);
+        tableSP.setIntercellSpacing(new Dimension(0, 0));
+
+        tableSP.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 15));
+        tableSP.getTableHeader().setBackground(new Color(30, 30, 30));
+        tableSP.getTableHeader().setForeground(Color.WHITE);
+        tableSP.getTableHeader().setReorderingAllowed(false);
+
+        tableSP.setRowSelectionAllowed(false);
+        tableSP.setColumnSelectionAllowed(false);
+        tableSP.setCellSelectionEnabled(false);
+
         loadProducts();
 
         add(new JScrollPane(tableSP), BorderLayout.CENTER);
@@ -99,48 +130,54 @@ public class KhuyenMaiAddDialog extends JDialog {
         }
     }
 
-private void savePromotion() {
+    private void savePromotion() {
 
-    try {
+        try {
 
-        giamgiaDTO gg = new giamgiaDTO(
-                txtMa.getText(),
-                txtTen.getText(),
-                LocalDateTime.parse(txtBD.getText()),
-                LocalDateTime.parse(txtKT.getText()));
+            LocalDateTime bd = LocalDateTime.parse(txtBD.getText());
 
-        ggBUS.add(gg);
+            int days = Integer.parseInt(txtDays.getText());
 
-        int percent = Integer.parseInt(txtPercent.getText());
+            LocalDateTime kt = bd.plusDays(days);
 
-        for (int i = 0; i < tableSP.getRowCount(); i++) {
+            giamgiaDTO gg = new giamgiaDTO(
+                    txtMa.getText(),
+                    txtTen.getText(),
+                    bd,
+                    kt);
 
-            Boolean checked = (Boolean) tableSP.getValueAt(i, 0);
+            ggBUS.add(gg);
 
-            if (checked != null && checked) {
+            int percent = Integer.parseInt(txtPercent.getText());
 
-                String masp = tableSP.getValueAt(i, 1).toString();
+            for (int i = 0; i < tableSP.getRowCount(); i++) {
 
-                double price = spBUS.getGiaByMaSP(masp);
+                Boolean checked = (Boolean) tableSP.getValueAt(i, 0);
 
-                double giasaugiam = price * (1 - percent / 100.0);
+                if (checked != null && checked) {
 
-                CTggDTO ct = new CTggDTO(
-                        txtMa.getText(),
-                        masp,
-                        percent,
-                        giasaugiam
-                );
+                    String masp = tableSP.getValueAt(i, 1).toString();
 
-                ctggBUS.add(ct);
+                    double price = spBUS.getGiaByMaSP(masp);
+
+                    double giasaugiam = price * (1 - percent / 100.0);
+
+                    CTggDTO ct = new CTggDTO(
+                            txtMa.getText(),
+                            masp,
+                            percent,
+                            giasaugiam);
+
+                    ctggBUS.add(ct);
+                }
             }
+
+            JOptionPane.showMessageDialog(this, "Tạo thành công!");
+            dispose();
+
+        } catch (Exception ex) {
+
+            JOptionPane.showMessageDialog(this, "Dữ liệu không hợp lệ!");
         }
-
-        JOptionPane.showMessageDialog(this, "Tạo thành công!");
-        dispose();
-
-    } catch (Exception ex) {
-        JOptionPane.showMessageDialog(this, "Lỗi dữ liệu!");
     }
-}
 }

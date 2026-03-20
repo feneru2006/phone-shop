@@ -73,7 +73,6 @@ public class PhieubaohanhBUS {
             throw new IllegalArgumentException(
                     Validator.invalidFormatMessage("Mã bảo hành"));
         }
-        
 
         updateTrangThaiLogic(bh);
 
@@ -103,27 +102,44 @@ public class PhieubaohanhBUS {
         if (LocalDate.now().isAfter(ngayHetHan)) {
             bh.setTrangthai("Hết hạn");
         } else {
-            bh.setTrangthai("Kích hoạt");
+            bh.setTrangthai("Đang bao hành");
         }
     }
 
     // ===============================
     // Kiểm tra còn bảo hành không
     // ===============================
-    public List<PhieubaohanhDTO> searchByMaBH(String keyword){
+    public List<PhieubaohanhDTO> searchByMaBH(String keyword) {
 
-    List<PhieubaohanhDTO> result = new ArrayList<>();
+        List<PhieubaohanhDTO> result = new ArrayList<>();
+
+        List<PhieubaohanhDTO> list = bhDAO.getAll();
+
+        for (PhieubaohanhDTO bh : list) {
+
+            if (bh.getMaBH().toLowerCase().contains(keyword.toLowerCase())) {
+                result.add(bh);
+            }
+
+        }
+
+        return result;
+    }
+
+    public void updateAllTrangThai() {
 
     List<PhieubaohanhDTO> list = bhDAO.getAll();
 
-    for(PhieubaohanhDTO bh : list){
+    for (PhieubaohanhDTO bh : list) {
 
-        if(bh.getMaBH().toLowerCase().contains(keyword.toLowerCase())){
-            result.add(bh);
+        String oldStatus = bh.getTrangthai();
+
+        updateTrangThaiLogic(bh); // tính lại trạng thái
+
+        // nếu trạng thái thay đổi thì update DB
+        if (!bh.getTrangthai().equals(oldStatus)) {
+            bhDAO.update(bh);
         }
-
     }
-
-    return result;
 }
 }

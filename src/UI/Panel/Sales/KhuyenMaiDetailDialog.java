@@ -56,15 +56,24 @@ public class KhuyenMaiDetailDialog extends JDialog {
         };
 
         table = new JTable(model);
-        table.setRowHeight(35);
-        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
 
-        // CĂN PHẢI CỘT GIÁ
+        table.setRowHeight(40);
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        table.setSelectionBackground(new Color(220, 240, 255));
+        table.setSelectionForeground(Color.BLACK);
+
+        table.setShowGrid(false);
+        table.setIntercellSpacing(new Dimension(0, 0));
+
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 15));
+        table.getTableHeader().setBackground(new Color(30,30,30));
+        table.getTableHeader().setForeground(Color.WHITE);
+        table.getTableHeader().setReorderingAllowed(false);
+
+        // căn phải cột giá
         DefaultTableCellRenderer right = new DefaultTableCellRenderer();
         right.setHorizontalAlignment(JLabel.RIGHT);
         table.getColumnModel().getColumn(3).setCellRenderer(right);
-
         JScrollPane scroll = new JScrollPane(table);
         add(scroll, BorderLayout.CENTER);
 
@@ -110,37 +119,44 @@ public class KhuyenMaiDetailDialog extends JDialog {
     // ================= THÊM SẢN PHẨM =================
     private void addProduct() {
 
-        JTextField txtMaSP = new JTextField();
+        List<SanPhamDTO> listSP = sanPhamBUS.getAll();
+
+        JComboBox<String> cbSanPham = new JComboBox<>();
         JTextField txtPercent = new JTextField();
 
-        Object[] message = {
-                "Mã sản phẩm:", txtMaSP,
-                "Phần trăm giảm:", txtPercent
-        };
+        for (SanPhamDTO sp : listSP) {
+            cbSanPham.addItem(sp.getMaSP() + " - " + sp.getTenSP());
+        }
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(2, 2, 10, 10));
+
+        panel.add(new JLabel("Chọn sản phẩm:"));
+        panel.add(cbSanPham);
+
+        panel.add(new JLabel("Phần trăm giảm:"));
+        panel.add(txtPercent);
 
         int option = JOptionPane.showConfirmDialog(
                 this,
-                message,
+                panel,
                 "Thêm sản phẩm giảm giá",
-                JOptionPane.OK_CANCEL_OPTION);
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
 
         if (option == JOptionPane.OK_OPTION) {
+
             try {
 
-                String masp = txtMaSP.getText();
+                String selected = cbSanPham.getSelectedItem().toString();
+                String maSP = selected.split(" - ")[0];
+
                 int percent = Integer.parseInt(txtPercent.getText());
 
-                // lấy giá sản phẩm từ BUS
-                double gia = sanPhamBUS.getGiaByMaSP(masp);
-
-                // tính giá sau giảm
+                double gia = sanPhamBUS.getGiaByMaSP(maSP);
                 double giasaugiam = gia * (1 - percent / 100.0);
 
-                CTggDTO ct = new CTggDTO(
-                        maGG,
-                        masp,
-                        percent,
-                        giasaugiam);
+                CTggDTO ct = new CTggDTO(maGG, maSP, percent, giasaugiam);
 
                 if (ctggBUS.add(ct)) {
                     JOptionPane.showMessageDialog(this, "Thêm thành công!");
@@ -150,8 +166,7 @@ public class KhuyenMaiDetailDialog extends JDialog {
                 }
 
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this,
-                        "Dữ liệu không hợp lệ!");
+                JOptionPane.showMessageDialog(this, "Dữ liệu không hợp lệ!");
             }
         }
     }

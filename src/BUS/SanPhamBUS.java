@@ -1,14 +1,13 @@
-
 package BUS;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import DAL.DAO.SanPhamDAO;
 import DTO.SanPhamDTO;
 
 public class SanPhamBUS {
-
     private SanPhamDAO spDAO = new SanPhamDAO();
     private List<SanPhamDTO> dsSanPham = new ArrayList<>();
 
@@ -17,41 +16,47 @@ public class SanPhamBUS {
     }
 
     public List<SanPhamDTO> getAll() {
-        return dsSanPham;
+        return dsSanPham.stream()
+                .filter(sp -> !sp.isDeleted())
+                .collect(Collectors.toList());
     }
 
     public List<SanPhamDTO> timKiem(String tieuChi, String keyword) {
         List<SanPhamDTO> result = new ArrayList<>();
         String key = keyword.toLowerCase().trim();
 
-        for (SanPhamDTO sp : dsSanPham) {
+        for (SanPhamDTO sp : getAll()) {
             boolean match = false;
             switch (tieuChi) {
                 case "Mã SP":
-                    if (sp.getMaSP().toLowerCase().contains(key)) match = true;
+                    if (sp.getMaSP().toLowerCase().contains(key))
+                        match = true;
                     break;
                 case "Tên SP":
-                    if (sp.getTenSP().toLowerCase().contains(key)) match = true;
+                    if (sp.getTenSP().toLowerCase().contains(key))
+                        match = true;
                     break;
                 case "Cấu hình":
-                    if (sp.getCauHinh().toLowerCase().contains(key)) match = true;
+                    if (sp.getCauHinh().toLowerCase().contains(key))
+                        match = true;
                     break;
-                default: 
-                    if (sp.getMaSP().toLowerCase().contains(key) || 
-                        sp.getTenSP().toLowerCase().contains(key) ||
-                        sp.getCauHinh().toLowerCase().contains(key)) {
+                default:
+                    if (sp.getMaSP().toLowerCase().contains(key) ||
+                            sp.getTenSP().toLowerCase().contains(key) ||
+                            sp.getCauHinh().toLowerCase().contains(key)) {
                         match = true;
                     }
                     break;
             }
-            if (match) result.add(sp);
+            if (match)
+                result.add(sp);
         }
         return result;
     }
 
-   
     public boolean themSanPham(SanPhamDTO sp) {
-        if (sp.getSlTon() < 0 || sp.getGia() < 0) return false;
+        if (sp.getSlTon() < 0 || sp.getGia() < 0 || sp.getPhanTramLoiNhuan() < 0)
+            return false;
         for (SanPhamDTO item : dsSanPham) {
             if (item.getMaSP().equalsIgnoreCase(sp.getMaSP())) {
                 return false;
@@ -61,8 +66,9 @@ public class SanPhamBUS {
         return true;
     }
 
-        public boolean suaSanPham(SanPhamDTO sp) {
-        if (sp.getSlTon() < 0 || sp.getGia() < 0) return false;
+    public boolean suaSanPham(SanPhamDTO sp) {
+        if (sp.getSlTon() < 0 || sp.getGia() < 0 || sp.getPhanTramLoiNhuan() < 0)
+            return false;
         for (int i = 0; i < dsSanPham.size(); i++) {
             if (dsSanPham.get(i).getMaSP().equalsIgnoreCase(sp.getMaSP())) {
                 dsSanPham.set(i, sp);
@@ -73,10 +79,16 @@ public class SanPhamBUS {
     }
 
     public boolean xoaSanPham(String maSP) {
-        return dsSanPham.removeIf(sp -> sp.getMaSP().equalsIgnoreCase(maSP));
+        for (SanPhamDTO sp : dsSanPham) {
+            if (sp.getMaSP().equalsIgnoreCase(maSP)) {
+                sp.setDeleted(true);
+                return true;
+            }
+        }
+        return false;
     }
 
-        public boolean saveToDatabase() {
+    public boolean saveToDatabase() {
         List<SanPhamDTO> dbList = spDAO.getAll();
         for (SanPhamDTO sp : dsSanPham) {
             boolean exists = false;
@@ -87,17 +99,9 @@ public class SanPhamBUS {
                     break;
                 }
             }
-            if (!exists) spDAO.insert(sp);
-        }
-        for (SanPhamDTO db : dbList) {
-            boolean stillExists = false;
-            for (SanPhamDTO sp : dsSanPham) {
-                if (sp.getMaSP().equalsIgnoreCase(db.getMaSP())) {
-                    stillExists = true;
-                    break;
-                }
+            if (!exists && !sp.isDeleted()) {
+                spDAO.insert(sp);
             }
-            if (!stillExists) spDAO.delete(db.getMaSP());
         }
         return true;
     }
@@ -106,27 +110,26 @@ public class SanPhamBUS {
         dsSanPham = spDAO.getAll();
     }
 
-    public SanPhamDTO getById(String maSP) {
-
-    if (dsSanPham == null || dsSanPham.isEmpty()) {
-        reload();
-    }
-
-    for (SanPhamDTO sp : dsSanPham) {
-        if (sp.getMaSP().equalsIgnoreCase(maSP)) {
-            return sp;
+    public double getGiaByMaSP(String maSP) {
+        for (SanPhamDTO sp : dsSanPham) {
+            if (sp.getMaSP().equalsIgnoreCase(maSP) && !sp.isDeleted()) {
+                return sp.getGia();
+            }
         }
-    }
-
-    return null;
-}
-    public double getGiaByMaSP(String maSP){
-    SanPhamDTO sp = getById(maSP);
-
-    if(sp == null){
         throw new RuntimeException("Không tìm thấy sản phẩm: " + maSP);
     }
 
-    return sp.getGia();
-}
+    public SanPhamDTO getById(String maSP) {
+
+        if (dsSanPham == null || dsSanPham.isEmpty()) {
+            reload();
+        }
+
+        for (SanPhamDTO sp : dsSanPham) {
+            if (sp.getMaSP().equalsIgnoreCase(maSP)) {
+                return sp;
+            }
+        }
+        throw new RuntimeException("Không tìm thấy sản phẩm: " + maSP);
+    }
 }
