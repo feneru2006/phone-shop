@@ -161,7 +161,6 @@ public class TaiKhoanUI extends JPanel {
         model = new DefaultTableModel(cols, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                // [SỬA]: Cho phép chỉnh sửa ở cột 3 (QUYỀN) và cột 4 (THAO TÁC)
                 return column == 3 || column == 4;
             }
         };
@@ -181,7 +180,7 @@ public class TaiKhoanUI extends JPanel {
                 label.setFont(new Font("Segoe UI", Font.BOLD, 12));
                 label.setForeground(Color.decode("#475569"));
 
-                if (column == 3 || column == 4) { // Căn giữa cả tiêu đề QUYỀN
+                if (column == 3 || column == 4) {
                     label.setHorizontalAlignment(SwingConstants.CENTER);
                     label.setBorder(new MatteBorder(0, 0, 1, 0, Color.decode("#E2E8F0")));
                 } else {
@@ -213,12 +212,10 @@ public class TaiKhoanUI extends JPanel {
             }
         };
 
-        // [SỬA]: Chỉ set DefaultRenderer cho 3 cột đầu (0,1,2).
         for (int i = 0; i < 3; i++) {
             table.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
         }
 
-        // [THÊM MỚI]: Set Renderer và Editor riêng cho cột QUYỀN (cột 3)
         table.getColumnModel().getColumn(3).setCellRenderer(new RoleCellRenderer());
         table.getColumnModel().getColumn(3).setCellEditor(new RoleCellEditor(table));
 
@@ -292,7 +289,6 @@ public class TaiKhoanUI extends JPanel {
         txtPass.setPreferredSize(new Dimension(200, 38));
         txtPass.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
-        // [SỬA]: Thêm chú thích cho các quyền
         String[] danhSachQuyen = {
                 "AD - Admin",
                 "CC - Chăm sóc khách hàng",
@@ -330,7 +326,6 @@ public class TaiKhoanUI extends JPanel {
             String ten = txtTen.getText().trim();
             String pass = new String(txtPass.getPassword());
 
-            // [SỬA]: Cắt lấy mã quyền
             String quyenFull = cbQuyen.getSelectedItem().toString();
             String quyen = quyenFull.split(" - ")[0].trim();
 
@@ -368,7 +363,6 @@ public class TaiKhoanUI extends JPanel {
 
     private void showEditAccountDialog(String oldId, String oldTen, String oldQuyen) {
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Chỉnh sửa tài khoản", true);
-        // [SỬA]: Thu nhỏ size lại vì đã bỏ combobox Chọn Quyền ra khỏi form này
         dialog.setSize(420, 380);
         dialog.setLocationRelativeTo(this);
         dialog.setLayout(new BorderLayout());
@@ -400,8 +394,6 @@ public class TaiKhoanUI extends JPanel {
         txtPass.setBorder(txtId.getBorder());
         txtPass.setPreferredSize(new Dimension(200, 38));
         txtPass.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-
-        // [SỬA]: ĐÃ XÓA COMBOBOX QUYỀN KHỎI ĐÂY THEO YÊU CẦU
 
         bodyPanel.add(createInputGroup("Mã tài khoản (ID) - Không thể sửa:", txtId));
         bodyPanel.add(Box.createRigidArea(new Dimension(0, 15)));
@@ -435,7 +427,6 @@ public class TaiKhoanUI extends JPanel {
                 upAcc.setId(id);
                 upAcc.setTen(ten);
                 upAcc.setPass(hashPassword(pass));
-                // [SỬA]: Truyền lại quyền cũ để database không bị mất dữ liệu quyền
                 upAcc.setQuyen(oldQuyen);
 
                 boolean isSuccess = accountDAO.update(upAcc);
@@ -459,7 +450,6 @@ public class TaiKhoanUI extends JPanel {
         dialog.setVisible(true);
     }
 
-    // [THÊM MỚI]: Form riêng biệt chỉ dùng để thay đổi NHÓM QUYỀN
     private void showEditRoleDialog(String id, String ten, String oldQuyen) {
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Thay đổi quyền", true);
         dialog.setSize(350, 240);
@@ -468,7 +458,7 @@ public class TaiKhoanUI extends JPanel {
         dialog.getContentPane().setBackground(Color.WHITE);
 
         JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(Color.decode("#F59E0B")); // Màu cam cảnh báo
+        headerPanel.setBackground(Color.decode("#F59E0B"));
         headerPanel.setBorder(new EmptyBorder(15, 20, 15, 20));
         JLabel lblTitle = new JLabel("THAY ĐỔI QUYỀN HẠN");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
@@ -481,7 +471,6 @@ public class TaiKhoanUI extends JPanel {
         bodyPanel.setBackground(Color.WHITE);
         bodyPanel.setBorder(new EmptyBorder(25, 30, 25, 30));
 
-        // [SỬA]: Thêm chú thích cho các quyền
         String[] danhSachQuyen = {
                 "AD - Admin",
                 "CC - Chăm sóc khách hàng",
@@ -495,7 +484,6 @@ public class TaiKhoanUI extends JPanel {
         cbQuyen.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         cbQuyen.setPreferredSize(new Dimension(200, 38));
 
-        // [SỬA]: Tìm và chọn đúng quyền cũ
         for (int i = 0; i < cbQuyen.getItemCount(); i++) {
             if (cbQuyen.getItemAt(i).startsWith(oldQuyen)) {
                 cbQuyen.setSelectedIndex(i);
@@ -516,14 +504,12 @@ public class TaiKhoanUI extends JPanel {
         btnHuy.addActionListener(e -> dialog.dispose());
 
         btnLuu.addActionListener(e -> {
-            // [SỬA]: Cắt lấy mã quyền trước dấu "-"
             String newQuyen = cbQuyen.getSelectedItem().toString().split(" - ")[0].trim();
             try {
-                // Lấy lại Account từ DB để giữ nguyên mật khẩu cũ
                 accountDTO acc = accountDAO.findByUsername(ten);
                 if (acc != null) {
                     acc.setQuyen(newQuyen);
-                    boolean isSuccess = accountDAO.update(acc); // Mật khẩu đã băm sẵn trong acc sẽ được giữ nguyên
+                    boolean isSuccess = accountDAO.update(acc);
                     if (isSuccess) {
                         loadDataToTable();
                         JOptionPane.showMessageDialog(dialog, "Thay đổi quyền thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
@@ -597,7 +583,6 @@ public class TaiKhoanUI extends JPanel {
     // 4. CÁC LỚP RENDERER VÀ EDITOR CHO BẢNG
     // =========================================================================
 
-    // [THÊM MỚI]: Giao diện của ô QUYỀN (Gồm Text tên quyền + Icon cài đặt)
     private class RolePanel extends JPanel {
         JLabel lblRole;
         JButton btnEditRole;
@@ -608,10 +593,10 @@ public class TaiKhoanUI extends JPanel {
 
             lblRole = new JLabel();
             lblRole.setFont(new Font("Segoe UI", Font.BOLD, 13));
-            lblRole.setForeground(Color.decode("#3B82F6")); // Màu xanh cho nổi bật quyền
+            lblRole.setForeground(Color.decode("#3B82F6"));
             lblRole.setBorder(new EmptyBorder(0, 20, 0, 0));
 
-            btnEditRole = new JButton("⚙️"); // Icon cài đặt quyền kế bên
+            btnEditRole = new JButton("⚙️");
             btnEditRole.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 14));
             btnEditRole.setForeground(Color.decode("#64748B"));
             btnEditRole.setContentAreaFilled(false);
@@ -625,7 +610,6 @@ public class TaiKhoanUI extends JPanel {
         }
     }
 
-    // [THÊM MỚI]: Renderer cho cột QUYỀN
     private class RoleCellRenderer implements TableCellRenderer {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -643,7 +627,6 @@ public class TaiKhoanUI extends JPanel {
         }
     }
 
-    // [THÊM MỚI]: Editor để bắt sự kiện click nút ⚙️ trong cột QUYỀN
     private class RoleCellEditor extends DefaultCellEditor {
         private final RolePanel rolePanel;
         private String currentId, currentTen, currentQuyen;
@@ -654,7 +637,12 @@ public class TaiKhoanUI extends JPanel {
 
             rolePanel.btnEditRole.addActionListener(e -> {
                 fireEditingStopped();
-                showEditRoleDialog(currentId, currentTen, currentQuyen); // Bật form chọn quyền
+                // [CHẶN: KHÔNG CHO PHÉP ĐỔI QUYỀN ADMIN]
+                if (currentQuyen.equals("AD")) {
+                    JOptionPane.showMessageDialog(null, "Tài khoản Admin (AD) là tối thượng, không thể thay đổi quyền!", "Từ chối truy cập", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                showEditRoleDialog(currentId, currentTen, currentQuyen);
             });
         }
 
@@ -675,7 +663,6 @@ public class TaiKhoanUI extends JPanel {
         }
     }
 
-    // Giao diện của ô THAO TÁC (Chỉnh sửa ID/Pass, Xóa)
     private class ActionPanel extends JPanel {
         JButton btnRole, btnDel;
 
@@ -741,20 +728,38 @@ public class TaiKhoanUI extends JPanel {
                     String id = table.getValueAt(row, 0).toString();
                     String ten = table.getValueAt(row, 1).toString();
                     String quyen = table.getValueAt(row, 3).toString();
+
+                    // [CHẶN: KHÔNG CHO PHÉP SỬA THÔNG TIN ADMIN]
+                    if (quyen.equals("AD")) {
+                        JOptionPane.showMessageDialog(null, "Tài khoản Admin (AD) là tối thượng, không thể sửa!", "Từ chối truy cập", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
                     showEditAccountDialog(id, ten, quyen);
                 }
             });
 
             actionPanel.btnDel.addActionListener(e -> {
                 fireEditingStopped();
-                int confirm = JOptionPane.showConfirmDialog(null, "Xóa tài khoản " + currentAccountId + "?", "Xác nhận", JOptionPane.YES_NO_OPTION);
-                if (confirm == JOptionPane.YES_OPTION) {
-                    boolean isDeleted = accountDAO.delete(currentAccountId);
-                    if (isDeleted){
-                        loadDataToTable();
-                        JOptionPane.showMessageDialog(null,"Đã xóa thành công");
-                    }else {
-                        JOptionPane.showMessageDialog(null,"Xóa thất bại!","Lỗi",JOptionPane.ERROR_MESSAGE);
+                int row = table.getSelectedRow();
+                if (row != -1) {
+                    String quyen = table.getValueAt(row, 3).toString();
+
+                    // [CHẶN: KHÔNG CHO PHÉP XÓA ADMIN]
+                    if (quyen.equals("AD")) {
+                        JOptionPane.showMessageDialog(null, "Tài khoản Admin (AD) là tối thượng, không thể xóa!", "Từ chối truy cập", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    int confirm = JOptionPane.showConfirmDialog(null, "Xóa tài khoản " + currentAccountId + "?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+                    if (confirm == JOptionPane.YES_OPTION) {
+                        boolean isDeleted = accountDAO.delete(currentAccountId);
+                        if (isDeleted){
+                            loadDataToTable();
+                            JOptionPane.showMessageDialog(null,"Đã xóa thành công");
+                        }else {
+                            JOptionPane.showMessageDialog(null,"Xóa thất bại!","Lỗi",JOptionPane.ERROR_MESSAGE);
+                        }
                     }
                 }
             });
