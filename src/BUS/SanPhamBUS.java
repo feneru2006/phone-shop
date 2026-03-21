@@ -103,12 +103,25 @@ public class SanPhamBUS {
     public void reload() {
         dsSanPham = spDAO.getAll();
     }
-public double getGiaByMaSP(String maSP) {
-        for (SanPhamDTO sp : dsSanPham) {
-            if (sp.getMaSP().equalsIgnoreCase(maSP) && !sp.isDeleted()) {
-                return sp.getGia();
-            }
+    public SanPhamDTO getById(String maSP) {
+        if (dsSanPham == null || dsSanPham.isEmpty()) {
+        reload();
         }
+
+        for (SanPhamDTO sp : dsSanPham) {
+        if (sp.getMaSP().equalsIgnoreCase(maSP)) {
+        return sp;
+        }
+    }
+    return null;
+    }
+   public double getGiaByMaSP(String maSP){
+    SanPhamDTO sp = getById(maSP);
+
+    if(sp == null){
         throw new RuntimeException("Không tìm thấy sản phẩm: " + maSP);
+    }
+
+    return sp.getGia();
     }
 }
