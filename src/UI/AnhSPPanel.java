@@ -164,6 +164,8 @@ public class AnhSPPanel extends JPanel {
         };
         table = new JTable(model);
         table.setRowHeight(70);
+        table.getTableHeader().setResizingAllowed(false);
+        table.getTableHeader().setReorderingAllowed(false);
         table.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 int r = table.getSelectedRow();

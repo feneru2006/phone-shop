@@ -222,6 +222,8 @@ public class SanPhamPanel extends JPanel {
         table.setIntercellSpacing(new Dimension(0, 0));
         table.setShowGrid(false); 
         table.getTableHeader().setPreferredSize(new Dimension(0, 38)); 
+        table.getTableHeader().setResizingAllowed(false);   
+        table.getTableHeader().setReorderingAllowed(false);
         table.getTableHeader().setDefaultRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable t, Object v, boolean isS, boolean hasF, int r, int c) {

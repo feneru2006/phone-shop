@@ -112,6 +112,8 @@ public class HangSXPanel extends JPanel {
         table.setRowHeight(35);
         
         table.getTableHeader().setPreferredSize(new Dimension(0, 40));
+        table.getTableHeader().setResizingAllowed(false);
+        table.getTableHeader().setReorderingAllowed(false);
         DefaultTableCellRenderer headerRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
