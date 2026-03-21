@@ -12,7 +12,7 @@ import java.util.Set;
 
 public class Main {
     // Để TRUE để vào thẳng giao diện chính, FALSE để hiện màn hình đăng nhập
-    private static final boolean DEBUG_MODE = true;
+    private static final boolean DEBUG_MODE = false;
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {

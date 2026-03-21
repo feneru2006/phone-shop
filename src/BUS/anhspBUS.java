@@ -22,7 +22,7 @@ public class anhspBUS {
 
         for (anhspDTO x : list) {
             if (x.getMaAnh().equals(a.getMaAnh()))
-                return false; 
+                return false;
         }
 
         list.add(a);
@@ -97,5 +97,9 @@ public class anhspBUS {
         }
 
         return false;
+    }
+
+    public void reload() {
+        list = dao.getAll();
     }
 }

@@ -1,6 +1,5 @@
 package DTO;
-import java.util.Objects;
-import java.util.*; 
+
 public class SanPhamDTO {
     private String maSP;
     private String tenSP;
@@ -11,9 +10,11 @@ public class SanPhamDTO {
     private String cauHinh;
     private String nsx;
     private boolean isDeleted; 
+    private double phanTramLoiNhuan;
     
     public SanPhamDTO() {}
-    public SanPhamDTO(String maSP, String tenSP, int slTon, double gia, String trangThai, String maLoai, String cauHinh, String nsx, boolean isDeleted) {
+
+    public SanPhamDTO(String maSP, String tenSP, int slTon, double gia, String trangThai, String maLoai, String cauHinh, String nsx, boolean isDeleted, double phanTramLoiNhuan) {
         this.maSP = maSP;
         this.tenSP = tenSP;
         this.slTon = slTon;
@@ -23,7 +24,9 @@ public class SanPhamDTO {
         this.cauHinh = cauHinh;
         this.nsx = nsx;
         this.isDeleted = isDeleted;
+        this.phanTramLoiNhuan = phanTramLoiNhuan;
     }
+
     public String getMaSP() { return maSP; }
     public void setMaSP(String maSP) { this.maSP = maSP; }
 
@@ -51,4 +54,10 @@ public class SanPhamDTO {
     public boolean isDeleted() { return isDeleted; }
     public void setDeleted(boolean isDeleted) { this.isDeleted = isDeleted; }
 
+    public double getPhanTramLoiNhuan() { return phanTramLoiNhuan; }
+    public void setPhanTramLoiNhuan(double phanTramLoiNhuan) { this.phanTramLoiNhuan = phanTramLoiNhuan; }
+
+    public double getGiaBan() {
+        return this.gia + (this.gia * this.phanTramLoiNhuan / 100);
+    }
 }

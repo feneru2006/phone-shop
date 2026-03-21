@@ -8,9 +8,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public class ReportService {
-    
     private final ReportDAO reportDAO = new ReportDAO();
-
 
     public List<ReportRevenueRow> getRevenueList(LocalDate from, LocalDate to) {
         try {
@@ -27,6 +25,14 @@ public class ReportService {
             throw new RuntimeException("Lỗi tải top sản phẩm", e);
         }
     }
+    public List<Object[]> getMonthlyRevenueList(LocalDate from, LocalDate to) {
+        try {
+            return reportDAO.getMonthlyRevenueReport(from, to);
+        } catch (SQLException e) {
+            throw new RuntimeException("Lỗi tải báo cáo doanh thu tháng", e);
+        }
+    }
+}
 
     public void xuatHoaDonPDF(DTO.hoadonDTO hd, java.util.ArrayList<DTO.CTHDDTO> dsCTHD, String tenKH, String tenNV) {
         String path = "HoaDon_" + hd.getMaHD() + ".pdf"; 

@@ -1,17 +1,19 @@
 package UI;
 
 import com.formdev.flatlaf.FlatLightLaf;
+
+import UI.Panel.DashboardPanel;
+import UI.Panel.Sales.KhuyenMaiPanel;
+import UI.Panel.Sales.KhuyenMaiView;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Area;
 import java.awt.geom.RoundRectangle2D;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import UI.DashboardPanel;
-import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
 public class MainFrameTest extends JFrame {
     private final CardLayout cardLayout = new CardLayout();
@@ -20,7 +22,7 @@ public class MainFrameTest extends JFrame {
     private JLabel pageTitleLabel;
 
     // --- MÀU SẮC THEME ---
-    private static final Color HEADER_BG = Color.decode("#0F172A"); // Xanh đen đậm
+    private static final Color HEADER_BG = Color.decode("#0F172A");
     private static final Color BG_APP = Color.decode("#F8FAFF");
     private static final Color SIDEBAR_BG = Color.decode("#FFFFFF");
     private static final Color SIDEBAR_ACTIVE = Color.decode("#2563EB");
@@ -30,11 +32,10 @@ public class MainFrameTest extends JFrame {
     public MainFrameTest() {
         setupLookAndFeel();
 
-        // Ẩn khung viền mặc định để tự vẽ
-        setUndecorated(true);
         setTitle("PHONE SHOP NHÓM 4 - HỆ THỐNG QUẢN LÝ");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(1300, 800);
+        setSize(1300, 850);
+        setMinimumSize(new Dimension(1360, 820));
         setLocationRelativeTo(null);
 
         JPanel root = new JPanel(new BorderLayout());
@@ -46,10 +47,20 @@ public class MainFrameTest extends JFrame {
 
         setContentPane(root);
         
+        // 1. Khởi tạo các Card trống cho các chức năng chưa làm
         initCards();
+        
+        // 2. Add Dashboard thật của bạn vào
         DashboardPanel dashboard = new DashboardPanel();
         contentPanel.add(dashboard, "Dashboard");
+        contentPanel.add(new TaiKhoanUI(), "Tài khoản");
+        contentPanel.add(new PhanQuyenUI(), "Phân quyền");
         
+        //
+        KhuyenMaiPanel giamgia = new KhuyenMaiPanel();
+        contentPanel.add(giamgia,"Khuyến mãi");
+        
+        // 3. Hiển thị Dashboard lên đầu tiên
         showCard("Dashboard");
     }
 
@@ -57,83 +68,49 @@ public class MainFrameTest extends JFrame {
         try {
             FlatLightLaf.setup();
             UIManager.put("defaultFont", new Font("Segoe UI", Font.PLAIN, 13));
-            UIManager.put("ScrollBar.width", 8);
         } catch (Exception ignored) {}
     }
 
-    // --- BUILD TITLE BAR VỚI BO GÓC ---
     private JPanel buildTitleBar() {
-        // Sử dụng RoundedPanel cho titleBar, bo góc trên (topOnly = true)
-        RoundedPanel titleBar = new RoundedPanel(20, HEADER_BG, true);
-        titleBar.setPreferredSize(new Dimension(0, 60));
-        titleBar.setBorder(new EmptyBorder(0, 20, 0, 10));
+        JPanel titleBar = new JPanel(new BorderLayout());
+        titleBar.setBackground(HEADER_BG);
+        titleBar.setPreferredSize(new Dimension(0, 65));
+        titleBar.setBorder(new EmptyBorder(0, 20, 0, 20));
 
-        // --- BÊN TRÁI: LOGO & BRAND ---
-        JPanel leftSection = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
-        leftSection.setOpaque(false);
-
-        // Icon giỏ hàng
-        JLabel lbCartIcon = new JLabel("🛒"); 
-        lbCartIcon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 20));
-        lbCartIcon.setForeground(Color.WHITE);
-        lbCartIcon.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(255,255,255,50), 1, true),
-            new EmptyBorder(5, 5, 5, 5)
-        ));
-
+        // Trái: Logo
+        JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 12));
+        left.setOpaque(false);
+        JLabel lbIcon = new JLabel("\uD83D\uDED2"); 
+        lbIcon.setFont(new Font("Segoe UI Symbol", Font.PLAIN, 18));
+        lbIcon.setForeground(Color.WHITE);
         JLabel lbBrand = new JLabel("PHONE SHOP NHÓM 4");
-        lbBrand.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lbBrand.setFont(new Font("Segoe UI", Font.BOLD, 17));
         lbBrand.setForeground(Color.WHITE);
+        left.add(lbIcon);
+        left.add(lbBrand);
 
-        leftSection.add(lbCartIcon);
-        leftSection.add(lbBrand);
+        // Phải: User Pill bo tròn
+        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 12));
+        right.setOpaque(false);
 
-        // --- BÊN PHẢI: USER INFO & CLOSE BUTTON ---
-        JPanel rightSection = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 8));
-        rightSection.setOpaque(false);
-
-        // --- PILLED USER VỚI BO GÓC CAO (30px) ---
         RoundedPanel userPill = new RoundedPanel(30, Color.decode("#1E293B"));
-        userPill.setPreferredSize(new Dimension(200, 40));
-        userPill.setBorder(new EmptyBorder(0, 10, 0, 10));
+        userPill.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 3));
+        userPill.setBorder(new EmptyBorder(0, 5, 0, 15));
         
-        // --- AVATAR VỚI BO GÓC 100% (TRÒN) ---
-        RoundedPanel avatar = new RoundedPanel(50, Color.decode("#2563EB"));
+        RoundedPanel avatar = new RoundedPanel(30, SIDEBAR_ACTIVE);
         avatar.setPreferredSize(new Dimension(30, 30));
-        JLabel avatarLabel = new JLabel("A", SwingConstants.CENTER);
-        avatarLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        avatarLabel.setForeground(Color.WHITE);
-        avatar.add(avatarLabel, BorderLayout.CENTER);
-        
-        // Text info (Name & Email)
-        JLabel userInfo = new JLabel("<html><div style='color:white; font-weight:bold; font-size:10px;'>ADMINISTRATOR</div>"
-                + "<div style='color:#3B82F6; font-size:9px;'>admin@phoneshop.vn</div></html>");
-        
-        // Icon người nhỏ bên cạnh
-        JLabel userIcon = new JLabel("👤");
-        userIcon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 12));
-        userIcon.setForeground(new Color(255,255,255,150));
+        JLabel avTxt = new JLabel("A", SwingConstants.CENTER);
+        avTxt.setForeground(Color.WHITE);
+        avTxt.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        avatar.add(avTxt, BorderLayout.CENTER);
 
-        userPill.add(avatar, BorderLayout.WEST);
-        userPill.add(userInfo, BorderLayout.CENTER);
-        userPill.add(userIcon, BorderLayout.EAST);
+        JLabel userInfo = new JLabel("<html><b style='color:white;'>Admin</b><br><font size='2' color='#94A3B8'>Quản trị viên</font></html>");
+        userPill.add(avatar);
+        userPill.add(userInfo);
+        right.add(userPill);
 
-        // Nút 'X' Close
-        JButton btnClose = new JButton("✕");
-        btnClose.setFont(new Font("Segoe UI", Font.PLAIN, 18));
-        btnClose.setForeground(new Color(255,255,255,150));
-        btnClose.setBorderPainted(false);
-        btnClose.setContentAreaFilled(false);
-        btnClose.setFocusPainted(false);
-        btnClose.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnClose.addActionListener(e -> System.exit(0));
-
-        rightSection.add(userPill);
-        rightSection.add(btnClose);
-
-        titleBar.add(leftSection, BorderLayout.WEST);
-        titleBar.add(rightSection, BorderLayout.EAST);
-
+        titleBar.add(left, BorderLayout.WEST);
+        titleBar.add(right, BorderLayout.EAST);
         return titleBar;
     }
 
@@ -143,37 +120,78 @@ public class MainFrameTest extends JFrame {
         sidebar.setBackground(SIDEBAR_BG);
         sidebar.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, Color.decode("#E2E8F0")));
 
+        JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+        container.setOpaque(false);
+
+        // --- PHẦN BÁN HÀNG ---
+        JLabel saleLabel = new JLabel("HỆ THỐNG BÁN HÀNG");
+        saleLabel.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        saleLabel.setForeground(TEXT_MUTED);
+        saleLabel.setBorder(new EmptyBorder(25, 20, 10, 10));
+        container.add(saleLabel);
+
+        // 🛒 Nút Bán hàng
+        NavItem banHangItem = new NavItem("🛒 Bán hàng tại quầy");
+        navItems.put("Bán hàng", banHangItem);
+        banHangItem.addMouseListener(new MouseAdapter() {
+            @Override public void mousePressed(MouseEvent e) { showCard("Bán hàng"); }
+        });
+        JPanel pWrapper = new JPanel(new BorderLayout());
+        pWrapper.setOpaque(false);
+        pWrapper.setBorder(new EmptyBorder(0, 10, 10, 10));
+        pWrapper.add(banHangItem);
+        container.add(pWrapper);
+
+        container.add(Box.createVerticalStrut(10));
+        container.add(new JSeparator());
+
+        // --- PHẦN QUẢN LÝ ---
         JLabel navLabel = new JLabel("DANH MỤC QUẢN LÝ");
         navLabel.setFont(new Font("Segoe UI", Font.BOLD, 11));
         navLabel.setForeground(TEXT_MUTED);
-        navLabel.setBorder(new EmptyBorder(25, 20, 15, 10));
-        sidebar.add(navLabel, BorderLayout.NORTH);
+        navLabel.setBorder(new EmptyBorder(15, 20, 10, 10));
+        container.add(navLabel);
 
         JPanel menuContainer = new JPanel();
         menuContainer.setLayout(new BoxLayout(menuContainer, BoxLayout.Y_AXIS));
-        menuContainer.setBackground(SIDEBAR_BG);
+        menuContainer.setOpaque(false);
         menuContainer.setBorder(new EmptyBorder(0, 10, 10, 10));
 
-        String[] menus = {
-            "Dashboard", "Sản phẩm", "Hình ảnh SP", "Chi tiết SP",
-            "Loại SP", "Bán hàng", "Khách hàng", "Nhân viên",
-            "Nhập hàng", "Nhà cung cấp", "Bảo hành",
-            "Khuyến mãi", "Đánh giá", "Tài khoản",
-            "Phân quyền", "Nhật ký"
+        // --- DANH SÁCH MỤC ---
+        String[][] managementItems = {
+            {"Dashboard", "📊 Dashboard"},
+            {"Sản phẩm", "📦 Sản phẩm"},
+            {"Hình ảnh SP", "🖼️ Hình ảnh SP"},
+            {"Chi tiết SP", "📝 Chi tiết SP"},
+            {"Loại SP", "🏷️ Loại SP"},
+            {"Khách hàng", "👥 Khách hàng"},
+            {"Nhân viên", "🆔 Nhân viên"},
+            {"Nhập hàng", "📥 Nhập hàng"},
+            {"Nhà cung cấp", "🏭 Nhà cung cấp"},
+            {"Bảo hành", "🛠️ Bảo hành"},
+            {"Khuyến mãi", "🎁 Khuyến mãi"},
+            {"Đánh giá", "⭐ Đánh giá"},
+            {"Tài khoản", "🔐 Tài khoản"},
+            {"Phân quyền", "🔑 Phân quyền"},
+            {"Nhật ký", "📜 Nhật ký"}
         };
 
-        for (String m : menus) {
-            NavItem item = new NavItem(m);
-            navItems.put(m, item);
-            item.addMouseListener(new MouseAdapter() {
-                @Override public void mousePressed(MouseEvent e) { showCard(m); }
+        for (String[] item : managementItems) {
+            NavItem navItem = new NavItem(item[1]);
+            navItems.put(item[0], navItem);
+            navItem.addMouseListener(new MouseAdapter() {
+                @Override public void mousePressed(MouseEvent e) { showCard(item[0]); }
             });
-            menuContainer.add(item);
+            menuContainer.add(navItem);
             menuContainer.add(Box.createVerticalStrut(4));
         }
 
+        sidebar.add(container, BorderLayout.NORTH);
         JScrollPane scroll = new JScrollPane(menuContainer);
         scroll.setBorder(null);
+        scroll.getViewport().setBackground(SIDEBAR_BG);
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
         sidebar.add(scroll, BorderLayout.CENTER);
 
         return sidebar;
@@ -204,10 +222,11 @@ public class MainFrameTest extends JFrame {
 
     private void initCards() {
         for (String key : navItems.keySet()) {
+            if (key.equals("Dashboard") || key.equals("Khuyến mãi")) continue; 
+
             JPanel card = new JPanel(new GridBagLayout());
             card.setBackground(Color.WHITE);
-            card.setBorder(BorderFactory.createLineBorder(Color.decode("#E2E8F0"), 1));
-            card.add(new JLabel("Nội dung cho: " + key));
+            card.add(new JLabel("Đang phát triển chức năng: " + key));
             contentPanel.add(card, key);
         }
     }
@@ -218,63 +237,84 @@ public class MainFrameTest extends JFrame {
         cardLayout.show(contentPanel, name);
     }
 
-    private class NavItem extends JPanel {
-        private final JLabel label;
-
-        NavItem(String text) {
-            setLayout(new BorderLayout());
-            setMaximumSize(new Dimension(240, 42));
-            setPreferredSize(new Dimension(240, 42));
-            setBackground(SIDEBAR_BG);
-            setCursor(new Cursor(Cursor.HAND_CURSOR));
-            setBorder(new EmptyBorder(0, 15, 0, 0));
-            
-            label = new JLabel(text);
-            label.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-            label.setForeground(TEXT_MAIN);
-            add(label, BorderLayout.CENTER);
-        }
-
-        void setActive(boolean active) {
-            setBackground(active ? SIDEBAR_ACTIVE : SIDEBAR_BG);
-            label.setForeground(active ? Color.WHITE : TEXT_MAIN);
-            label.setFont(new Font("Segoe UI", active ? Font.BOLD : Font.PLAIN, 14));
-        }
-    }
-
-    // --- LỚP ROUNDEDPANEL DÙNG CHUNG ---
+    // --- LỚP HỖ TRỢ BO GÓC ---
     class RoundedPanel extends JPanel {
-        private int cornerRadius;
-        private Color backgroundColor;
-        private boolean topOnly = false;
+        private int radius;
+        private Color bgColor;
 
-        public RoundedPanel(int cornerRadius, Color backgroundColor) {
+        public RoundedPanel(int radius, Color bgColor) {
             super(new BorderLayout());
-            this.cornerRadius = cornerRadius;
-            this.backgroundColor = backgroundColor;
+            this.radius = radius;
+            this.bgColor = bgColor;
             setOpaque(false);
-        }
-
-        public RoundedPanel(int cornerRadius, Color backgroundColor, boolean topOnly) {
-            this(cornerRadius, backgroundColor);
-            this.topOnly = topOnly;
         }
 
         @Override
         protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(backgroundColor);
-
-            if (topOnly) {
-                Area area = new Area(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius));
-                area.add(new Area(new Rectangle(0, getHeight() / 2, getWidth(), getHeight() / 2)));
-                g2.fill(area);
-            } else {
-                g2.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius));
-            }
+            g2.setColor(bgColor);
+            g2.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), radius, radius));
             g2.dispose();
+            super.paintComponent(g);
+        }
+    }
+
+    // --- LỚP NÚT SIDENAV CÓ EMOJI ---
+    private class NavItem extends JPanel {
+        private final JLabel labelIcon;
+        private final JLabel labelText;
+        private boolean active = false;
+
+        NavItem(String textWithEmoji) {
+            setLayout(new BorderLayout());
+            setMaximumSize(new Dimension(240, 35));
+            setPreferredSize(new Dimension(240, 35));
+            setOpaque(false);
+            setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+            // Tách Emoji và Text
+            String emoji = textWithEmoji.substring(0, 2);
+            String text = textWithEmoji.substring(2).trim();
+
+            labelIcon = new JLabel(emoji);
+            // Font cho icon (hỗ trợ Emoji)
+            labelIcon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 14));
+            labelIcon.setForeground(TEXT_MAIN);
+            labelIcon.setBorder(new EmptyBorder(0, 15, 0, 0));
+
+            labelText = new JLabel(text);
+            // Font cho chữ (hỗ trợ tiếng Việt)
+            labelText.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            labelText.setForeground(TEXT_MAIN);
+            labelText.setBorder(new EmptyBorder(0, 10, 0, 0));
+
+            add(labelIcon, BorderLayout.WEST);
+            add(labelText, BorderLayout.CENTER);
+        }
+
+        void setActive(boolean active) {
+            this.active = active;
+            Color textColor = active ? Color.WHITE : TEXT_MAIN;
+            labelIcon.setForeground(textColor);
+            labelText.setForeground(textColor);
+            
+            // Cập nhật bold khi active
+            labelIcon.setFont(new Font("Segoe UI Emoji", active ? Font.BOLD : Font.PLAIN, 14));
+            labelText.setFont(new Font("Segoe UI", active ? Font.BOLD : Font.PLAIN, 14));
+            repaint();
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            if (active) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(SIDEBAR_ACTIVE);
+                g2.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 8, 8));
+                g2.dispose();
+            }
+            super.paintComponent(g);
         }
     }
 }
