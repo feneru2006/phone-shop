@@ -48,6 +48,9 @@ public class AccountDAO {
         return list;
     }
 
+    // ==========================================================
+    // THÊM MỚI: Lấy danh sách tài khoản theo mã quyền
+    // ==========================================================
     public ArrayList<accountDTO> selectByRole(String maQuyen) {
         ArrayList<accountDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM account WHERE quyen = ?";
@@ -83,6 +86,7 @@ public class AccountDAO {
 
             return ps.executeUpdate() > 0; // Trả về true nếu chèn thành công ít nhất 1 dòng
         } catch (SQLException e) {
+            // Nếu báo lỗi Foreign Key, khả năng cao là ID (Mã NV) chưa tồn tại trong bảng nhanvien
             e.printStackTrace();
         }
         return false;
