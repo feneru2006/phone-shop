@@ -1,66 +1,42 @@
 package BUS;
 
-import DAL.DAO.*;
-import DTO.*;
-import java.sql.*;
+import DAL.DAO.HoaDonDAO;
+import DAL.DAO.CTHDDAO; 
+import DAL.DAO.CtspDAO;
+import DTO.hoadonDTO;
+import DTO.CTHDDTO;
 import java.util.ArrayList;
 
 public class HoaDonBUS {
+
+    // Gọi các DAO lên để làm việc
     private HoaDonDAO hdDAO = new HoaDonDAO();
     private CTHDDAO cthdDAO = new CTHDDAO();
-    private ChitietSPDAO ctspDAO = new ChitietSPDAO();
-    private ReportService reportService = new ReportService(); // Kéo từ cấu trúc của bạn
+    private CtspDAO ctspDAO = new CtspDAO();
 
-    /**
-     * Hàm Xử lý Giao dịch (Lập hóa đơn & Cập nhật kho)
-     */
-    public String xuLyThanhToan(hoadonDTO hd, ArrayList<CTHDDTO> dsCTHD, ArrayList<String> dsMaSP) {
-        if (dsCTHD == null || dsCTHD.isEmpty()) return "Giỏ hàng trống!";
+    // Lấy danh sách hóa đơn (Dùng cho nút Xem Lịch Sử sau này)
+    public ArrayList<hoadonDTO> getAll() {
+        return hdDAO.getAll();
+    }
 
-        // 1. Lập hóa đơn bán hàng
+    public boolean xuLyThanhToan(hoadonDTO hd, ArrayList<CTHDDTO> dsCTHD) {
+        
+        // BƯỚC 1: Lưu Hóa Đơn vào Database trước (Để lấy cái Mã Hóa Đơn)
         if (!hdDAO.insert(hd)) {
-            return "Lỗi: Không thể tạo hóa đơn!";
+            return false; // Rớt ngay từ bước 1 thì báo lỗi luôn
         }
 
-        // 2. Xử lý chi tiết giao dịch
-        for (int i = 0; i < dsCTHD.size(); i++) {
-            CTHDDTO ct = dsCTHD.get(i);
-            String maSP = dsMaSP.get(i); // Mã sản phẩm chung (VD: SP01)
+        // BƯỚC 2 & 3: Duyệt qua từng cái điện thoại trong Giỏ Hàng
+        for (CTHDDTO cthd : dsCTHD) {
             
-            // Lấy MACTSP (IMEI) từ DTO đưa vào CTHD
-            cthdDAO.insert(ct);
-            
-            // Cập nhật tình trạng của máy cụ thể đó thành 'Đã bán'
-            ctspDAO.updateTinhTrang(ct.getMaCTSP(), "Đã bán");
+            // Bước 2: Lưu vào bảng Chi Tiết Hóa Đơn (Mã HD, Mã IMEI, Giá...)
+            cthdDAO.insert(cthd);
 
-            // Đồng thời cập nhật lại số lượng tồn trong bảng sanpham
-            giamSoLuongTonKho(maSP); 
+            // Bước 3: Cập nhật tình trạng của cái máy IMEI đó thành "Đã bán"
+            ctspDAO.updateTinhTrang(cthd.getMaCTSP(), "Đã bán");
         }
 
-        // 3. In hóa đơn cho khách
-        try {
-            // Giả sử ReportService của bạn có hàm xuất hóa đơn
-            // reportService.exportInvoice(hd.getMaHD()); 
-        } catch (Exception e) {
-            System.out.println("Lỗi in PDF: " + e.getMessage());
-        }
-
-        return "Thanh toán thành công!";
-    }
-    // Tự động sinh mã hóa đơn mới (Ví dụ: HD001, HD002)
-    public String tuDongTaoMaHD() {
-        int soLuong = hdDAO.getRowCount();
-        return "HD" + String.format("%03d", soLuong + 1);
-    }
-//Cập nhật sô lượng tồn kho
-    private void giamSoLuongTonKho(String maSP) {
-        String sql = "UPDATE sanpham SET SLton = SLton - 1 WHERE MASP = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, maSP);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        // Nếu chạy mượt mà qua hết vòng lặp thì trả về Thành công!
+        return true; 
     }
 }
