@@ -1,4 +1,4 @@
-package UI.Panel.CTSP;
+package UI;
 
 import BUS.CtspBUS;
 import BUS.SanPhamBUS;
