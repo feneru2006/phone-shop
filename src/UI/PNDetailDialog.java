@@ -1,4 +1,4 @@
-package UI.Panel.PN;
+package UI;
 
 import BUS.NCCBUS;
 import BUS.PhieuNhapBUS;
@@ -16,11 +16,11 @@ import java.util.List;
 
 public class PNDetailDialog extends JDialog {
 
-    private SanPhamBUS spBus = new SanPhamBUS(); // Gọi BUS Sản phẩm để lấy Tên SP
+    private SanPhamBUS spBus = new SanPhamBUS(); 
 
     public PNDetailDialog(String maPNH, PhieuNhapBUS pnBus, NCCBUS nccBus, String tenNhanVien) {
         setTitle("CHI TIẾT PHIẾU NHẬP");
-        setSize(850, 550); // Mở rộng form một chút để chứa tên SP
+        setSize(850, 550); 
         setLocationRelativeTo(null);
         setModal(true);
 
@@ -31,18 +31,15 @@ public class PNDetailDialog extends JDialog {
         main.setBackground(Color.WHITE);
         main.setBorder(new EmptyBorder(20, 25, 20, 25));
 
-        // --- INFO HEADER (Làm gọn giống Hình 1) ---
         JPanel infoPanel = new JPanel(new GridLayout(1, 3, 20, 0));
         infoPanel.setBackground(Color.WHITE);
         infoPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.decode("#E2E8F0")));
         
         infoPanel.add(createInfoBlock("MÃ SỐ", pn.getMaPNH()));
         infoPanel.add(createInfoBlock("ĐỐI TÁC (NCC)", nccBus.layTenNccTheoMa(pn.getMaNCC())));
-        infoPanel.add(createInfoBlock("NHÂN VIÊN LẬP", tenNhanVien)); // Nhận tên nhân viên từ bảng truyền qua
-        
+        infoPanel.add(createInfoBlock("NHÂN VIÊN LẬP", tenNhanVien)); 
         main.add(infoPanel, BorderLayout.NORTH);
 
-        // --- TABLE (Thêm cột Tên Sản Phẩm) ---
         String[] cols = {"MÃ SP", "TÊN SẢN PHẨM", "SỐ LƯỢNG", "ĐƠN GIÁ NHẬP", "THÀNH TIỀN"};
         DefaultTableModel model = new DefaultTableModel(cols, 0) {
             @Override public boolean isCellEditable(int row, int column) { return false; }
@@ -58,28 +55,25 @@ public class PNDetailDialog extends JDialog {
         table.setShowHorizontalLines(true);
         table.setGridColor(Color.decode("#E2E8F0"));
         
-        // Căn phải cho các cột số
         DefaultTableCellRenderer rightRender = new DefaultTableCellRenderer();
         rightRender.setHorizontalAlignment(JLabel.RIGHT);
         table.getColumnModel().getColumn(2).setCellRenderer(rightRender);
         table.getColumnModel().getColumn(3).setCellRenderer(rightRender);
         table.getColumnModel().getColumn(4).setCellRenderer(rightRender);
 
-        // Đổ dữ liệu
         for (CTphieunhapDTO ct : chiTietList) {
             SanPhamDTO sp = spBus.getById(ct.getMaSP());
             String tenSP = (sp != null) ? sp.getTenSP() : "Sản phẩm không tồn tại";
 
             model.addRow(new Object[]{
                 ct.getMaSP(), 
-                tenSP, // TÊN SẢN PHẨM
+                tenSP, 
                 ct.getSl(), 
                 String.format("%,.0f đ", ct.getDonGia()), 
                 String.format("%,.0f đ", ct.getThanhTien())
             });
         }
         
-        // Chỉnh độ rộng cột cho đẹp
         table.getColumnModel().getColumn(0).setPreferredWidth(80);
         table.getColumnModel().getColumn(1).setPreferredWidth(250);
         table.getColumnModel().getColumn(2).setPreferredWidth(80);
@@ -89,7 +83,6 @@ public class PNDetailDialog extends JDialog {
         scroll.setBorder(BorderFactory.createLineBorder(Color.decode("#E2E8F0")));
         main.add(scroll, BorderLayout.CENTER);
 
-        // --- FOOTER TOTAL ---
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         bottom.setBackground(Color.WHITE);
         JLabel lblTotal = new JLabel(String.format("TỔNG CỘNG: %,.0f VNĐ", pn.getTongTien()));
@@ -104,15 +97,15 @@ public class PNDetailDialog extends JDialog {
     private JPanel createInfoBlock(String title, String value) {
         JPanel p = new JPanel(new GridLayout(2, 1, 0, 5));
         p.setBackground(Color.WHITE);
-        p.setBorder(new EmptyBorder(0, 0, 15, 0)); // Tạo khoảng cách dưới đường kẻ
+        p.setBorder(new EmptyBorder(0, 0, 15, 0)); 
 
         JLabel lblT = new JLabel(title);
-        lblT.setForeground(Color.decode("#64748B")); // Xám nhạt
+        lblT.setForeground(Color.decode("#64748B"));
         lblT.setFont(new Font("Segoe UI", Font.BOLD, 12));
         
         JLabel lblV = new JLabel(value);
         lblV.setFont(new Font("Segoe UI", Font.BOLD, 15));
-        lblV.setForeground(Color.decode("#1E293B")); // Đen đậm
+        lblV.setForeground(Color.decode("#1E293B")); 
 
         p.add(lblT); 
         p.add(lblV);
