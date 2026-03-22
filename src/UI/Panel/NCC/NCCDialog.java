@@ -1,4 +1,4 @@
-package UI;
+package UI.Panel.NCC;
 
 import BUS.NCCBUS;
 import DTO.NCCDTO;

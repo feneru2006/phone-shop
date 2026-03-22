@@ -3,31 +3,56 @@ package BUS;
 import DAL.DAO.LogDAO;
 import DTO.logDTO;
 import Utility.RolePermission;
+
+// Import thư viện Log4j
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class LogBUS {
+    private LogDAO logDAO = new LogDAO();
+    
+    // Khởi tạo đối tượng Logger
+    private static final Logger logger = LogManager.getLogger(LogBUS.class);
 
-    private final LogDAO logDAO = new LogDAO();
-    public void ghiLog(String hanhVi, String thucThe, String chiTietHV) {
-        //du lieu dau vao
-        String maLog = "L" + System.currentTimeMillis();
+    public List<logDTO> getAll() {
+        return logDAO.getAll();
+    }
 
-        String accountId = "GUEST";
-        if (RolePermission.getCurrentUser() != null) {
-            accountId = String.valueOf(RolePermission.getCurrentUser().getId());
+    private String taoMaLogTuDong() {
+        String lastMa = logDAO.getLastMaLog();
+        if (lastMa == null || lastMa.isEmpty()) {
+            return "LOG0001";
         }
-
-        LocalDateTime bayGio = LocalDateTime.now();
-
-        //tao doi tuong dto
-        logDTO log = new logDTO(maLog, accountId, hanhVi, thucThe, chiTietHV, bayGio);
-
-        //dung DAO de luu
         try {
-            logDAO.insertLog(log);
+            int so = Integer.parseInt(lastMa.substring(3)) + 1;
+            return String.format("LOG%04d", so);
         } catch (Exception e) {
-            //xuat loi ra console neu db co van de
-            System.err.println("Loi ghi log: " + e.getMessage());
+            return "LOG" + System.currentTimeMillis(); 
         }
     }
-}   
+
+    public void ghiNhatKy(String hanhvi, String thucthe, String chitiethv) {
+        String accountId = "SYSTEM"; 
+        
+        if (RolePermission.getCurrentUser() != null) {
+            accountId = RolePermission.getCurrentUser().getId();
+        }
+
+        // 1. SỬ DỤNG LOG4J ĐỂ GHI RA FILE TXT
+        logger.info("Tài khoản: {} | Hành vi: {} | Thực thể: {} | Chi Tiết: {}", accountId, hanhvi, thucthe, chitiethv);
+
+        // 2. GHI VÀO DATABASE BẰNG DAO NHƯ CŨ
+        logDTO log = new logDTO(
+                taoMaLogTuDong(),
+                accountId,
+                hanhvi,
+                thucthe,
+                chitiethv,
+                LocalDateTime.now()
+        );
+        logDAO.insertLog(log);
+    }
+}
