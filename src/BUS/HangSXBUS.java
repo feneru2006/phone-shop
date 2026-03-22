@@ -10,6 +10,9 @@ public class HangSXBUS {
 
     private HangSXDAO dao = new HangSXDAO();
     private List<hangsxDTO> dsHang = new ArrayList<>();
+    
+    // Thêm đối tượng LogBUS
+    private LogBUS logBUS = new LogBUS();
 
     public HangSXBUS() {
         dsHang = dao.getAll(); 
@@ -18,6 +21,7 @@ public class HangSXBUS {
     public List<hangsxDTO> getAll() {
         return dsHang;
     }
+    
     public List<hangsxDTO> timKiem(String tieuChi, String keyword) {
         List<hangsxDTO> result = new ArrayList<>();
         String key = keyword.toLowerCase().trim();
@@ -53,6 +57,8 @@ public class HangSXBUS {
             }
         }
         dsHang.add(hang);
+        // Ghi log khi thêm thành công
+        logBUS.ghiNhatKy("Thêm", "Hãng Sản Xuất", "Thêm hãng sản xuất mã: " + hang.getMaNSX());
         return true;
     }
 
@@ -60,6 +66,8 @@ public class HangSXBUS {
         for (int i = 0; i < dsHang.size(); i++) {
             if (dsHang.get(i).getMaNSX().equals(hang.getMaNSX())) {
                 dsHang.set(i, hang);
+                // Ghi log khi sửa thành công
+                logBUS.ghiNhatKy("Sửa", "Hãng Sản Xuất", "Sửa hãng sản xuất mã: " + hang.getMaNSX());
                 return true;
             }
         }
@@ -67,7 +75,13 @@ public class HangSXBUS {
     }
 
     public boolean xoa(String maNSX) {
-        return dsHang.removeIf(h -> h.getMaNSX().equals(maNSX));
+        // Tách ra để kiểm tra kết quả xóa thành công hay không trước khi return
+        boolean ketQua = dsHang.removeIf(h -> h.getMaNSX().equals(maNSX));
+        if (ketQua) {
+            // Ghi log khi xóa thành công
+            logBUS.ghiNhatKy("Xóa", "Hãng Sản Xuất", "Xóa hãng sản xuất mã: " + maNSX);
+        }
+        return ketQua;
     }
 
     public boolean saveToDatabase() {
