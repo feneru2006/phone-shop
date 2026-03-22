@@ -29,6 +29,7 @@ public class MainFrameTest extends JFrame {
     private final JPanel contentPanel = new JPanel(cardLayout);
     private final Map<String, NavItem> navItems = new LinkedHashMap<>();
     private JLabel pageTitleLabel;
+    private JPanel menuContainer;
 
     // Biến lưu trữ thông tin tài khoản đang đăng nhập
     private String currentUsername;
