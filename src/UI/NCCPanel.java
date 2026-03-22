@@ -1,4 +1,4 @@
-package UI.Panel.NCC;
+package UI;
 
 import BUS.NCCBUS;
 import DTO.NCCDTO;
@@ -23,7 +23,6 @@ public class NCCPanel extends JPanel {
     private NCCBUS nccBus;
     private List<NCCDTO> currentList; 
     
-    // Quyền giả định để test (có thể thay bằng hệ thống quyền thực tế của bạn)
     private final List<String> userPermissions = Arrays.asList("CREATE_NCC", "UPDATE_NCC", "DELETE_NCC");
 
     private JTable table;
@@ -35,7 +34,6 @@ public class NCCPanel extends JPanel {
     private final int itemsPerPage = 10;
     private int hoveredRow = -1;
 
-    // Màu sắc Theme
     private final Color PRIMARY_COLOR = Color.decode("#2563EB");
     private final Color BG_COLOR = Color.decode("#F8FAFF");
 
@@ -72,7 +70,6 @@ public class NCCPanel extends JPanel {
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
 
-        // Góc trái: Tiêu đề
         JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
         left.setOpaque(false);
         JLabel lblIcon = new JLabel("🗄️");
@@ -83,7 +80,6 @@ public class NCCPanel extends JPanel {
         left.add(lblIcon);
         left.add(lblTitle);
 
-        // Góc phải: Thanh tìm kiếm & Nút thêm
         JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
         right.setOpaque(false);
 
@@ -132,12 +128,10 @@ public class NCCPanel extends JPanel {
         table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
         
-        // Header màu xám nhạt như yêu cầu
         table.getTableHeader().setBackground(Color.decode("#F8FAFC")); 
         table.getTableHeader().setForeground(Color.decode("#334155"));
         table.getTableHeader().setPreferredSize(new Dimension(0, 45));
         
-        // Kẻ viền dọc cho bảng
         table.setShowVerticalLines(true); 
         table.setShowHorizontalLines(true);
         table.setGridColor(Color.decode("#E2E8F0")); 
@@ -149,15 +143,12 @@ public class NCCPanel extends JPanel {
         table.getColumnModel().getColumn(3).setPreferredWidth(120);
         table.getColumnModel().getColumn(4).setPreferredWidth(100); 
 
-        // Gắn Renderer xử lý màu nền, Hover và Trạng thái Khóa
         CustomRowRenderer rowRenderer = new CustomRowRenderer();
         for (int i = 0; i < 4; i++) {
             table.getColumnModel().getColumn(i).setCellRenderer(rowRenderer);
         }
-        // Gắn Renderer vẽ Icon cho cột cuối cùng
         table.getColumnModel().getColumn(4).setCellRenderer(new ActionRenderer());
 
-        // Bắt sự kiện Hover chuột đổi màu nền
         table.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
@@ -169,7 +160,6 @@ public class NCCPanel extends JPanel {
             }
         });
 
-        // Bắt sự kiện Click chuột vào nút Sửa/Xóa/Mở khóa
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseExited(MouseEvent e) {
@@ -190,17 +180,14 @@ public class NCCPanel extends JPanel {
                     String maNCC = tableModel.getValueAt(row, 0).toString();
                     NCCDTO ncc = nccBus.timNccTheoTen(tableModel.getValueAt(row, 1).toString());
                     
-                    // CẬP NHẬT MỚI DỰA THEO DATABASE: getIsDeleted() == 1 là bị khóa
                     boolean isLocked = (ncc != null && ncc.getIsDeleted() == 1);
 
                     if (isLocked) {
-                        // Vùng click của Ổ Khóa (Giữa ô)
                         int lockX = w / 2 - 6;
                         if (clickX >= lockX - 10 && clickX <= lockX + 26) {
                             handleUnlock(maNCC);
                         }
                     } else {
-                        // Vùng click của nút Sửa (Trái) và Xóa (Phải)
                         int editX = w / 2 - 25;
                         int delX = w / 2 + 10;
                         if (clickX >= editX - 5 && clickX <= editX + 23) {
@@ -302,7 +289,6 @@ public class NCCPanel extends JPanel {
         }
     }
 
-    // --- HÀM XỬ LÝ MỞ KHÓA BẰNG PASSWORD ---
     private void handleUnlock(String maNCC) {
         JPasswordField pf = new JPasswordField();
         Object[] message = {
@@ -315,11 +301,10 @@ public class NCCPanel extends JPanel {
         if (option == JOptionPane.OK_OPTION) {
             String pass = new String(pf.getPassword());
             
-            // Password mặc định là admin, sau này có thể kết nối với AuthService
             if (pass.equals("admin")) { 
                 if (nccBus.moKhoaNCC(maNCC)) {
                     JOptionPane.showMessageDialog(this, "Mở khóa thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
-                    search(); // Load lại bảng để bỏ màu xám
+                    search(); 
                 } else {
                     JOptionPane.showMessageDialog(this, "Lỗi kết nối cơ sở dữ liệu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 }
@@ -342,7 +327,7 @@ public class NCCPanel extends JPanel {
         JPanel glassPane = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
-                g.setColor(new Color(0, 0, 0, 100)); // Màu đen mờ 100/255
+                g.setColor(new Color(0, 0, 0, 100)); 
                 g.fillRect(0, 0, getWidth(), getHeight());
             }
         };
@@ -354,10 +339,9 @@ public class NCCPanel extends JPanel {
         dialog.setVisible(true); 
 
         glassPane.setVisible(false); 
-        search(); // Load lại data lỡ có thay đổi
+        search();
     }
 
-    // Class vẽ Panel bo góc
     class RoundedPanel extends JPanel {
         private int radius;
         private Color bgColor;
@@ -378,7 +362,6 @@ public class NCCPanel extends JPanel {
         }
     }
 
-    // --- RENDERER 1: QUẢN LÝ MÀU NỀN CỦA DÒNG BẢNG ---
     class CustomRowRenderer extends DefaultTableCellRenderer {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -390,15 +373,12 @@ public class NCCPanel extends JPanel {
                 ncc = nccBus.timNccTheoTen(tenNCC);
             } catch (Exception e){}
 
-            // CẬP NHẬT: Kiểm tra bằng isDeleted == 1
             boolean isLocked = (ncc != null && ncc.getIsDeleted() == 1);
 
             if (isLocked) {
-                // Nếu bị khóa: Nền xám, Chữ xám mờ (Trông như đã bị vô hiệu hóa)
                 c.setBackground(Color.decode("#F1F5F9")); 
                 c.setForeground(Color.decode("#94A3B8")); 
             } else {
-                // Nếu bình thường: Chọn thì xám đậm, Hover thì xám nhạt, Chữ đen
                 c.setForeground(Color.decode("#1E293B"));
                 if (isSelected) c.setBackground(Color.decode("#E2E8F0"));
                 else if (row == hoveredRow) c.setBackground(Color.decode("#F1F5F9"));
@@ -412,7 +392,6 @@ public class NCCPanel extends JPanel {
         }
     }
 
-    // --- RENDERER 2: VẼ ICON SỬA/XÓA HOẶC Ổ KHÓA TÙY VÀO DỮ LIỆU ---
     class ActionRenderer extends JPanel implements TableCellRenderer {
         private boolean isLockedRow = false;
 
@@ -423,11 +402,9 @@ public class NCCPanel extends JPanel {
             try {
                 String tenNCC = tableModel.getValueAt(row, 1).toString();
                 NCCDTO ncc = nccBus.timNccTheoTen(tenNCC);
-                // CẬP NHẬT: Kiểm tra bằng isDeleted == 1
                 isLockedRow = (ncc != null && ncc.getIsDeleted() == 1);
             } catch (Exception e){ isLockedRow = false; }
 
-            // Đồng bộ màu nền với CustomRowRenderer
             if (isLockedRow) setBackground(Color.decode("#F1F5F9"));
             else if (isSelected) setBackground(Color.decode("#E2E8F0"));
             else if (row == hoveredRow) setBackground(Color.decode("#F1F5F9"));
@@ -447,29 +424,25 @@ public class NCCPanel extends JPanel {
             int iconSize = 18;
 
             if (isLockedRow) {
-                // VẼ Ổ KHÓA NẾU NHÀ CUNG CẤP BỊ XÓA MỀM
                 int lockX = w / 2 - 6;
                 int lockY = (h - 14) / 2;
-                g2.setColor(Color.decode("#64748B")); // Màu xám tối
+                g2.setColor(Color.decode("#64748B")); 
                 g2.setStroke(new BasicStroke(1.5f));
                 
-                g2.drawRoundRect(lockX, lockY + 5, 12, 9, 2, 2); // Thân ổ khóa
-                g2.drawArc(lockX + 2, lockY, 8, 10, 0, 180); // Còng khóa phía trên
-                g2.drawLine(lockX + 6, lockY + 8, lockX + 6, lockY + 11); // Lỗ cắm chìa khóa
+                g2.drawRoundRect(lockX, lockY + 5, 12, 9, 2, 2); 
+                g2.drawArc(lockX + 2, lockY, 8, 10, 0, 180);
+                g2.drawLine(lockX + 6, lockY + 8, lockX + 6, lockY + 11); 
             } else {
-                // VẼ ICON SỬA & XÓA BÌNH THƯỜNG
                 int editX = w / 2 - 25; 
                 int editY = (h - iconSize) / 2;
                 int delX = w / 2 + 10;
                 int delY = (h - iconSize) / 2;
 
-                // Nút Sửa (Xanh lá)
                 g2.setColor(Color.decode("#16A34A"));
                 g2.setStroke(new BasicStroke(1.5f)); 
                 g2.drawRoundRect(editX, editY, iconSize, iconSize, 4, 4); 
                 g2.drawLine(editX + 5, editY + 13, editX + 13, editY + 5); 
 
-                // Nút Xóa (Đỏ)
                 g2.setColor(Color.decode("#DC2626"));
                 g2.setStroke(new BasicStroke(1.5f));
                 g2.drawRect(delX + 7, delY + 2, 4, 3); 
