@@ -10,6 +10,9 @@ public class loaiBUS {
 
     private loaiDAO dao = new loaiDAO();
     private List<loaiDTO> dsLoai = new ArrayList<>();
+    
+    // Thêm đối tượng LogBUS
+    private LogBUS logBUS = new LogBUS();
 
     public loaiBUS() {
         dsLoai = dao.getAll();
@@ -18,6 +21,7 @@ public class loaiBUS {
     public List<loaiDTO> getAll() {
         return dsLoai;
     }
+    
     public List<loaiDTO> timKiem(String tieuChi, String keyword) {
         List<loaiDTO> result = new ArrayList<>();
         String key = keyword.toLowerCase().trim();
@@ -53,6 +57,8 @@ public class loaiBUS {
             }
         }
         dsLoai.add(loai);
+        // Ghi log khi thêm thành công
+        logBUS.ghiNhatKy("Thêm", "Loại", "Thêm loại mã: " + loai.getMaLoai());
         return true;
     }
 
@@ -60,6 +66,8 @@ public class loaiBUS {
         for (int i = 0; i < dsLoai.size(); i++) {
             if (dsLoai.get(i).getMaLoai().equalsIgnoreCase(loai.getMaLoai())) {
                 dsLoai.set(i, loai);
+                // Ghi log khi sửa thành công
+                logBUS.ghiNhatKy("Sửa", "Loại", "Sửa loại mã: " + loai.getMaLoai());
                 return true;
             }
         }
@@ -67,7 +75,13 @@ public class loaiBUS {
     }
 
     public boolean xoa(String maLoai) {
-        return dsLoai.removeIf(l -> l.getMaLoai().equalsIgnoreCase(maLoai));
+        // Tách ra để kiểm tra kết quả xóa thành công hay không trước khi return
+        boolean ketQua = dsLoai.removeIf(l -> l.getMaLoai().equalsIgnoreCase(maLoai));
+        if (ketQua) {
+            // Ghi log khi xóa thành công
+            logBUS.ghiNhatKy("Xóa", "Loại", "Xóa loại mã: " + maLoai);
+        }
+        return ketQua;
     }
 
     public boolean saveToDatabase() {

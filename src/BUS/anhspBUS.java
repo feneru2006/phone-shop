@@ -9,6 +9,9 @@ public class anhspBUS {
 
     private anhspDAO dao = new anhspDAO();
     private ArrayList<anhspDTO> list;
+    
+    // Thêm đối tượng LogBUS
+    private LogBUS logBUS = new LogBUS();
 
     public anhspBUS() {
         list = dao.getAll();
@@ -26,6 +29,8 @@ public class anhspBUS {
         }
 
         list.add(a);
+        // Ghi log khi thêm thành công
+        logBUS.ghiNhatKy("Thêm", "Ảnh Sản Phẩm", "Thêm ảnh mã: " + a.getMaAnh());
         return true;
     }
 
@@ -34,6 +39,8 @@ public class anhspBUS {
         for (int i = 0; i < list.size(); i++) {
             if (list.get(i).getMaAnh().equals(a.getMaAnh())) {
                 list.set(i, a);
+                // Ghi log khi sửa thành công
+                logBUS.ghiNhatKy("Sửa", "Ảnh Sản Phẩm", "Sửa ảnh mã: " + a.getMaAnh());
                 return true;
             }
         }
@@ -45,6 +52,8 @@ public class anhspBUS {
         for (int i = 0; i < list.size(); i++) {
             if (list.get(i).getMaAnh().equals(maAnh)) {
                 list.remove(i);
+                // Ghi log khi xóa thành công
+                logBUS.ghiNhatKy("Xóa", "Ảnh Sản Phẩm", "Xóa ảnh mã: " + maAnh);
                 return true;
             }
         }
