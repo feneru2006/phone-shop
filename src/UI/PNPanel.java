@@ -1,4 +1,4 @@
-package UI.Panel.PN;
+package UI;
 
 import BUS.CtspBUS;
 import BUS.NCCBUS;
@@ -184,7 +184,6 @@ public class PNPanel extends JPanel {
 
                 if (maSP.isEmpty() || imei.isEmpty() || soLuongStr.isEmpty()) continue; 
 
-                // 👉 CHỐT CHẶN: KIỂM TRA ĐỒNG NHẤT MÃ NHÂN VIÊN VÀ NHÀ CUNG CẤP TRÊN TOÀN BỘ FILE
                 if (maNV.isEmpty()) {
                     maNV = currentRowNV;
                 } else if (!maNV.equals(currentRowNV)) {
@@ -314,7 +313,6 @@ public class PNPanel extends JPanel {
         filterPanel.add(createLabel("Từ ngày (dd/MM/yyyy):"));
         JPanel pTuNgay = new JPanel(new BorderLayout()); pTuNgay.setOpaque(false);
         txtTuNgay = new JTextField();
-        // 👉 ĐÃ KHÔI PHỤC SỰ KIỆN NÚT LỊCH TỪ NGÀY
         JButton btnCal1 = new JButton("📅"); btnCal1.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnCal1.addActionListener(e -> showDatePicker(txtTuNgay)); 
         pTuNgay.add(txtTuNgay, BorderLayout.CENTER); pTuNgay.add(btnCal1, BorderLayout.EAST);
@@ -325,7 +323,6 @@ public class PNPanel extends JPanel {
         filterPanel.add(createLabel("Đến ngày (dd/MM/yyyy):"));
         JPanel pDenNgay = new JPanel(new BorderLayout()); pDenNgay.setOpaque(false);
         txtDenNgay = new JTextField();
-        // 👉 ĐÃ KHÔI PHỤC SỰ KIỆN NÚT LỊCH ĐẾN NGÀY
         JButton btnCal2 = new JButton("📅"); btnCal2.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnCal2.addActionListener(e -> showDatePicker(txtDenNgay));
         pDenNgay.add(txtDenNgay, BorderLayout.CENTER); pDenNgay.add(btnCal2, BorderLayout.EAST);
@@ -557,7 +554,6 @@ public class PNPanel extends JPanel {
         }
     }
 
-    // 👉 ĐÃ KHÔI PHỤC HÀM HIỂN THỊ LỊCH DATEPICKER
     private void showDatePicker(JTextField targetField) {
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Chọn ngày", true);
         dialog.setSize(300, 280);
