@@ -64,8 +64,63 @@ public class MainFrameTest extends JFrame {
         contentPanel.add(giamgia,"Khuyến mãi");
         KhoPanel khoPanel = new KhoPanel();
         contentPanel.add(khoPanel, "Kho");
-        
+        contentPanel.add(new TaiKhoanUI(), "Tài khoản");
+        contentPanel.add(new PhanQuyenUI(), "Phân quyền");
+
+        applyPermissionsFromDB();
         showCard("Dashboard");
+    }
+
+    private void applyPermissionsFromDB() {
+        if (SessionManager.currentUser == null) return;
+        String roleCode = SessionManager.currentUser.getQuyen();
+        // 1. Nếu là Admin (AD) -> Hiển thị tất cả
+        if (roleCode.equals("AD")) return;
+
+        // 2. Lấy danh sách menu từ DB
+        ArrayList<String> permittedMenus = new ArrayList<>();
+        permittedMenus.add("dashboard"); // Luôn lưu dạng chữ thường để so sánh
+
+        try (Connection conn = DBConnection.getConnection()) {
+            String sql = "SELECT c.tenCN FROM phanquyen p " +
+                    "JOIN chucnang c ON p.MACN = c.MACN " +
+                    "WHERE p.MAQUYEN = ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, roleCode);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                // Ép hết về chữ thường để tránh lỗi hoa/thường
+                permittedMenus.add(rs.getString("tenCN").toLowerCase().trim());
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        // 3. CHẶN CỨNG: Nếu không phải Quản lý (M) -> Xóa 3 mục nhạy cảm
+        if (!roleCode.equals("M")) {
+            permittedMenus.remove("tài khoản");
+            permittedMenus.remove("phân quyền");
+            permittedMenus.remove("nhật ký");
+        }
+        // 4. Gọi hàm lọc với danh sách đã chuẩn hóa
+        filterMenu(permittedMenus);
+    }
+
+    private void filterMenu(ArrayList<String> allowedMenus) {
+        for (Map.Entry<String, NavItem> entry : navItems.entrySet()) {
+            String key = entry.getKey().toLowerCase().trim();
+            NavItem item = entry.getValue();
+
+            // Nếu không có trong danh sách cho phép -> Ẩn
+            if (!allowedMenus.contains(key)) {
+                item.setVisible(false);
+            } else {
+                item.setVisible(true); // Đảm bảo các mục khác được hiện
+            }
+        }
+
+        // QUAN TRỌNG: Làm mới lại toàn bộ Sidebar
+        if (menuContainer != null) {
+            menuContainer.revalidate();
+            menuContainer.repaint();
+        }
     }
 
     private void setupLookAndFeel() {
