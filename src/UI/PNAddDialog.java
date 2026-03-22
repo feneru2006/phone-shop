@@ -1,4 +1,4 @@
-package UI.Panel.PN;
+package UI;
 
 import BUS.CtspBUS;
 import BUS.NCCBUS;
@@ -38,7 +38,7 @@ public class PNAddDialog extends JDialog {
     private JLabel lblTotal;
     private double tongTienPhieu = 0;
     
-    private int currentMaxCTPN = 0; // Biến lưu CTPN lớn nhất
+    private int currentMaxCTPN = 0;
 
     public PNAddDialog(JPanel parent, PhieuNhapBUS pnBus, NCCBUS nccBus, List<String> perms) {
         this.pnBus = pnBus;
@@ -51,7 +51,6 @@ public class PNAddDialog extends JDialog {
         setModal(true);
         setLayout(new BorderLayout(10, 10)); 
 
-        // 👉 TỰ ĐỘNG TÌM MÃ CTPN LỚN NHẤT TRONG DB
         for(ChitietSPDTO ct : ctspBus.getListCtsp()) {
             if(ct.getMaCTPN() != null && ct.getMaCTPN().startsWith("CTPN")) {
                 try {
@@ -301,7 +300,6 @@ public class PNAddDialog extends JDialog {
                 }
             }
 
-            // 👉 THUẬT TOÁN ĐỊNH DANH MÃ CTPN KHÔNG BAO GIỜ LỖI
             boolean foundCTPN = false;
             String assignedCTPN = "";
             for (CTphieunhapDTO ctpn : cartList) {
@@ -333,7 +331,7 @@ public class PNAddDialog extends JDialog {
                 ChitietSPDTO ctsp = new ChitietSPDTO();
                 ctsp.setMaCTSP("IMEI" + (startImeiNum + i));
                 ctsp.setMaSP(maSP);
-                ctsp.setMaCTPN(assignedCTPN); // Gán CTPN chuẩn
+                ctsp.setMaCTPN(assignedCTPN); 
                 ctsp.setTinhtrang("Sẵn có");
                 imeiListToSave.add(ctsp);
             }
