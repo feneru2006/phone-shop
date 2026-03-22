@@ -64,8 +64,10 @@ public class MainFrameTest extends JFrame {
         contentPanel.add(giamgia,"Khuyến mãi");
         KhoPanel khoPanel = new KhoPanel();
         contentPanel.add(khoPanel, "Kho");
-        contentPanel.add(new TaiKhoanUI(), "Tài khoản");
-        contentPanel.add(new PhanQuyenUI(), "Phân quyền");
+        TaiKhoanUI taiKhoanUI = new TaiKhoanUI();
+        contentPanel.add(taiKhoanUI, "Tài khoản");
+        PhanQuyenUI phanQuyenUI = new PhanQuyenUI();
+        contentPanel.add(phanQuyenUI, "Phân quyền");
 
         applyPermissionsFromDB();
         showCard("Dashboard");
