@@ -1,12 +1,16 @@
 package DTO;
+
 public class ChitietSPDTO {
     private String maCTSP;
     private String maSP;
     private String maNCC;
     private String Tinhtrang; 
     private String maCTPN;
+    private int isDeleted; 
 
-    public ChitietSPDTO() {}
+    public ChitietSPDTO() {
+        this.isDeleted = 0;
+    }
 
     public ChitietSPDTO(String maCTSP, String maSP, String maNCC, String Tinhtrang, String maCTPN) {
         this.maCTSP = maCTSP;
@@ -14,6 +18,7 @@ public class ChitietSPDTO {
         this.maNCC = maNCC;
         this.Tinhtrang = Tinhtrang;
         this.maCTPN = maCTPN;
+        this.isDeleted = 0;
     }
 
     public String getMaCTSP() { return maCTSP; }
@@ -31,4 +36,6 @@ public class ChitietSPDTO {
     public String getMaCTPN() { return maCTPN; }
     public void setMaCTPN(String maCTPN) { this.maCTPN = maCTPN; }
 
+    public int getIsDeleted() { return isDeleted; }
+    public void setIsDeleted(int isDeleted) { this.isDeleted = isDeleted; }
 }
