@@ -118,37 +118,51 @@ public class PhieuNhapDAO {
         return result;
     }
 
-    public boolean update(phieunhapDTO pn) {
-        String sql = "UPDATE phieunhap SET MANV=?, tongtien=?, MANCC=? WHERE MAPNH=?";
-        
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            
-            ps.setString(1, pn.getMaNV());
-            ps.setDouble(2, pn.getTongTien());
-            ps.setString(3, pn.getMaNCC());
-            ps.setString(4, pn.getMaPNH());
-            
-            return ps.executeUpdate() > 0;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
+    public boolean huyPhieuNhap(String maPNH) {
+        Connection conn = null;
+        try {
+            conn = DBConnection.getConnection();
+            conn.setAutoCommit(false); 
+            String sqlTruTonKho = "UPDATE sanpham sp JOIN ctphieunhap ct ON sp.MASP = ct.MASP " +
+                                  "SET sp.SLton = sp.SLton - ct.SL " +
+                                  "WHERE ct.MAPNH = ?";
+            try (PreparedStatement psTruKho = conn.prepareStatement(sqlTruTonKho)) {
+                psTruKho.setString(1, maPNH);
+                psTruKho.executeUpdate();
+            }
 
-    public boolean delete(String maPNH) {
-        String sql = "DELETE FROM phieunhap WHERE MAPNH=?";
-        
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            
-            ps.setString(1, maPNH);
-            return ps.executeUpdate() > 0;
+            String sqlXoaIMEI = "DELETE FROM ctsp WHERE MACTPN IN (SELECT MACTPN FROM ctphieunhap WHERE MAPNH = ?)";
+            try (PreparedStatement psXoaIMEI = conn.prepareStatement(sqlXoaIMEI)) {
+                psXoaIMEI.setString(1, maPNH);
+                psXoaIMEI.executeUpdate();
+            }
+
+            String sqlXoaCT = "DELETE FROM ctphieunhap WHERE MAPNH = ?";
+            try (PreparedStatement psXoaCT = conn.prepareStatement(sqlXoaCT)) {
+                psXoaCT.setString(1, maPNH);
+                psXoaCT.executeUpdate();
+            }
+
+            String sqlXoaPN = "DELETE FROM phieunhap WHERE MAPNH = ?";
+            try (PreparedStatement psXoaPN = conn.prepareStatement(sqlXoaPN)) {
+                psXoaPN.setString(1, maPNH);
+                psXoaPN.executeUpdate();
+            }
+
+            conn.commit(); 
+            return true;
+
         } catch (Exception e) {
-            System.out.println("Lỗi Xóa Phiếu Nhập: Dữ liệu đang bị ràng buộc khóa ngoại (Foreign Key)!");
+            if (conn != null) {
+                try { conn.rollback(); } catch (Exception ex) { ex.printStackTrace(); }
+            }
             e.printStackTrace();
+            return false;
+        } finally {
+            if (conn != null) {
+                try { conn.setAutoCommit(true); conn.close(); } catch (Exception e) { e.printStackTrace(); }
+            }
         }
-        return false;
     }
 
     public List<CTphieunhapDTO> getChiTietPhieuNhap(String maPNH) {
@@ -168,6 +182,7 @@ public class PhieuNhapDAO {
                 ct.setMaPNH(rs.getString("MAPNH"));
                 ct.setSl(rs.getInt("SL"));
                 ct.setDonGia(rs.getDouble("dongia"));
+                ct.setThanhTien(rs.getInt("SL") * rs.getDouble("dongia")); 
                 listCT.add(ct);
             }
         } catch (Exception e) {
@@ -196,5 +211,4 @@ public class PhieuNhapDAO {
         }
         return tongTien;
     }
-
 }
