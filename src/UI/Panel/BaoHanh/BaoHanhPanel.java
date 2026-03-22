@@ -65,14 +65,6 @@ private void initUI() {
 
     /* ===== BUTTON ADD ===== */
 
-    JButton btnAdd = new JButton("+ THÊM");
-    btnAdd.setBackground(new Color(59,130,246));
-    btnAdd.setForeground(Color.WHITE);
-    btnAdd.setFocusPainted(false);
-    btnAdd.setBorder(BorderFactory.createEmptyBorder(8,16,8,16));
-    btnAdd.setCursor(new Cursor(Cursor.HAND_CURSOR));
-    btnAdd.addActionListener(e -> openAddDialog());
-
     /* ===== TOP PANEL ===== */
 
     JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
@@ -83,7 +75,6 @@ private void initUI() {
     right.setBackground(Color.WHITE);
     right.add(new JLabel("Tìm kiếm:"));
     right.add(txtSearch);
-    right.add(btnAdd);
 
     JPanel top = new JPanel(new BorderLayout());
     top.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));

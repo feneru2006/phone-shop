@@ -1,4 +1,5 @@
 package DAL.DAO;
+import DAL.DAO.DBConnection;
 import DTO.nhanvienDTO;
 import java.sql.*;
 import java.util.ArrayList;
@@ -11,14 +12,33 @@ public class NhanVienDAO {
         String sql = "SELECT * FROM nhanvien";
         try (Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
+                
+                String gtDB = rs.getString("gioitinh");
+                nhanvienDTO.GioiTinh enumGT = nhanvienDTO.GioiTinh.NAM; 
+                
+                if (gtDB != null) {
+                    // Nếu DB ghi là "Nữ" hoặc "Nu" thì chuyển thành enum NU
+                    if (gtDB.equalsIgnoreCase("Nữ") || gtDB.equalsIgnoreCase("Nu") || gtDB.equalsIgnoreCase("NỮ")) {
+                        enumGT = nhanvienDTO.GioiTinh.NU; 
+                    }
+                }
+
+                // Bơm dữ liệu vào DTO
                 boolean add = list.add(new nhanvienDTO(
-                        rs.getString("MANV"), rs.getString("hoten"),
-                        nhanvienDTO.GioiTinh.valueOf(rs.getString("gioitinh").toUpperCase()),
-                        rs.getString("SDT"), rs.getString("diachi"),
-                        rs.getDouble("thamnien"), rs.getDouble("luong"), rs.getBoolean("trangthai")
+                    rs.getString("MANV"),
+                    rs.getString("hoten"),
+                    enumGT, 
+                    rs.getString("SDT"),
+                    rs.getString("diachi"),
+                    rs.getDouble("thamnien"),
+                    rs.getDouble("luong"),
+                    rs.getBoolean("trangthai")
                 ));
             }
-        } catch (SQLException e) {}
+        } catch (Exception e) { 
+            System.out.println("====== LỖI Ở NHÂN VIÊN DAO ======");
+            e.printStackTrace(); 
+        }
         return list;
     }
 }

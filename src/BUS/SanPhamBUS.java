@@ -29,34 +29,29 @@ public class SanPhamBUS {
             boolean match = false;
             switch (tieuChi) {
                 case "Mã SP":
-                    if (sp.getMaSP().toLowerCase().contains(key))
-                        match = true;
+                    if (sp.getMaSP().toLowerCase().contains(key)) match = true;
                     break;
                 case "Tên SP":
-                    if (sp.getTenSP().toLowerCase().contains(key))
-                        match = true;
+                    if (sp.getTenSP().toLowerCase().contains(key)) match = true;
                     break;
                 case "Cấu hình":
-                    if (sp.getCauHinh().toLowerCase().contains(key))
-                        match = true;
+                    if (sp.getCauHinh().toLowerCase().contains(key)) match = true;
                     break;
-                default:
-                    if (sp.getMaSP().toLowerCase().contains(key) ||
-                            sp.getTenSP().toLowerCase().contains(key) ||
-                            sp.getCauHinh().toLowerCase().contains(key)) {
+                default: 
+                    if (sp.getMaSP().toLowerCase().contains(key) || 
+                        sp.getTenSP().toLowerCase().contains(key) ||
+                        sp.getCauHinh().toLowerCase().contains(key)) {
                         match = true;
                     }
                     break;
             }
-            if (match)
-                result.add(sp);
+            if (match) result.add(sp);
         }
         return result;
     }
 
     public boolean themSanPham(SanPhamDTO sp) {
-        if (sp.getSlTon() < 0 || sp.getGia() < 0 || sp.getPhanTramLoiNhuan() < 0)
-            return false;
+        if (sp.getSlTon() < 0 || sp.getGia() < 0 || sp.getPhanTramLoiNhuan() < 0) return false;
         for (SanPhamDTO item : dsSanPham) {
             if (item.getMaSP().equalsIgnoreCase(sp.getMaSP())) {
                 return false;
@@ -67,8 +62,7 @@ public class SanPhamBUS {
     }
 
     public boolean suaSanPham(SanPhamDTO sp) {
-        if (sp.getSlTon() < 0 || sp.getGia() < 0 || sp.getPhanTramLoiNhuan() < 0)
-            return false;
+        if (sp.getSlTon() < 0 || sp.getGia() < 0 || sp.getPhanTramLoiNhuan() < 0) return false;
         for (int i = 0; i < dsSanPham.size(); i++) {
             if (dsSanPham.get(i).getMaSP().equalsIgnoreCase(sp.getMaSP())) {
                 dsSanPham.set(i, sp);
@@ -81,7 +75,7 @@ public class SanPhamBUS {
     public boolean xoaSanPham(String maSP) {
         for (SanPhamDTO sp : dsSanPham) {
             if (sp.getMaSP().equalsIgnoreCase(maSP)) {
-                sp.setDeleted(true);
+                sp.setDeleted(true); 
                 return true;
             }
         }
@@ -94,7 +88,7 @@ public class SanPhamBUS {
             boolean exists = false;
             for (SanPhamDTO db : dbList) {
                 if (db.getMaSP().equalsIgnoreCase(sp.getMaSP())) {
-                    spDAO.update(sp);
+                    spDAO.update(sp); 
                     exists = true;
                     break;
                 }
@@ -109,27 +103,25 @@ public class SanPhamBUS {
     public void reload() {
         dsSanPham = spDAO.getAll();
     }
-
-    public double getGiaByMaSP(String maSP) {
-        for (SanPhamDTO sp : dsSanPham) {
-            if (sp.getMaSP().equalsIgnoreCase(maSP) && !sp.isDeleted()) {
-                return sp.getGia();
-            }
+    public SanPhamDTO getById(String maSP) {
+        if (dsSanPham == null || dsSanPham.isEmpty()) {
+        reload();
         }
+
+        for (SanPhamDTO sp : dsSanPham) {
+        if (sp.getMaSP().equalsIgnoreCase(maSP)) {
+        return sp;
+        }
+    }
+    return null;
+    }
+   public double getGiaByMaSP(String maSP){
+    SanPhamDTO sp = getById(maSP);
+
+    if(sp == null){
         throw new RuntimeException("Không tìm thấy sản phẩm: " + maSP);
     }
 
-    public SanPhamDTO getById(String maSP) {
-
-        if (dsSanPham == null || dsSanPham.isEmpty()) {
-            reload();
-        }
-
-        for (SanPhamDTO sp : dsSanPham) {
-            if (sp.getMaSP().equalsIgnoreCase(maSP)) {
-                return sp;
-            }
-        }
-        throw new RuntimeException("Không tìm thấy sản phẩm: " + maSP);
+    return sp.getGia();
     }
 }

@@ -1,23 +1,26 @@
 package UI;
 
-
+import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.FlatLightLaf;
 import BUS.AuthService;
 import DTO.accountDTO;
-import Utility.SecurityPass;
-import Utility.Validator;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
 public class LoginFrame extends JFrame {
     private JTextField txtUsername;
     private JPasswordField txtPassword;
     private JButton btnLogin;
-    private JCheckBox checkPassword;
     private final AuthService authService = new AuthService();
+
+    // --- BẢNG MÀU CHUẨN ---
+    private static final Color BG_DARK = Color.decode("#0F172A");    // Nền tối đậm (Bên trái)
+    private static final Color ACCENT_BLUE = Color.decode("#2563EB"); // Xanh dương nút bấm
+    private static final Color TEXT_LABEL = Color.decode("#1E293B");  // Màu chữ chính
+    private static final Color TEXT_SUB = Color.decode("#64748B");    // Màu chữ phụ
 
     public LoginFrame() {
         setupLookAndFeel();
@@ -27,95 +30,157 @@ public class LoginFrame extends JFrame {
     private void setupLookAndFeel() {
         try {
             FlatLightLaf.setup();
-            UIManager.put("Button.arc", 10);
-            UIManager.put("Component.arc", 10);
-        } catch (Exception ignored) {}
+            UIManager.put("defaultFont", new Font("Segoe UI", Font.PLAIN, 14));
+            UIManager.put("Button.arc", 15); // Bo góc nút
+            UIManager.put("Component.arc", 15); // Bo góc ô text
+            UIManager.put("TextComponent.arc", 15);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void initUI() {
-        setTitle("HỆ THỐNG QUẢN LÝ PHONE SHOP");
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(400, 500);
+        setTitle("Đăng nhập - Phone Shop Nhóm 4");
+        setSize(850, 500); // Kích thước rộng hơn để chia đôi màn hình
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBackground(Color.WHITE);
-        panel.setBorder(new EmptyBorder(40, 40, 40, 40));
+        // Panel chính chia làm 2 cột
+        JPanel mainPanel = new JPanel(new GridLayout(1, 2));
 
-        JLabel lblTitle = new JLabel("ĐĂNG NHẬP", SwingConstants.CENTER);
+        // ==========================================
+        // CỘT TRÁI: BRANDING (THƯƠNG HIỆU)
+        // ==========================================
+        JPanel leftPanel = new JPanel(new GridBagLayout());
+        leftPanel.setBackground(BG_DARK);
+        
+        GridBagConstraints gbcLeft = new GridBagConstraints();
+        gbcLeft.gridx = 0;
+        gbcLeft.gridy = GridBagConstraints.RELATIVE;
+        gbcLeft.insets = new Insets(10, 0, 10, 0);
+        gbcLeft.anchor = GridBagConstraints.CENTER;
+
+        // Có thể thay thế icon biểu tượng bằng hình ảnh thật (ImageIcon)
+        JLabel lblLogo = new JLabel("📱");
+        lblLogo.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 80));
+        lblLogo.setForeground(Color.WHITE);
+        
+        JLabel lblShopName = new JLabel("PHONE SHOP NHÓM 4");
+        lblShopName.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        lblShopName.setForeground(Color.WHITE);
+        
+        JLabel lblSlogan = new JLabel("Hệ thống quản lý cửa hàng điện thoại");
+        lblSlogan.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lblSlogan.setForeground(new Color(255, 255, 255, 180));
+
+        leftPanel.add(lblLogo, gbcLeft);
+        leftPanel.add(lblShopName, gbcLeft);
+        leftPanel.add(lblSlogan, gbcLeft);
+
+
+        // ==========================================
+        // CỘT PHẢI: FORM ĐĂNG NHẬP
+        // ==========================================
+        JPanel rightPanel = new JPanel(new GridBagLayout());
+        rightPanel.setBackground(Color.WHITE);
+        
+        JPanel formPanel = new JPanel();
+        formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
+        formPanel.setBackground(Color.WHITE);
+        formPanel.setBorder(new EmptyBorder(40, 50, 40, 50));
+
+        // Tiêu đề form
+        JLabel lblTitle = new JLabel("Chào mừng trở lại!");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        lblTitle.setAlignmentX(Component.LEFT_ALIGNMENT); 
-        lblTitle.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40)); 
+        lblTitle.setForeground(TEXT_LABEL);
+        lblTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel lblUser = new JLabel("Tên đăng nhập:");
-        lblUser.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JLabel lblSubTitle = new JLabel("Vui lòng đăng nhập vào tài khoản của bạn.");
+        lblSubTitle.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lblSubTitle.setForeground(TEXT_SUB);
+        lblSubTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+        lblSubTitle.setBorder(new EmptyBorder(5, 0, 30, 0));
 
+        // Tên đăng nhập
+        JLabel lblUser = new JLabel("Tên đăng nhập");
+        lblUser.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblUser.setForeground(TEXT_LABEL);
+        
         txtUsername = new JTextField();
+        txtUsername.setPreferredSize(new Dimension(300, 40));
         txtUsername.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        txtUsername.setAlignmentX(Component.LEFT_ALIGNMENT);
+        // FlatLaf Properties: Thêm chữ mờ và nút xóa nhanh (Clear button)
+        txtUsername.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tài khoản của bạn...");
+        txtUsername.putClientProperty(FlatClientProperties.TEXT_FIELD_SHOW_CLEAR_BUTTON, true);
 
-        JLabel lblPass = new JLabel("Mật khẩu:");
-        lblPass.setAlignmentX(Component.LEFT_ALIGNMENT);
-
+        // Mật khẩu
+        JLabel lblPass = new JLabel("Mật khẩu");
+        lblPass.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblPass.setForeground(TEXT_LABEL);
+        lblPass.setBorder(new EmptyBorder(15, 0, 0, 0)); // Tạo khoảng cách với ô trên
+        
         txtPassword = new JPasswordField();
+        txtPassword.setPreferredSize(new Dimension(300, 40));
         txtPassword.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        txtPassword.setAlignmentX(Component.LEFT_ALIGNMENT);
+        // FlatLaf Properties: Thêm nút con mắt hiện/ẩn mật khẩu
+        txtPassword.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập mật khẩu...");
+        txtPassword.putClientProperty(FlatClientProperties.STYLE, "showRevealButton: true");
 
-        checkPassword = new JCheckBox("Hiện mật khẩu");
-        checkPassword.setBackground(Color.WHITE);
-        checkPassword.setAlignmentX(Component.LEFT_ALIGNMENT);
-        checkPassword.addActionListener(e -> {
-            if(checkPassword.isSelected()){
-                txtPassword.setEchoChar((char)0);
-            } else {
-                txtPassword.setEchoChar('⬤');
-            }
-        });
-
+        // Nút đăng nhập
         btnLogin = new JButton("ĐĂNG NHẬP");
-        btnLogin.setBackground(Color.decode("#2563EB"));
+        btnLogin.setBackground(ACCENT_BLUE);
         btnLogin.setForeground(Color.WHITE);
+        btnLogin.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnLogin.setPreferredSize(new Dimension(300, 45));
         btnLogin.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
-        btnLogin.setAlignmentX(Component.LEFT_ALIGNMENT);
         btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnLogin.addActionListener(this::handleLogin);
+        // Bỏ viền focus khi click
+        btnLogin.setFocusPainted(false); 
 
-        panel.add(lblTitle);
-        panel.add(Box.createVerticalStrut(40));
-        panel.add(lblUser);
-        panel.add(txtUsername);
-        panel.add(Box.createVerticalStrut(20));
-        panel.add(lblPass);
-        panel.add(txtPassword);
-        panel.add(Box.createVerticalStrut(10));
-        panel.add(checkPassword);
-        panel.add(Box.createVerticalStrut(30));
-        panel.add(btnLogin);
+        // Ráp các thành phần vào form
+        formPanel.add(lblTitle);
+        formPanel.add(lblSubTitle);
+        
+        formPanel.add(lblUser);
+        formPanel.add(Box.createVerticalStrut(5));
+        formPanel.add(txtUsername);
+        
+        formPanel.add(lblPass);
+        formPanel.add(Box.createVerticalStrut(5));
+        formPanel.add(txtPassword);
+        
+        formPanel.add(Box.createVerticalStrut(30));
+        formPanel.add(btnLogin);
 
-        setContentPane(panel);
+        rightPanel.add(formPanel);
+
+        // ==========================================
+        // THÊM VÀO MAIN PANEL
+        // ==========================================
+        mainPanel.add(leftPanel);
+        mainPanel.add(rightPanel);
+
+        setContentPane(mainPanel);
     }
 
     private void handleLogin(ActionEvent e) {
         String user = txtUsername.getText().trim();
         String pass = new String(txtPassword.getPassword());
 
-        if (Validator.isNullOrEmpty(user)) {
-            JOptionPane.showMessageDialog(this, Validator.requiredMessage("Tên đăng nhập"));
+        if (user.isEmpty() || pass.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin!", "Thông báo", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         accountDTO account = authService.login(user, pass);
         if (account != null) {
-            new MainFrameTest().setVisible(true);
+            // Thay đổi sang giao diện chính của bạn
+            new MainFrameTest(account.getTen(), account.getQuyen()).setVisible(true);
             this.dispose();
         } else {
-            JOptionPane.showMessageDialog(this, "Tài khoản hoặc mật khẩu không chính xác!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Sai tài khoản hoặc mật khẩu!", "Lỗi đăng nhập", JOptionPane.ERROR_MESSAGE);
         }
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
     }
 }

@@ -18,7 +18,7 @@ public class KhuyenMaiPanel extends JPanel {
     private giamgiaBUS ggBUS = new giamgiaBUS();
 
     private int currentPage = 1;
-    private int rowsPerPage = 5;
+    private int rowsPerPage = 8;
     private int totalPages = 1;
 
     private JButton btnPrev;

@@ -36,4 +36,29 @@ public class HoaDonDAO {
         // ... (Viết ResultSet mapping tương tự getAll)
         return list;
     }
+
+    public ArrayList<DTO.hoadonDTO> getAll() {
+        ArrayList<DTO.hoadonDTO> list = new ArrayList<>();
+        String sql = "SELECT * FROM hoadon"; //lấy dữ liệu từ database ở bảng hoadon
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                DTO.hoadonDTO hd = new DTO.hoadonDTO();
+                // Bơm dữ liệu từ Database vào DTO
+                hd.setMaHD(rs.getString("MAHD"));
+                hd.setMaKH(rs.getString("MAKH"));
+                hd.setMaNV(rs.getString("MANV"));
+                hd.setNgayLap(rs.getTimestamp("NGAYLAP").toLocalDateTime()); 
+                hd.setTongTien(rs.getDouble("TONGTIEN")); 
+                
+                list.add(hd);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 }

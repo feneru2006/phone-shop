@@ -26,22 +26,22 @@ import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
-import BUS.HangSXBUS;
-import DTO.hangsxDTO;
+import BUS.loaiBUS;
+import DTO.loaiDTO;
 
-public class HangSXPanel extends JPanel {
+public class LoaiPanel extends JPanel {
     private JTable table;
     private DefaultTableModel model;
-    private JTextField txtMaNSX, txtTenNSX, txtTimKiem;
+    private JTextField txtMaLoai, txtDanhMuc, txtTimKiem;
     private JComboBox<String> cbTieuChi;
-    private HangSXBUS bus = new HangSXBUS();
+    private loaiBUS bus = new loaiBUS();
 
-    public HangSXPanel() {
+    public LoaiPanel() {
         setLayout(new BorderLayout(15, 15));
         setBackground(Color.decode("#F8FAFF"));
         setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        JLabel lblTitle = new JLabel("Quản lý Hãng Sản Xuất");
+        JLabel lblTitle = new JLabel("Quản lý Loại Sản Phẩm");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
         add(lblTitle, BorderLayout.NORTH);
 
@@ -65,15 +65,15 @@ public class HangSXPanel extends JPanel {
         JPanel pnlFields = new JPanel(new GridLayout(1, 4, 15, 15));
         pnlFields.setBackground(Color.WHITE);
         pnlFields.setBorder(new CompoundBorder(
-            BorderFactory.createTitledBorder(new LineBorder(Color.GRAY, 1), "Thông Tin Hãng"),
+            BorderFactory.createTitledBorder(new LineBorder(Color.GRAY, 1), "Thông Tin Danh Mục"),
             new EmptyBorder(15, 20, 15, 20)
         ));
 
-        txtMaNSX = new JTextField();
-        txtTenNSX = new JTextField();
+        txtMaLoai = new JTextField();
+        txtDanhMuc = new JTextField();
 
-        pnlFields.add(taoNhan("Mã Hãng SX:")); pnlFields.add(txtMaNSX);
-        pnlFields.add(taoNhan("Tên Thương Hiệu:")); pnlFields.add(txtTenNSX);
+        pnlFields.add(taoNhan("Mã Loại:")); pnlFields.add(txtMaLoai);
+        pnlFields.add(taoNhan("Tên Danh Mục:")); pnlFields.add(txtDanhMuc);
 
         return pnlFields;
     }
@@ -85,13 +85,15 @@ public class HangSXPanel extends JPanel {
         JPanel pnlToolbar = new JPanel(new BorderLayout());
         pnlToolbar.setOpaque(false);
 
+        // Thanh tìm kiếm bên trái
         JPanel pnlSearch = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         pnlSearch.setOpaque(false);
-        cbTieuChi = new JComboBox<>(new String[]{"Tất cả", "Mã NSX", "Tên Thương Hiệu"});
+        cbTieuChi = new JComboBox<>(new String[]{"Tất cả", "Mã Loại", "Tên Danh Mục"});
         txtTimKiem = new JTextField(15);
         JButton btnTim = taoNutBam("Tìm kiếm", "#2563EB");
         pnlSearch.add(cbTieuChi); pnlSearch.add(txtTimKiem); pnlSearch.add(btnTim);
 
+        // Nhóm nút bên phải
         JPanel pnlBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         pnlBtns.setOpaque(false);
         JButton btnThem = taoNutBam("Thêm", "#10B981");
@@ -104,14 +106,18 @@ public class HangSXPanel extends JPanel {
         pnlToolbar.add(pnlSearch, BorderLayout.WEST);
         pnlToolbar.add(pnlBtns, BorderLayout.EAST);
 
-        model = new DefaultTableModel(new String[]{"Mã Hãng SX", "Tên Thương Hiệu"}, 0) {
+
+        model = new DefaultTableModel(new String[]{"Mã Loại", "Tên Danh Mục"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) { return false; }
         };
         table = new JTable(model);
         table.setRowHeight(35);
         
+
         table.getTableHeader().setPreferredSize(new Dimension(0, 40));
+        table.getTableHeader().setResizingAllowed(false);
+        table.getTableHeader().setReorderingAllowed(false);
         DefaultTableCellRenderer headerRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -139,39 +145,40 @@ public class HangSXPanel extends JPanel {
         leftRenderer.setBorder(new EmptyBorder(0, 10, 0, 0));
 
         table.getColumnModel().getColumn(0).setCellRenderer(centerRenderer); 
-        table.getColumnModel().getColumn(1).setCellRenderer(leftRenderer);  
+        table.getColumnModel().getColumn(1).setCellRenderer(leftRenderer);   
 
         pnlBottom.add(pnlToolbar, BorderLayout.NORTH);
         pnlBottom.add(new JScrollPane(table), BorderLayout.CENTER);
+
 
         table.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 int r = table.getSelectedRow();
                 if(r != -1) {
-                    txtMaNSX.setText(model.getValueAt(r, 0).toString());
-                    txtTenNSX.setText(model.getValueAt(r, 1).toString());
+                    txtMaLoai.setText(model.getValueAt(r, 0).toString());
+                    txtDanhMuc.setText(model.getValueAt(r, 1).toString());
                 }
             }
         });
 
         btnThem.addActionListener(e -> {
-            if(bus.them(new hangsxDTO(txtMaNSX.getText(), txtTenNSX.getText()))) {
-                taiDuLieuBang(bus.getAll());
+            if(bus.them(new loaiDTO(txtMaLoai.getText(), txtDanhMuc.getText()))) {
+                taiDuLieuBang(bus.getAll()); 
             } else JOptionPane.showMessageDialog(this, "Thêm thất bại (Trùng mã hoặc rỗng)!");
         });
 
         btnSua.addActionListener(e -> {
-            if(bus.sua(new hangsxDTO(txtMaNSX.getText(), txtTenNSX.getText()))) {
-                taiDuLieuBang(bus.getAll());
+            if(bus.sua(new loaiDTO(txtMaLoai.getText(), txtDanhMuc.getText()))) {
+                taiDuLieuBang(bus.getAll()); 
             } else JOptionPane.showMessageDialog(this, "Sửa thất bại!");
         });
 
         btnXoa.addActionListener(e -> {
-            if(txtMaNSX.getText().isEmpty()) return;
-            if(JOptionPane.showConfirmDialog(this, "Xóa NSX này?") == JOptionPane.YES_OPTION) {
-                if(bus.xoa(txtMaNSX.getText())) {
+            if(txtMaLoai.getText().isEmpty()) return;
+            if(JOptionPane.showConfirmDialog(this, "Xóa loại này?") == JOptionPane.YES_OPTION) {
+                if(bus.xoa(txtMaLoai.getText())) {
                     taiDuLieuBang(bus.getAll());
-                    txtMaNSX.setText(""); txtTenNSX.setText("");
+                    txtMaLoai.setText(""); txtDanhMuc.setText("");
                 } else JOptionPane.showMessageDialog(this, "Xóa thất bại!");
             }
         });
@@ -183,7 +190,7 @@ public class HangSXPanel extends JPanel {
         btnMoi.addActionListener(e -> { 
             bus.reload(); 
             taiDuLieuBang(bus.getAll());
-            txtMaNSX.setText(""); txtTenNSX.setText(""); 
+            txtMaLoai.setText(""); txtDanhMuc.setText(""); 
             txtTimKiem.setText("");
             cbTieuChi.setSelectedIndex(0);
         });
@@ -196,9 +203,9 @@ public class HangSXPanel extends JPanel {
         return pnlBottom;
     }
 
-    private void taiDuLieuBang(List<hangsxDTO> list) {
+    private void taiDuLieuBang(List<loaiDTO> list) {
         model.setRowCount(0);
-        for (hangsxDTO h : list) model.addRow(new Object[]{h.getMaNSX(), h.getTenTH()});
+        for (loaiDTO l : list) model.addRow(new Object[]{l.getMaLoai(), l.getDanhMuc()});
     }
 
     private JButton taoNutBam(String text, String bg) {

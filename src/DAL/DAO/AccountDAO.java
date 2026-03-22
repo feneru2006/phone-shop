@@ -2,6 +2,7 @@ package DAL.DAO;
 
 import DTO.accountDTO;
 import java.sql.*;
+import java.util.ArrayList;
 
 public class AccountDAO {
     public accountDTO findByUsername(String username) {
@@ -40,6 +41,32 @@ public class AccountDAO {
                         rs.getString("pass"),
                         rs.getString("quyen")
                 ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    // ==========================================================
+    // THÊM MỚI: Lấy danh sách tài khoản theo mã quyền
+    // ==========================================================
+    public ArrayList<accountDTO> selectByRole(String maQuyen) {
+        ArrayList<accountDTO> list = new ArrayList<>();
+        String sql = "SELECT * FROM account WHERE quyen = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, maQuyen);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new accountDTO(
+                            rs.getString("id"),
+                            rs.getString("ten"),
+                            rs.getString("pass"),
+                            rs.getString("quyen")
+                    ));
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();

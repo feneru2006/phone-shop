@@ -12,9 +12,10 @@ import java.util.Set;
 
 public class Main {
     // Để TRUE để vào thẳng giao diện chính, FALSE để hiện màn hình đăng nhập
-    private static final boolean DEBUG_MODE = true;
+    private static final boolean DEBUG_MODE = false;
 
     public static void main(String[] args) {
+        System.out.println("Java đang đứng tại: " + new java.io.File(".").getAbsolutePath());
         SwingUtilities.invokeLater(() -> {
             try {
                 // 1. Thiết lập giao diện FlatLaf hiện đại
@@ -55,7 +56,7 @@ public class Main {
                 RolePermission.set(administrator, fullPerms);
 
                 // Mở giao diện chính
-                MainFrameTest main = new MainFrameTest();
+                MainFrameTest main = new MainFrameTest(administrator.getTen(), "Quản trị viên");
                 main.setVisible(true);
                 
                 System.out.println("Đang chạy ở chế độ DEBUG: Đã bỏ qua đăng nhập.");

@@ -1,17 +1,22 @@
 package DTO;
+
 public class NCCDTO {
     private String maNCC;
     private String ten;
     private String diaChi;
     private String sdt;
+    private int isDeleted; 
 
-    public NCCDTO() {}
+    public NCCDTO() {
+        this.isDeleted = 0; 
+    }
 
     public NCCDTO(String maNCC, String ten, String diaChi, String sdt) {
         this.maNCC = maNCC;
         this.ten = ten;
         this.diaChi = diaChi;
         this.sdt = sdt;
+        this.isDeleted = 0;
     }
 
     public String getMaNCC() { return maNCC; }
@@ -26,4 +31,6 @@ public class NCCDTO {
     public String getSdt() { return sdt; }
     public void setSdt(String sdt) { this.sdt = sdt; }
 
+    public int getIsDeleted() { return isDeleted; }
+    public void setIsDeleted(int isDeleted) { this.isDeleted = isDeleted; }
 }
