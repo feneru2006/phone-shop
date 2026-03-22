@@ -5,6 +5,9 @@ import com.formdev.flatlaf.FlatLightLaf;
 import UI.Panel.DashboardPanel;
 import UI.Panel.Sales.KhuyenMaiPanel;
 import UI.Panel.KhoPanel;
+import UI.Panel.LogPanel;
+import UI.Panel.BaoHanh.BaoHanhPanel;
+import UI.Panel.NCC.NCCPanel;
 import UI.Panel.PN.PNPanel;
 import UI.Utils.UIUtils; // Import UIUtils
 import Utility.SessionManager;
@@ -13,6 +16,9 @@ import DAL.DAO.DBConnection;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+
+import org.apache.poi.ss.formula.functions.Log;
+
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -80,7 +86,14 @@ public class MainFrameTest extends JFrame {
         contentPanel.add(sanPhamPanel, "Sản phẩm");
         PNPanel pnPanel = new PNPanel();
         contentPanel.add(pnPanel, "Nhập hàng");
-
+        NCCPanel nccPanel = new NCCPanel();
+        contentPanel.add(nccPanel, "Nhà cung cấp");
+        GiaoDienBanHang banHangPanel = new GiaoDienBanHang();
+        contentPanel.add(banHangPanel, "Bán hàng");
+        BaoHanhPanel baoHanhPanel = new BaoHanhPanel();
+        contentPanel.add(baoHanhPanel, "Bảo hành");
+        // LogPanel logPanel = new LogPanel();
+        // contentPanel.add(logPanel, "Log");
         applyPermissionsFromDB();
         showCard("Dashboard");
     }
@@ -299,7 +312,8 @@ public class MainFrameTest extends JFrame {
     private void initCards() {
         for (String key : navItems.keySet()) {
             if (key.equals("Dashboard") || key.equals("Khuyến mãi") || key.equals("Kho") ||
-             key.equals("Sản phẩm") || key.equals("Nhập hàng")) continue; 
+             key.equals("Sản phẩm") || key.equals("Nhập hàng") || key.equals("Nhà cung cấp") || key.equals("Bán hàng")
+             || key.equals("Bảo hành")) continue; 
 
             JPanel card = new JPanel(new GridBagLayout());
             card.setBackground(Color.WHITE);

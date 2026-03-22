@@ -20,6 +20,7 @@ public class LogPanel extends JPanel {
     private JTextField txtTimKiem;
     private JButton btnTimKiem, btnLamMoi;
 
+    
     // YÊU CẦU: Constructor nhận đường dẫn icon từ bên ngoài
     public LogPanel(String iconPath) {
         logBUS = new LogBUS();
