@@ -32,13 +32,10 @@ public class ReportService {
             throw new RuntimeException("Lỗi tải báo cáo doanh thu tháng", e);
         }
     }
-}
 
     public void xuatHoaDonPDF(DTO.hoadonDTO hd, java.util.ArrayList<DTO.CTHDDTO> dsCTHD, String tenKH, String tenNV) {
-        String path = "HoaDon_" + hd.getMaHD() + ".pdf"; 
-        
-        
-        com.itextpdf.text.Document document = new com.itextpdf.text.Document(com.itextpdf.text.PageSize.A5); 
+        String path = "HoaDon_" + hd.getMaHD() + ".pdf";
+        com.itextpdf.text.Document document = new com.itextpdf.text.Document(com.itextpdf.text.PageSize.A5);
 
         try {
             com.itextpdf.text.pdf.PdfWriter.getInstance(document, new java.io.FileOutputStream(path));
@@ -59,7 +56,7 @@ public class ReportService {
             document.add(new com.itextpdf.text.Paragraph(" ")); // Dòng trống
 
             // 3. Kẻ Bảng Chi tiết sản phẩm (4 cột)
-            com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(4); 
+            com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(4);
             table.setWidthPercentage(100);
             table.setWidths(new float[]{1f, 3f, 3f, 3f}); // Tỷ lệ độ rộng các cột
 
@@ -72,7 +69,7 @@ public class ReportService {
             int stt = 1;
             for (DTO.CTHDDTO ct : dsCTHD) {
                 table.addCell(String.valueOf(stt++));
-                table.addCell(ct.getMaCTSP()); 
+                table.addCell(ct.getMaCTSP());
                 table.addCell(String.format("%,.0f", ct.getDonGia()));
                 table.addCell(String.format("%,.0f", ct.getThanhTien()));
             }
@@ -98,5 +95,4 @@ public class ReportService {
             e.printStackTrace();
         }
     }
-
 }
