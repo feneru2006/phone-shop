@@ -1,4 +1,4 @@
-package UI.Panel.NCC;
+package UI;
 
 import BUS.NCCBUS;
 import DTO.NCCDTO;
@@ -25,7 +25,6 @@ public class NCCDialog extends JDialog {
         this.isEditMode = (ncc != null);
 
         setTitle(isEditMode ? "CẬP NHẬT NHÀ CUNG CẤP" : "THÊM NHÀ CUNG CẤP MỚI");
-        // Tăng chiều rộng và chiều cao Form
         setSize(500, 480);
         setModal(true); 
         setResizable(false);
@@ -39,11 +38,9 @@ public class NCCDialog extends JDialog {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBackground(Color.WHITE);
-        // Tăng padding xung quanh để form nhìn thoáng hơn
         panel.setBorder(new EmptyBorder(30, 40, 30, 40));
 
         txtMaNCC = createTextField();
-        // 👉 LUÔN KHÓA Ô MÃ NCC (Dù là Thêm mới hay Cập nhật để tránh nhập trùng)
         txtMaNCC.setEditable(false);
         txtMaNCC.setBackground(Color.decode("#F1F5F9")); 
         
@@ -51,39 +48,34 @@ public class NCCDialog extends JDialog {
         txtSDT = createTextField();
         txtDiaChi = createTextField();
 
-        // 1. Dòng Mã NCC
         panel.add(createLabel("Mã Nhà Cung Cấp (*Tự sinh):"));
-        panel.add(Box.createVerticalStrut(8)); // Tăng khoảng cách
+        panel.add(Box.createVerticalStrut(8)); 
         panel.add(txtMaNCC);
         panel.add(Box.createVerticalStrut(20));
 
-        // 2. Dòng Tên NCC
         panel.add(createLabel("Tên Nhà Cung Cấp (*):"));
         panel.add(Box.createVerticalStrut(8));
         panel.add(txtTen);
         panel.add(Box.createVerticalStrut(20));
 
-        // 3. Dòng SĐT
         panel.add(createLabel("Số Điện Thoại (*):"));
         panel.add(Box.createVerticalStrut(8));
         panel.add(txtSDT);
         panel.add(Box.createVerticalStrut(20));
 
-        // 4. Dòng Địa chỉ
         panel.add(createLabel("Địa Chỉ:"));
         panel.add(Box.createVerticalStrut(8));
         panel.add(txtDiaChi);
-        panel.add(Box.createVerticalStrut(35)); // Cách xa nút bấm ra một chút
+        panel.add(Box.createVerticalStrut(35)); 
 
-        // 5. Buttons
         JPanel btnPanel = new JPanel(new GridLayout(1, 2, 20, 0));
         btnPanel.setOpaque(false);
-        btnPanel.setAlignmentX(Component.LEFT_ALIGNMENT); // Căn trái cho Panel chứa nút
+        btnPanel.setAlignmentX(Component.LEFT_ALIGNMENT); 
 
         btnCancel = new JButton("Hủy Bỏ");
         btnCancel.setBackground(Color.decode("#F1F5F9"));
         btnCancel.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnCancel.setPreferredSize(new Dimension(0, 40)); // Nút to hơn
+        btnCancel.setPreferredSize(new Dimension(0, 40)); 
         btnCancel.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnCancel.addActionListener(e -> dispose());
 
@@ -91,7 +83,7 @@ public class NCCDialog extends JDialog {
         btnSave.setBackground(Color.decode("#2563EB"));
         btnSave.setForeground(Color.WHITE);
         btnSave.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnSave.setPreferredSize(new Dimension(0, 40)); // Nút to hơn
+        btnSave.setPreferredSize(new Dimension(0, 40)); 
         btnSave.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnSave.addActionListener(e -> saveNCC());
 
@@ -102,26 +94,23 @@ public class NCCDialog extends JDialog {
         setContentPane(panel);
     }
 
-    // Hàm hỗ trợ tạo Label và ép nó căn lề trái
     private JLabel createLabel(String text) {
         JLabel lbl = new JLabel(text);
         lbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
         lbl.setForeground(Color.decode("#334155"));
-        lbl.setAlignmentX(Component.LEFT_ALIGNMENT); // ÉP CĂN TRÁI
+        lbl.setAlignmentX(Component.LEFT_ALIGNMENT); 
         return lbl;
     }
 
-    // Hàm hỗ trợ tạo TextField và ép căn lề trái, kéo giãn hết cỡ
     private JTextField createTextField() {
         JTextField tf = new JTextField();
-        tf.setAlignmentX(Component.LEFT_ALIGNMENT); // ÉP CĂN TRÁI
+        tf.setAlignmentX(Component.LEFT_ALIGNMENT); 
         tf.setPreferredSize(new Dimension(400, 40)); 
-        tf.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40)); // Chiếm full chiều ngang
+        tf.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40)); 
         tf.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         return tf;
     }
 
-    // 👉 THUẬT TOÁN TỰ SINH MÃ NCC
     private String autoGenMaNCC(NCCBUS nccBus) {
         long maxNum = 0;
         for (NCCDTO ncc : nccBus.getListNCC()) {
@@ -142,7 +131,6 @@ public class NCCDialog extends JDialog {
             txtSDT.setText(currentNcc.getSdt());
             txtDiaChi.setText(currentNcc.getDiaChi());
         } else {
-            // 👉 NẾU LÀ THÊM MỚI, GỌI HÀM TỰ SINH MÃ
             txtMaNCC.setText(autoGenMaNCC(nccBus));
         }
     }
