@@ -328,7 +328,7 @@ public class CTSPPanel extends JPanel {
                 ct.getMaCTSP(), 
                 tenSP, 
                 ct.getTinhtrang(), 
-                ct.getMaCTPN() // 👉 Gắn thẳng mã CTPN từ Database lên luôn, không cắt chữ gì nữa
+                ct.getMaCTPN() 
             });
         }
     }
