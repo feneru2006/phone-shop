@@ -6,6 +6,9 @@ import UI.Panel.DashboardPanel;
 import UI.Panel.Sales.KhuyenMaiPanel;
 import UI.Panel.KhoPanel;
 import UI.Utils.UIUtils; // Import UIUtils
+import Utility.SessionManager;
+import Utility.PhanQuyen;
+import DAL.DAO.DBConnection;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -16,6 +19,10 @@ import java.awt.geom.RoundRectangle2D;
 import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.sql.Connection;
 
 public class MainFrameTest extends JFrame {
     private final CardLayout cardLayout = new CardLayout();
