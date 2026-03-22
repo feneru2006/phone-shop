@@ -3,7 +3,7 @@ public class ChitietSPDTO {
     private String maCTSP;
     private String maSP;
     private String maNCC;
-    private String Tinhtrang; // Serial/IMEI
+    private String Tinhtrang; 
     private String maCTPN;
 
     public ChitietSPDTO() {}
