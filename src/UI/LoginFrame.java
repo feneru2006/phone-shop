@@ -176,13 +176,8 @@ public class LoginFrame extends JFrame {
 
         accountDTO account = authService.login(user, pass);
         if (account != null) {
-            //gán dữ liệu này TRƯỚC khi khởi tạo MainFrameTest
-            Utility.SessionManager.currentUser = account;
-
-            // Sau khi đã có thông tin người dùng trong bộ nhớ, mới mở giao diện chính
-            new MainFrameTest().setVisible(true);
-
-            // Đóng giao diện đăng nhập
+            // Thay đổi sang giao diện chính của bạn
+            new MainFrameTest(account.getTen(), account.getQuyen()).setVisible(true);
             this.dispose();
         } else {
             JOptionPane.showMessageDialog(this, "Sai tài khoản hoặc mật khẩu!", "Lỗi đăng nhập", JOptionPane.ERROR_MESSAGE);
