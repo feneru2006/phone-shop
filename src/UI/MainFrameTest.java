@@ -78,10 +78,8 @@ public class MainFrameTest extends JFrame {
         contentPanel.add(giamgia,"Khuyến mãi");
         KhoPanel khoPanel = new KhoPanel();
         contentPanel.add(khoPanel, "Kho");
-        TaiKhoanUI taiKhoanUI = new TaiKhoanUI();
-        contentPanel.add(taiKhoanUI, "Tài khoản");
-        PhanQuyenUI phanQuyenUI = new PhanQuyenUI();
-        contentPanel.add(phanQuyenUI, "Phân quyền");
+        contentPanel.add(new TaiKhoanUI(), "Tài khoản");
+        contentPanel.add(new PhanQuyenUI(), "Phân quyền");
         SanPhamPanel sanPhamPanel = new SanPhamPanel();
         contentPanel.add(sanPhamPanel, "Sản phẩm");
         PNPanel pnPanel = new PNPanel();
@@ -247,7 +245,7 @@ public class MainFrameTest extends JFrame {
         navLabel.setBorder(new EmptyBorder(15, 20, 10, 10));
         container.add(navLabel);
 
-        JPanel menuContainer = new JPanel();
+        menuContainer = new JPanel();
         menuContainer.setLayout(new BoxLayout(menuContainer, BoxLayout.Y_AXIS));
         menuContainer.setOpaque(false);
         menuContainer.setBorder(new EmptyBorder(0, 10, 10, 10));
@@ -329,6 +327,23 @@ public class MainFrameTest extends JFrame {
     }
 
     private void showCard(String name) {
+        if (SessionManager.currentUser == null) {
+            // Nếu chưa có user, vẫn cho hiện Dashboard nhưng bỏ qua kiểm tra quyền
+            navItems.forEach((k, v) -> v.setActive(k.equals(name)));
+            if (pageTitleLabel != null) pageTitleLabel.setText(name);
+            cardLayout.show(contentPanel, name);
+            return;
+        }
+        // ----------------------------------------------
+
+        // Logic kiểm tra quyền
+        String role = SessionManager.currentUser.getQuyen();
+        if (!role.equals("AD") && !role.equals("M")) {
+            if (name.equals("Tài khoản") || name.equals("Phân quyền") || name.equals("Nhật ký")) {
+                JOptionPane.showMessageDialog(this, "Bạn không có quyền truy cập!");
+                return;
+            }
+        }
         navItems.forEach((k, v) -> v.setActive(k.equals(name)));
         if (pageTitleLabel != null) pageTitleLabel.setText(name);
         cardLayout.show(contentPanel, name);

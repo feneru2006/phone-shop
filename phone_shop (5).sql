@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 09, 2026 at 05:22 PM
+-- Generation Time: Mar 23, 2026 at 02:34 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -40,10 +40,10 @@ CREATE TABLE `account` (
 
 INSERT INTO `account` (`id`, `ten`, `pass`, `quyen`) VALUES
 ('NV01', 'admin', '309a205ef98249a04f79fb054cb81d92c348e6b4af2985de5ab939f3dd4f5802', 'AD'),
-('NV02', 'staff01', 'password', 'ST'),
-('NV03', 'staff02', 'password', 'ST'),
-('NV04', 'staff03', 'password', 'ST'),
-('NV05', 'staff04', 'password', 'ST');
+('NV02', 'staff01', '309a205ef98249a04f79fb054cb81d92c348e6b4af2985de5ab939f3dd4f5802', 'M'),
+('NV03', 'staff02', '309a205ef98249a04f79fb054cb81d92c348e6b4af2985de5ab939f3dd4f5802', 'CC'),
+('NV04', 'staff03', '309a205ef98249a04f79fb054cb81d92c348e6b4af2985de5ab939f3dd4f5802', 'SA'),
+('NV05', 'staff04', '309a205ef98249a04f79fb054cb81d92c348e6b4af2985de5ab939f3dd4f5802', 'PM');
 
 -- --------------------------------------------------------
 
@@ -74,11 +74,20 @@ CREATE TABLE `chucnang` (
 --
 
 INSERT INTO `chucnang` (`MACN`, `tenCN`) VALUES
-('CN01', 'Quản lý kho'),
-('CN02', 'Bán hàng'),
-('CN03', 'Báo cáo'),
-('CN04', 'Nhân sự'),
-('CN05', 'Cấu hình');
+('CN01', 'Bán hàng'),
+('CN02', 'Sản phẩm'),
+('CN03', 'Hình ảnh SP'),
+('CN04', 'Chi tiết SP'),
+('CN05', 'Loại SP'),
+('CN06', 'Khách hàng'),
+('CN07', 'Nhân viên'),
+('CN08', 'Nhập hàng'),
+('CN09', 'Nhà cung cấp'),
+('CN10', 'Khuyến mãi'),
+('CN11', 'Tài khoản'),
+('CN12', 'Phân quyền'),
+('CN13', 'Nhật ký'),
+('CN14', 'Kho');
 
 -- --------------------------------------------------------
 
@@ -89,24 +98,34 @@ INSERT INTO `chucnang` (`MACN`, `tenCN`) VALUES
 CREATE TABLE `ctgg` (
   `MAGG` varchar(20) NOT NULL,
   `MASP` varchar(20) NOT NULL,
-  `phantramgg` int(11) DEFAULT 0 CHECK (`phantramgg` >= 0 and `phantramgg` <= 100)
+  `phantramgg` int(11) DEFAULT 0 CHECK (`phantramgg` >= 0 and `phantramgg` <= 100),
+  `giasaugiam` double DEFAULT NULL CHECK (`giasaugiam` >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `ctgg`
 --
 
-INSERT INTO `ctgg` (`MAGG`, `MASP`, `phantramgg`) VALUES
-('GG01', 'SP01', 10),
-('GG02', 'SP04', 15),
-('GG03', 'SP06', 20),
-('GG04', 'SP02', 25),
-('GG05', 'SP03', 30),
-('GG06', 'SP07', 10),
-('GG07', 'SP09', 5),
-('GG08', 'SP10', 15),
-('GG09', 'SP05', 20),
-('GG10', 'SP08', 5);
+INSERT INTO `ctgg` (`MAGG`, `MASP`, `phantramgg`, `giasaugiam`) VALUES
+('GG01', 'SP01', 10, 18000000),
+('GG01', 'SP05', 20, 24000000),
+('GG01', 'SP06', 3, 7760000),
+('GG01', 'SP07', 40, 6000000),
+('GG01', 'SP08', 3, 485000),
+('GG02', 'SP04', 15, 21250000),
+('GG03', 'SP06', 20, 6400000),
+('GG03', 'SP08', 20, 400000),
+('GG04', 'SP02', 25, 13500000),
+('GG06', 'SP07', 10, 9000000),
+('GG07', 'SP09', 5, 190000),
+('GG08', 'SP10', 15, 2125000),
+('GG09', 'SP05', 20, 24000000),
+('GG10', 'SP01', 4, 19200000),
+('GG10', 'SP05', 10, 27000000),
+('GG10', 'SP06', 10, 7200000),
+('GG10', 'SP07', 10, 9000000),
+('GG10', 'SP08', 5, 475000),
+('GG11', 'SP02', 20, 14280000);
 
 -- --------------------------------------------------------
 
@@ -132,11 +151,10 @@ INSERT INTO `cthd` (`MACTHD`, `MAHD`, `MACTSP`, `Dongia`, `Thanhtien`) VALUES
 ('CTHD03', 'HD03', 'IMEI05', 15000000, 15000000),
 ('CTHD04', 'HD04', 'IMEI03', 25000000, 25000000),
 ('CTHD05', 'HD05', 'IMEI06', 30000000, 30000000),
-('CTHD06', 'HD06', 'IMEI07', 8000000, 8000000),
-('CTHD07', 'HD07', 'IMEI08', 10000000, 10000000),
-('CTHD08', 'HD08', 'IMEI09', 500000, 500000),
-('CTHD09', 'HD09', 'IMEI02', 200000, 200000),
-('CTHD10', 'HD10', 'IMEI10', 2500000, 2500000);
+('CTHD06', 'HD06', 'IMEI08', 10000000, 10000000),
+('CTHD07', 'HD07', 'IMEI09', 500000, 500000),
+('CTHD08', 'HD08', 'IMEI02', 200000, 200000),
+('CTHD09', 'HD09', 'IMEI10', 2500000, 2500000);
 
 --
 -- Triggers `cthd`
@@ -193,7 +211,8 @@ INSERT INTO `ctphieunhap` (`MACTPN`, `MASP`, `MAPNH`, `SL`, `dongia`) VALUES
 ('CTPN07', 'SP07', 'PN05', 4, 9500000),
 ('CTPN08', 'SP08', 'PN06', 10, 450000),
 ('CTPN09', 'SP09', 'PN07', 20, 180000),
-('CTPN10', 'SP10', 'PN08', 6, 2300000);
+('CTPN10', 'SP10', 'PN08', 6, 2300000),
+('CTPN11', 'SP01', 'PN11', 12, 19950000);
 
 --
 -- Triggers `ctphieunhap`
@@ -201,7 +220,7 @@ INSERT INTO `ctphieunhap` (`MACTPN`, `MASP`, `MAPNH`, `SL`, `dongia`) VALUES
 DELIMITER $$
 CREATE TRIGGER `Them_Nhap_Hang` AFTER INSERT ON `ctphieunhap` FOR EACH ROW BEGIN
         UPDATE `sanpham` 
-        SET SLton = SLton + NEW.SL 
+        SET SLton = SLton + NEW.SL
         WHERE MASP = NEW.MASP;
 END
 $$
@@ -218,24 +237,53 @@ CREATE TABLE `ctsp` (
   `MASP` varchar(20) DEFAULT NULL,
   `MANCC` varchar(20) DEFAULT NULL,
   `tinhtrang` varchar(50) DEFAULT 'Sẵn có',
-  `MACTPN` varchar(20) DEFAULT NULL
+  `MACTPN` varchar(20) DEFAULT NULL,
+  `isDeleted` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `ctsp`
 --
 
-INSERT INTO `ctsp` (`MACTSP`, `MASP`, `MANCC`, `tinhtrang`, `MACTPN`) VALUES
-('IMEI01', 'SP01', 'NCC01', 'Đã bán', 'CTPN01'),
-('IMEI02', 'SP01', 'NCC01', 'Đã bán', 'CTPN01'),
-('IMEI03', 'SP04', 'NCC01', 'Đã bán', 'CTPN02'),
-('IMEI04', 'SP02', 'NCC02', 'Đã bán', 'CTPN03'),
-('IMEI05', 'SP03', 'NCC02', 'Đã bán', 'CTPN04'),
-('IMEI06', 'SP05', 'NCC03', 'Đã bán', 'CTPN05'),
-('IMEI07', 'SP06', 'NCC04', 'Đã bán', 'CTPN06'),
-('IMEI08', 'SP07', 'NCC05', 'Đã bán', 'CTPN07'),
-('IMEI09', 'SP08', 'NCC06', 'Đã bán', 'CTPN08'),
-('IMEI10', 'SP10', 'NCC08', 'Đã bán', 'CTPN10');
+INSERT INTO `ctsp` (`MACTSP`, `MASP`, `MANCC`, `tinhtrang`, `MACTPN`, `isDeleted`) VALUES
+('IMEI01', 'SP01', 'NCC01', 'Đã bán', 'CTPN01', 0),
+('IMEI02', 'SP01', 'NCC01', 'Đã bán', 'CTPN01', 0),
+('IMEI03', 'SP04', 'NCC01', 'Đã bán', 'CTPN02', 0),
+('IMEI04', 'SP02', 'NCC02', 'Đã bán', 'CTPN03', 0),
+('IMEI05', 'SP03', 'NCC02', 'Đã bán', 'CTPN04', 0),
+('IMEI06', 'SP05', 'NCC03', 'Đã bán', 'CTPN05', 0),
+('IMEI07', 'SP06', 'NCC04', 'Đã bán', 'CTPN06', 0),
+('IMEI08', 'SP07', 'NCC05', 'Đã bán', 'CTPN07', 0),
+('IMEI09', 'SP08', 'NCC06', 'Đã bán', 'CTPN08', 0),
+('IMEI10', 'SP10', 'NCC08', 'Đã bán', 'CTPN10', 0),
+('IMEI11', 'SP01', 'NCC01', 'Sẵn có', 'CTPN11', 0),
+('IMEI12', 'SP01', 'NCC01', 'Sẵn có', 'CTPN11', 0),
+('IMEI13', 'SP01', 'NCC01', 'Sẵn có', 'CTPN11', 0),
+('IMEI14', 'SP01', 'NCC01', 'Sẵn có', 'CTPN11', 0),
+('IMEI15', 'SP01', 'NCC01', 'Sẵn có', 'CTPN11', 0),
+('IMEI16', 'SP01', 'NCC01', 'Sẵn có', 'CTPN11', 0),
+('IMEI17', 'SP01', 'NCC01', 'Sẵn có', 'CTPN11', 0),
+('IMEI18', 'SP01', 'NCC01', 'Sẵn có', 'CTPN11', 0),
+('IMEI19', 'SP01', 'NCC01', 'Sẵn có', 'CTPN11', 0),
+('IMEI20', 'SP01', 'NCC01', 'Sẵn có', 'CTPN11', 0),
+('IMEI21', 'SP01', 'NCC01', 'Sẵn có', 'CTPN11', 0),
+('IMEI22', 'SP01', 'NCC01', 'Sẵn có', 'CTPN11', 0);
+
+--
+-- Triggers `ctsp`
+--
+DELIMITER $$
+CREATE TRIGGER `Sync_SLton_Khi_Update_CTSP` AFTER UPDATE ON `ctsp` FOR EACH ROW BEGIN
+    -- LỖI 1: Phải có từ khóa IF ở đầu
+    IF OLD.isDeleted = 0 AND NEW.isDeleted = 1 THEN
+        UPDATE `sanpham` 
+        SET SLton = SLton - 1 
+        WHERE MASP = NEW.MASP;
+    -- LỖI 2: Phải đóng khối IF bằng END IF;
+    END IF;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -255,7 +303,7 @@ CREATE TABLE `giamgia` (
 --
 
 INSERT INTO `giamgia` (`MAGG`, `dotGG`, `batdau`, `ketthuc`) VALUES
-('GG01', 'Tôi là người béo', '2026-06-01 00:00:00', '2026-07-01 02:59:59'),
+('GG01', 'Khuyến mãi hè', '2026-03-16 17:00:00', '2026-03-30 16:59:59'),
 ('GG02', 'Back to school', '2026-08-01 00:00:00', '2026-08-31 23:59:59'),
 ('GG03', 'Black Friday', '2026-11-20 00:00:00', '2026-11-27 23:59:59'),
 ('GG04', 'Giáng sinh', '2026-12-15 00:00:00', '2026-12-25 23:59:59'),
@@ -264,7 +312,8 @@ INSERT INTO `giamgia` (`MAGG`, `dotGG`, `batdau`, `ketthuc`) VALUES
 ('GG07', 'Quốc tế phụ nữ', '2026-03-01 00:00:00', '2026-03-08 23:59:59'),
 ('GG08', 'Giải phóng miền Nam', '2026-04-20 00:00:00', '2026-04-30 23:59:59'),
 ('GG09', 'Quốc tế lao động', '2026-05-01 00:00:00', '2026-05-05 23:59:59'),
-('GG10', 'Quốc khánh', '2026-09-01 00:00:00', '2026-09-05 23:59:59');
+('GG10', 'Quốc khánh', '2026-09-01 00:00:00', '2026-09-05 23:59:59'),
+('GG11', 'Ngày Goku ra đời', '2026-03-15 17:00:00', '2026-03-16 16:59:59');
 
 -- --------------------------------------------------------
 
@@ -318,10 +367,10 @@ INSERT INTO `hoadon` (`MAHD`, `MANV`, `MAKH`, `ngaylap`, `tongtien`) VALUES
 ('HD04', 'NV05', 'KH04', '2026-02-04 13:00:00', 25000000),
 ('HD05', 'NV02', 'KH05', '2026-02-05 14:00:00', 30000000),
 ('HD06', 'NV03', 'KH06', '2026-02-06 15:00:00', 8000000),
-('HD07', 'NV04', 'KH07', '2026-02-07 16:00:00', 10000000),
-('HD08', 'NV05', 'KH08', '2026-02-08 10:00:00', 500000),
-('HD09', 'NV02', 'KH09', '2026-02-09 11:00:00', 200000),
-('HD10', 'NV03', 'KH10', '2026-02-10 12:00:00', 2500000);
+('HD07', 'NV05', 'KH08', '2026-02-08 10:00:00', 500000),
+('HD08', 'NV02', 'KH09', '2026-02-09 11:00:00', 200000),
+('HD09', 'NV03', 'KH10', '2026-02-10 12:00:00', 2500000),
+('HD1774158095118', 'NV01', 'KH02', '2026-03-22 00:00:00', 9975000);
 
 -- --------------------------------------------------------
 
@@ -414,24 +463,25 @@ CREATE TABLE `ncc` (
   `MANCC` varchar(20) NOT NULL,
   `ten` varchar(255) NOT NULL,
   `diachi` text DEFAULT NULL,
-  `SDT` varchar(15) DEFAULT NULL
+  `SDT` varchar(15) DEFAULT NULL,
+  `isDeleted` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `ncc`
 --
 
-INSERT INTO `ncc` (`MANCC`, `ten`, `diachi`, `SDT`) VALUES
-('NCC01', 'Digiworld', 'TP.HCM', '0281234567'),
-('NCC02', 'FPT', 'Hà Nội', '0249876543'),
-('NCC03', 'Petrosetco', 'TP.HCM', '0289876543'),
-('NCC04', 'Viettel', 'Hà Nội', '0241234567'),
-('NCC05', 'Thế Giới Số', 'Đà Nẵng', '0236123456'),
-('NCC06', 'Samsung VN', 'Bắc Ninh', '0222123456'),
-('NCC07', 'Apple VN', 'TP.HCM', '0281112222'),
-('NCC08', 'Xiaomi VN', 'Hà Nội', '0243334444'),
-('NCC09', 'Sony VN', 'TP.HCM', '0285556666'),
-('NCC10', 'OPPO VN', 'Bình Dương', '0274777888');
+INSERT INTO `ncc` (`MANCC`, `ten`, `diachi`, `SDT`, `isDeleted`) VALUES
+('NCC01', 'Digiworld', 'TP.HCM', '0281234567', 0),
+('NCC02', 'FPT', 'Hà Nội', '0249876543', 0),
+('NCC03', 'Petrosetco', 'TP.HCM', '0289876543', 0),
+('NCC04', 'Viettel', 'Hà Nội', '0241234567', 0),
+('NCC05', 'Thế Giới Số', 'Đà Nẵng', '0236123456', 0),
+('NCC06', 'Samsung VN', 'Bắc Ninh', '0222123456', 0),
+('NCC07', 'Apple VN', 'TP.HCM', '0281112222', 0),
+('NCC08', 'Xiaomi VN', 'Hà Nội', '0243334444', 0),
+('NCC09', 'Sony VN', 'TP.HCM', '0285556666', 0),
+('NCC10', 'OPPO VN', 'Bình Dương', '0274777888', 0);
 
 -- --------------------------------------------------------
 
@@ -483,7 +533,11 @@ CREATE TABLE `nhomquyen` (
 
 INSERT INTO `nhomquyen` (`MAQUYEN`, `tenQUYEN`) VALUES
 ('AD', 'Admin'),
-('ST', 'Staff');
+('CC', 'Chăm sóc khách hàng'),
+('M', 'Quản lý'),
+('PM', 'Quản lý sản phẩm'),
+('SA', 'Bán hàng'),
+('WM', 'Quản lý kho');
 
 -- --------------------------------------------------------
 
@@ -506,8 +560,19 @@ INSERT INTO `phanquyen` (`MAQUYEN`, `MACN`) VALUES
 ('AD', 'CN03'),
 ('AD', 'CN04'),
 ('AD', 'CN05'),
-('ST', 'CN01'),
-('ST', 'CN02');
+('AD', 'CN06'),
+('AD', 'CN07'),
+('AD', 'CN08'),
+('AD', 'CN09'),
+('AD', 'CN10'),
+('AD', 'CN11'),
+('AD', 'CN12'),
+('AD', 'CN13'),
+('AD', 'CN14'),
+('CC', 'CN01'),
+('CC', 'CN02'),
+('CC', 'CN06'),
+('M', 'CN14');
 
 -- --------------------------------------------------------
 
@@ -529,16 +594,15 @@ CREATE TABLE `phieubaohanh` (
 --
 
 INSERT INTO `phieubaohanh` (`MABH`, `MACTHD`, `MAKH`, `ngayBD`, `thoihan`, `trangthai`) VALUES
-('BH01', 'CTHD01', 'KH01', '2026-02-01', 12, 'Đang bảo hành'),
-('BH02', 'CTHD02', 'KH02', '2026-02-02', 12, 'Đang bảo hành'),
-('BH03', 'CTHD03', 'KH03', '2026-02-03', 12, 'Đang bảo hành'),
-('BH04', 'CTHD04', 'KH04', '2026-02-04', 24, 'Đang bảo hành'),
-('BH05', 'CTHD05', 'KH05', '2026-02-05', 24, 'Đang bảo hành'),
-('BH06', 'CTHD06', 'KH06', '2026-02-06', 12, 'Hết hạn'),
-('BH07', 'CTHD07', 'KH07', '2026-02-07', 12, 'Hết hạn'),
-('BH08', 'CTHD08', 'KH08', '2026-02-08', 6, 'Hết hạn'),
-('BH09', 'CTHD09', 'KH09', '2026-02-09', 6, 'Hết hạn'),
-('BH10', 'CTHD10', 'KH10', '2026-02-10', 12, 'Đang bảo hành');
+('BH01', 'CTHD01', 'KH01', '2026-02-01', 12, 'Đang bao hành'),
+('BH02', 'CTHD02', 'KH02', '2026-02-02', 12, 'Đang bao hành'),
+('BH03', 'CTHD03', 'KH03', '2026-02-03', 12, 'Đang bao hành'),
+('BH04', 'CTHD04', 'KH04', '2026-02-04', 24, 'Đang bao hành'),
+('BH05', 'CTHD05', 'KH05', '2026-02-05', 24, 'Đang bao hành'),
+('BH06', 'CTHD06', 'KH06', '2026-02-06', 12, 'Đang bao hành'),
+('BH07', 'CTHD07', 'KH07', '2026-02-07', 12, 'Đang bao hành'),
+('BH08', 'CTHD08', 'KH08', '2025-02-08', 6, 'Hết hạn'),
+('BH09', 'CTHD09', 'KH09', '2026-02-09', 6, 'Đang bao hành');
 
 -- --------------------------------------------------------
 
@@ -568,7 +632,8 @@ INSERT INTO `phieunhap` (`MAPNH`, `MANV`, `Ngaynhap`, `tongtien`, `MANCC`) VALUE
 ('PN07', 'NV01', '2026-04-01 08:00:00', 110000000, 'NCC07'),
 ('PN08', 'NV04', '2026-04-15 09:00:00', 120000000, 'NCC08'),
 ('PN09', 'NV06', '2026-05-01 10:00:00', 130000000, 'NCC09'),
-('PN10', 'NV01', '2026-05-15 08:30:00', 140000000, 'NCC10');
+('PN10', 'NV01', '2026-05-15 08:30:00', 140000000, 'NCC10'),
+('PN11', 'NV01', '2026-03-22 05:59:11', 239400000, 'NCC01');
 
 -- --------------------------------------------------------
 
@@ -585,24 +650,25 @@ CREATE TABLE `sanpham` (
   `MAloai` varchar(20) DEFAULT NULL,
   `cauhinh` text DEFAULT NULL,
   `NSX` varchar(20) DEFAULT NULL,
-  `isDeleted` tinyint(1) DEFAULT 0
+  `isDeleted` tinyint(1) DEFAULT 0,
+  `phantramloinhuan` int(11) DEFAULT 5
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `sanpham`
 --
 
-INSERT INTO `sanpham` (`MASP`, `tenSP`, `SLton`, `gia`, `trangthai`, `MAloai`, `cauhinh`, `NSX`, `isDeleted`) VALUES
-('SP01', 'iPhone 15', 3, 20000000, 'Mới', 'L01', '128GB', 'HSX01', 0),
-('SP02', 'Samsung S23', 3, 18000000, 'Mới', 'L01', '256GB', 'HSX02', 0),
-('SP03', 'Xiaomi 13', 2, 15000000, 'Mới', 'L01', '256GB', 'HSX03', 0),
-('SP04', 'iPad Pro', 1, 25000000, 'Mới', 'L02', '11 inch', 'HSX01', 0),
-('SP05', 'MacBook Air', 1, 30000000, 'Mới', 'L02', 'M2, 8GB', 'HSX01', 0),
-('SP06', 'Sony WH-1000XM5', 4, 8000000, 'Mới', 'L03', 'Chống ồn', 'HSX05', 0),
-('SP07', 'Apple Watch S9', 3, 10000000, 'Mới', 'L03', '45mm', 'HSX01', 0),
-('SP08', 'Sạc nhanh 20W', 9, 500000, 'Mới', 'L03', 'Type-C', 'HSX01', 0),
-('SP09', 'Ốp lưng Silicon', 20, 200000, 'Mới', 'L03', 'Trong suốt', 'HSX02', 0),
-('SP10', 'Loa JBL Flip 6', 5, 2500000, 'Mới', 'L03', 'Bluetooth', 'HSX05', 0);
+INSERT INTO `sanpham` (`MASP`, `tenSP`, `SLton`, `gia`, `trangthai`, `MAloai`, `cauhinh`, `NSX`, `isDeleted`, `phantramloinhuan`) VALUES
+('SP01', 'iPhone 15', 12, 19950000, 'Mới', 'L01', '128GB', 'HSX01', 0, 5),
+('SP02', 'Samsung S23', 0, 17850000, 'Mới', 'L01', '256GB', 'HSX02', 0, 5),
+('SP03', 'Xiaomi 13', 0, 14700000, 'Mới', 'L01', '256GB', 'HSX03', 0, 5),
+('SP04', 'iPad Pro', 0, 25200000, 'Mới', 'L02', '11 inch', 'HSX01', 0, 5),
+('SP05', 'MacBook Air', 0, 30450000, 'Mới', 'L02', 'M2, 8GB', 'HSX01', 0, 5),
+('SP06', 'Sony WH-1000XM5', 0, 7875000, 'Mới', 'L03', 'Chống ồn', 'HSX05', 0, 5),
+('SP07', 'Apple Watch S9', 0, 9975000, 'Mới', 'L03', '45mm', 'HSX01', 0, 5),
+('SP08', 'Sạc nhanh 20W', 0, 472500, 'Mới', 'L03', 'Type-C', 'HSX01', 0, 5),
+('SP09', 'Ốp lưng Silicon', 0, 189000, 'Mới', 'L03', 'Trong suốt', 'HSX02', 0, 5),
+('SP10', 'Loa JBL Flip 6', 0, 2415000, 'Mới', 'L03', 'Bluetooth', 'HSX05', 0, 5);
 
 --
 -- Indexes for dumped tables
