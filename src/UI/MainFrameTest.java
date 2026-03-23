@@ -92,6 +92,10 @@ public class MainFrameTest extends JFrame {
         contentPanel.add(banHangPanel, "Bán hàng");
         BaoHanhPanel baoHanhPanel = new BaoHanhPanel();
         contentPanel.add(baoHanhPanel, "Bảo hành");
+        contentPanel.add(new LogPanel("abc.png"),"Nhật ký");
+        contentPanel.add(new AnhSPPanel(),"Hình ảnh SP");
+        contentPanel.add(new LoaiPanel(),"Loại SP");
+        contentPanel.add(new CTSPPanel(),"Chi tiết SP");
         // LogPanel logPanel = new LogPanel();
         // contentPanel.add(logPanel, "Log");
         applyPermissionsFromDB();
@@ -312,8 +316,10 @@ public class MainFrameTest extends JFrame {
     private void initCards() {
         for (String key : navItems.keySet()) {
             if (key.equals("Dashboard") || key.equals("Khuyến mãi") || key.equals("Kho") ||
-             key.equals("Sản phẩm") || key.equals("Nhập hàng") || key.equals("Nhà cung cấp") || key.equals("Bán hàng")
-             || key.equals("Bảo hành")) continue; 
+             key.equals("Sản phẩm") || key.equals("Nhập hàng") || key.equals("Nhà cung cấp") ||
+              key.equals("Bán hàng")
+             || key.equals("Bảo hành") || key.equals("Nhật ký") ||  key.equals("Hình ảnh SP")
+            || key.equals("Loại SP")) continue; 
 
             JPanel card = new JPanel(new GridBagLayout());
             card.setBackground(Color.WHITE);
