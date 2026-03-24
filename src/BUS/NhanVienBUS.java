@@ -1,21 +1,35 @@
 package BUS;
+
 import DAL.DAO.NhanVienDAO;
 import DTO.nhanvienDTO;
-import java.util.ArrayList; 
+import java.util.ArrayList;
 
 public class NhanVienBUS {
-    private NhanVienDAO dao = new NhanVienDAO();
+    private NhanVienDAO nvDAO = new NhanVienDAO();
 
+    // Dùng chung cho Load Data và Tìm Kiếm
+    public ArrayList<nhanvienDTO> timKiem(String keyword) {
+        return nvDAO.timKiem(keyword);
+    }
     
-    public String layTenNhanVien(String maNV) {
-        for (nhanvienDTO nv : dao.getAll()) {
-            if (nv.getMaNV().equals(maNV)) return nv.getHoTen();
-        }
-        return "Unknown";
+    // Đảm bảo có hàm getList() để mấy form khác gọi (như cái PNAddDialog, GiaoDienBanHang hồi trưa)
+    public ArrayList<nhanvienDTO> getList() {
+        return nvDAO.timKiem("");
     }
 
-    // Để lấy danh sách đổ vào ComboBox cho bên bán hàng UI
-    public java.util.List<nhanvienDTO> getAll() {
-        return dao.getAll();
+    public boolean themNV(nhanvienDTO nv) {
+        return nvDAO.insert(nv);
+    }
+
+    public boolean suaNV(nhanvienDTO nv) {
+        return nvDAO.update(nv);
+    }
+
+    public boolean xoaNV(String maNV) {
+        return nvDAO.delete(maNV);
+    }
+
+    public Object layTenNhanVien(String maNV) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }
