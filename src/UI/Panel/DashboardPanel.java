@@ -6,12 +6,14 @@ import DTO.DashboardDTO;
 import DTO.ReportProduct;
 import DTO.ReportRevenueRow;
 import DTO.logDTO;
-import UI.Utils.UIUtils; // Đã import chính xác
+import UI.Utils.UIUtils;
+import com.toedter.calendar.JDateChooser; // Thêm thư viện jcalendar
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.geom.RoundRectangle2D;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -34,13 +36,13 @@ public class DashboardPanel extends JPanel {
     private JTable logTable, revenueDailyTable, revenueMonthlyTable, lowStockTable, productRevenueTable;
     private DefaultTableModel logModel, dailyModel, monthlyModel, lowStockModel, productModel;
     private JPanel chartLinePanel, chartPiePanel;
-    private JTextField txtStartDate, txtEndDate;
+    
+    // Đổi JTextField thành JDateChooser
+    private JDateChooser txtStartDate, txtEndDate; 
+    
     private JScrollPane scrollPane;
     private JPanel mainContainer;
     
-    // ĐÃ SỬA: Xóa dòng khai báo lỗi ở dòng 33 hoặc đặt tên biến cụ thể nếu cần sử dụng làm field
-    // private UIUtils.RoundedPanel statisticsPanel; 
-
     // Các biến hỗ trợ cho chức năng chuyển đổi Bảng doanh thu
     private JPanel revenueCards;
     private CardLayout revenueCardLayout;
@@ -79,6 +81,8 @@ public class DashboardPanel extends JPanel {
 
         refreshOverviewData();
         filterStatistics(); 
+        
+        new Utility.AutoRefresh(30000, () -> { refreshOverviewData(); }).start();
     }
 
     private void initStatsCards() {
@@ -99,21 +103,33 @@ public class DashboardPanel extends JPanel {
     }
 
     private void initAnalysisSection() {
-        // ĐÃ SỬA: Thay RoundedPanel thành UIUtils.RoundedPanel
-        UIUtils.RoundedPanel statisticsPanel = new UIUtils.RoundedPanel(25, Color.decode("#FDD835"));
+        RoundedPanel statisticsPanel = new RoundedPanel(25, Color.decode("#49bdcc"));
         statisticsPanel.setLayout(new BorderLayout(0, 15)); 
         statisticsPanel.setBorder(new EmptyBorder(20, 20, 20, 20)); 
 
+        // --- HEADER ---
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
         
+        // Gọi hàm từ UIUtils
         JPanel titlePanel = UIUtils.createTitlePanel("src/main/java/resources/fire.png", "THỐNG KÊ DOANH SỐ", 22, Color.WHITE);
         headerPanel.add(titlePanel, BorderLayout.WEST); 
 
         JPanel dateFilterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
         dateFilterPanel.setOpaque(false);
-        txtStartDate = new JTextField(UIDateUtils.format(LocalDate.now().minusDays(30)), 10);
-        txtEndDate = new JTextField(UIDateUtils.format(LocalDate.now()), 10);
+        
+        // Khởi tạo JDateChooser cho ngày bắt đầu
+        txtStartDate = new JDateChooser();
+        txtStartDate.setDateFormatString("dd/MM/yyyy");
+        txtStartDate.setDate(java.sql.Date.valueOf(LocalDate.now().minusDays(30)));
+        txtStartDate.setPreferredSize(new Dimension(130, 25));
+
+        // Khởi tạo JDateChooser cho ngày kết thúc
+        txtEndDate = new JDateChooser();
+        txtEndDate.setDateFormatString("dd/MM/yyyy");
+        txtEndDate.setDate(java.sql.Date.valueOf(LocalDate.now()));
+        txtEndDate.setPreferredSize(new Dimension(130, 25));
+
         JButton btnFilter = new JButton("Lọc dữ liệu");
         btnFilter.addActionListener(e -> filterStatistics());
 
@@ -125,15 +141,16 @@ public class DashboardPanel extends JPanel {
         headerPanel.add(dateFilterPanel, BorderLayout.EAST);
         statisticsPanel.add(headerPanel, BorderLayout.NORTH);
 
+        // --- CONTENT ---
         JPanel contentPanel = new JPanel(new GridLayout(2, 1, 0, 20)); 
         contentPanel.setOpaque(false);
 
+        // Hàng 1: Hai khung trắng chứa biểu đồ
         JPanel chartsRow = new JPanel(new GridLayout(1, 2, 20, 0)); 
         chartsRow.setOpaque(false);
         chartsRow.setPreferredSize(new Dimension(0, 400)); 
 
-        // ĐÃ SỬA: Thay RoundedPanel thành UIUtils.RoundedPanel
-        UIUtils.RoundedPanel lineBox = new UIUtils.RoundedPanel(20, Color.WHITE);
+        RoundedPanel lineBox = new RoundedPanel(20, Color.WHITE);
         lineBox.setLayout(new BorderLayout());
         lineBox.setBorder(new EmptyBorder(15, 5, 10, 8)); 
         JPanel lineTitlePanel = UIUtils.createTitlePanel("src/main/java/resources/chart_line.png", "DOANH THU THEO NGÀY", 18, Color.BLACK);
@@ -143,8 +160,7 @@ public class DashboardPanel extends JPanel {
         lineBox.add(lineTitlePanel, BorderLayout.NORTH);
         lineBox.add(chartLinePanel, BorderLayout.CENTER);
 
-        // ĐÃ SỬA: Thay RoundedPanel thành UIUtils.RoundedPanel
-        UIUtils.RoundedPanel pieBox = new UIUtils.RoundedPanel(20, Color.WHITE);
+        RoundedPanel pieBox = new RoundedPanel(20, Color.WHITE);
         pieBox.setLayout(new BorderLayout());
         pieBox.setBorder(new EmptyBorder(15, 15, 15, 15)); 
         JPanel pieTitlePanel = UIUtils.createTitlePanel("src/main/java/resources/chart_pie.png", "TỶ TRỌNG SẢN PHẨM", 18, Color.BLACK);
@@ -157,15 +173,17 @@ public class DashboardPanel extends JPanel {
         chartsRow.add(lineBox);
         chartsRow.add(pieBox);
 
+        // Hàng 2: Hai bảng chi tiết
         JPanel tablesRow = new JPanel(new GridLayout(1, 2, 20, 0)); 
         tablesRow.setOpaque(false);
         tablesRow.setPreferredSize(new Dimension(0, 280));
 
-        // ĐÃ SỬA: Thay RoundedPanel thành UIUtils.RoundedPanel
-        UIUtils.RoundedPanel revenueBox = new UIUtils.RoundedPanel(20, Color.WHITE);
+        // 1. Khung bên trái (Gộp doanh thu Ngày và Tháng có nút bấm)
+        RoundedPanel revenueBox = new RoundedPanel(20, Color.WHITE);
         revenueBox.setLayout(new BorderLayout());
         revenueBox.setBorder(new EmptyBorder(15, 15, 15, 15)); 
 
+        // Header bảng trái chứa Tiêu đề và Nút chuyển đổi
         JPanel revenueHeader = new JPanel(new BorderLayout());
         revenueHeader.setOpaque(false);
         JPanel revenueTitlePanel = UIUtils.createTitlePanel("src/main/java/resources/clipboard.png", "DOANH THU THEO NGÀY", 18, Color.BLACK);
@@ -176,6 +194,7 @@ public class DashboardPanel extends JPanel {
         btnToggleRevenue.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnToggleRevenue.setBackground(Color.decode("#F1F5F9")); 
         
+        // Logic bấm để đổi bảng và tiêu đề
         btnToggleRevenue.addActionListener(e -> {
             isDailyView = !isDailyView;
             if (isDailyView) {
@@ -208,8 +227,8 @@ public class DashboardPanel extends JPanel {
         revenueBox.add(revenueHeader, BorderLayout.NORTH);
         revenueBox.add(revenueCards, BorderLayout.CENTER);
 
-        // ĐÃ SỬA: Thay RoundedPanel thành UIUtils.RoundedPanel
-        UIUtils.RoundedPanel productBox = new UIUtils.RoundedPanel(20, Color.WHITE);
+        // 2. Khung bên phải (Doanh thu theo Sản Phẩm)
+        RoundedPanel productBox = new RoundedPanel(20, Color.WHITE);
         productBox.setLayout(new BorderLayout());
         productBox.setBorder(new EmptyBorder(15, 15, 15, 15)); 
         JPanel productTitlePanel = UIUtils.createTitlePanel("src/main/java/resources/box.png", "DOANH THU TỪNG SẢN PHẨM", 18, Color.BLACK);
@@ -221,6 +240,7 @@ public class DashboardPanel extends JPanel {
         productBox.add(productTitlePanel, BorderLayout.NORTH);
         productBox.add(new JScrollPane(productRevenueTable), BorderLayout.CENTER);
 
+        // Thêm vào hàng tables
         tablesRow.add(revenueBox);
         tablesRow.add(productBox);
 
@@ -235,8 +255,7 @@ public class DashboardPanel extends JPanel {
         bottomPanel.setOpaque(false);
         bottomPanel.setPreferredSize(new Dimension(0, 320)); 
 
-        // ĐÃ SỬA: Thay RoundedPanel thành UIUtils.RoundedPanel
-        UIUtils.RoundedPanel logContainer = new UIUtils.RoundedPanel(20, Color.WHITE);
+        RoundedPanel logContainer = new RoundedPanel(20, Color.WHITE);
         logContainer.setLayout(new BorderLayout());
         logContainer.setBorder(new EmptyBorder(15, 15, 15, 15)); 
         JPanel logTitlePanel = UIUtils.createTitlePanel("src/main/java/resources/log.png", "NHẬT KÝ HỆ THỐNG GẦN ĐÂY", 16, Color.BLACK);
@@ -247,8 +266,7 @@ public class DashboardPanel extends JPanel {
         logContainer.add(new JScrollPane(logTable), BorderLayout.CENTER);
         bottomPanel.add(logContainer, BorderLayout.CENTER);
 
-        // ĐÃ SỬA: Thay RoundedPanel thành UIUtils.RoundedPanel
-        UIUtils.RoundedPanel stockContainer = new UIUtils.RoundedPanel(20, Color.WHITE);
+        RoundedPanel stockContainer = new RoundedPanel(20, Color.WHITE);
         stockContainer.setPreferredSize(new Dimension(480, 0));
         stockContainer.setLayout(new BorderLayout());
         stockContainer.setBorder(new EmptyBorder(15, 20, 15, 15)); 
@@ -305,8 +323,13 @@ public class DashboardPanel extends JPanel {
     }
 
     private void filterStatistics() {
-        LocalDate startDate = UIDateUtils.parse(txtStartDate.getText().trim());
-        LocalDate endDate = UIDateUtils.parse(txtEndDate.getText().trim());
+        // Lấy text trực tiếp từ ô nhập liệu của JDateChooser để giữ nguyên cách parse cũ
+        String startText = ((JTextField) txtStartDate.getDateEditor().getUiComponent()).getText();
+        String endText = ((JTextField) txtEndDate.getDateEditor().getUiComponent()).getText();
+        
+        LocalDate startDate = UIDateUtils.parse(startText.trim());
+        LocalDate endDate = UIDateUtils.parse(endText.trim());
+        
         if (startDate == null || endDate == null) return;
 
         try {
@@ -373,8 +396,7 @@ public class DashboardPanel extends JPanel {
     }
 
     private JPanel createCard(String title, JLabel valueLabel, Color color, String icon) {
-        // ĐÃ SỬA: Thay RoundedPanel thành UIUtils.RoundedPanel
-        UIUtils.RoundedPanel card = new UIUtils.RoundedPanel(22, color);
+        RoundedPanel card = new RoundedPanel(22, color);
         card.setLayout(new BorderLayout());
         card.setBorder(new EmptyBorder(15, 20, 15, 20));
         JLabel lblTitle = new JLabel(title);
@@ -391,5 +413,25 @@ public class DashboardPanel extends JPanel {
         card.add(valueLabel, BorderLayout.CENTER);
         card.add(lblIcon, BorderLayout.EAST);
         return card;
+    }
+
+    class RoundedPanel extends JPanel {
+        private int radius;
+        private Color bgColor;
+        public RoundedPanel(int radius, Color bgColor) {
+            super(new BorderLayout());
+            this.radius = radius;
+            this.bgColor = bgColor;
+            setOpaque(false);
+        }
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(bgColor);
+            g2.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), radius, radius));
+            g2.dispose();
+            super.paintComponent(g);
+        }
     }
 }

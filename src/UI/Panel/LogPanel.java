@@ -20,11 +20,13 @@ public class LogPanel extends JPanel {
     private JTextField txtTimKiem;
     private JButton btnTimKiem, btnLamMoi;
 
-    // YÊU CẦU: Constructor nhận đường dẫn icon từ bên ngoài
     public LogPanel(String iconPath) {
         logBUS = new LogBUS();
         initUI(iconPath);
         loadDataToTable(logBUS.getAll());
+        new Utility.AutoRefresh(30000, () -> { 
+        loadDataToTable(logBUS.getAll()); 
+        }).start();
     }
 
     private void initUI(String iconPath) {
@@ -45,7 +47,7 @@ public class LogPanel extends JPanel {
         txtTimKiem = new JTextField(25);
         txtTimKiem.setPreferredSize(new Dimension(300, 38));
         txtTimKiem.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        txtTimKiem.putClientProperty("JTextField.placeholderText", "Tìm kiếm theo tài khoản, hành vi...");
+        txtTimKiem.putClientProperty("JTextField.placeholderText", "Tìm kiếm theo tài khoản/Hành vi");
         txtTimKiem.addActionListener(e -> handleTimKiem());
 
         btnTimKiem = new JButton("Tìm kiếm");

@@ -11,7 +11,8 @@ public class CTggBUS {
 
     private CTggDAO ctggDAO = new CTggDAO();
     private List<CTggDTO> dsCTGG = new ArrayList<>();
-
+    private LogBUS logBUS = new LogBUS();
+    
     public CTggBUS() {
         dsCTGG = ctggDAO.getAll();
     }
@@ -52,7 +53,7 @@ public class CTggBUS {
             dsCTGG.remove(ctgg); // rollback
             return false;
         }
-
+        logBUS.ghiNhatKy("Thêm", "Sản phẩm", "Sửa GG mã: " + ctgg.getMAGG());
         return true;
     }
 
@@ -79,8 +80,6 @@ public class CTggBUS {
 
             if (old.getMAGG().equals(ctgg.getMAGG()) &&
                 old.getMaSP().equals(ctgg.getMaSP())) {
-
-                // update list trước
                 dsCTGG.set(i, ctgg);
 
                 // update DB
@@ -88,7 +87,7 @@ public class CTggBUS {
                     dsCTGG.set(i, old); // rollback
                     return false;
                 }
-
+                logBUS.ghiNhatKy("Sữa", "Giảm giá", "Sửa GG mã: " + ctgg.getMAGG());
                 return true;
             }
         }
@@ -114,9 +113,9 @@ public class CTggBUS {
 
             if (ct.getMAGG().equals(maGG) &&
                 ct.getMaSP().equals(maSP)) {
-
+                logBUS.ghiNhatKy("Xóa", "CTGG", "Sửa GG mã: " + maGG);
                 dsCTGG.remove(i);
-
+                
                 if (!ctggDAO.delete(maGG, maSP)) {
                     dsCTGG.add(i, ct); // rollback
                     return false;
@@ -145,7 +144,9 @@ public class CTggBUS {
 
             if (dsCTGG.get(i).getMAGG().equals(maGG)) {
                 removed.add(dsCTGG.get(i));
+                logBUS.ghiNhatKy("Xóa", "Giảm giá", "Sửa GG mã: " + maGG);
                 dsCTGG.remove(i);
+                
             }
         }
 

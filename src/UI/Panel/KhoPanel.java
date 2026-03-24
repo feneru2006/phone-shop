@@ -50,6 +50,11 @@ public class KhoPanel extends JPanel {
         initUI();
         loadDataKho(sanPhamBUS.getAll());
         loadLowStock();
+        new Utility.AutoRefresh(30000, () -> { 
+        sanPhamBUS.reload(); 
+        loadDataKho(sanPhamBUS.getAll()); 
+        loadLowStock(); 
+        }).start();
     }
 
     private void initUI() {

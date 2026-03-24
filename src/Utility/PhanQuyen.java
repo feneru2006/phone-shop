@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+
 public class PhanQuyen {
 
     // 1. Kiểm tra quyền logic (Trả về true/false)

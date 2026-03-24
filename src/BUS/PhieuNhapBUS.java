@@ -11,7 +11,8 @@ import DTO.ChitietSPDTO;
 public class PhieuNhapBUS {
     private PhieuNhapDAO pnDAO = new PhieuNhapDAO();
     private List<phieunhapDTO> listPhieuNhap = new ArrayList<>();
-
+    private LogBUS logBUS = new LogBUS();
+    
     public PhieuNhapBUS() {
         docDanhSach(); 
     }
@@ -39,11 +40,13 @@ public class PhieuNhapBUS {
         if (isSuccess) {
             this.listPhieuNhap.add(0, pn); 
             System.out.println("Nhập hàng thành công! Đã thêm " + listIMEI.size() + " mã IMEI vào kho.");
+            logBUS.ghiNhatKy("Nhập hàng", "Phiếu nhập", "Nhập hàng, mãPNH: " + pn.getMaPNH());
             return true;
         } else {
             System.out.println("Lỗi hệ thống: Nhập hàng thất bại do Database từ chối!");
             return false;
         }
+        
     }
 
     public phieunhapDTO timPhieuNhapTheoId(String maPNH) {

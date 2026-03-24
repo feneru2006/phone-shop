@@ -1,5 +1,5 @@
 package DAL.DAO;
-import DAL.DBConnection;
+import DAL.DAO.DBConnection;
 import DTO.nhanvienDTO;
 import java.sql.*;
 import java.util.ArrayList;
