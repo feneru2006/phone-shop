@@ -1,34 +1,34 @@
 package BUS;
 
-import DAL.DAO.NhanVienDAO;
-import DTO.nhanvienDTO;
+import DAL.DAO.KhachHangDAO;
+import DTO.khachhangDTO;
 import java.util.ArrayList;
 
-public class NhanVienBUS {
-    private NhanVienDAO nvDAO = new NhanVienDAO();
+public class KhachHangBUS {
+    private KhachHangDAO khDAO = new KhachHangDAO();
 
-    // Dùng chung cho Load Data và Tìm Kiếm
-    public ArrayList<nhanvienDTO> timKiem(String keyword) {
-        return nvDAO.timKiem(keyword);
+    public ArrayList<khachhangDTO> timKiem(String keyword) {
+        return khDAO.timKiem(keyword);
     }
     
-    public ArrayList<nhanvienDTO> getList() {
-        return nvDAO.timKiem("");
+    public ArrayList<khachhangDTO> getList() {
+        return khDAO.timKiem("");
     }
 
-    public boolean themNV(nhanvienDTO nv) {
-        return nvDAO.insert(nv);
+    public boolean themKH(khachhangDTO kh) {
+        // Có thể check thêm logic trùng SĐT ở đây nếu thích
+        return khDAO.insert(kh);
     }
 
-    public boolean suaNV(nhanvienDTO nv) {
-        return nvDAO.update(nv);
+    public boolean suaKH(khachhangDTO kh) {
+        return khDAO.update(kh);
     }
 
-    public boolean xoaNV(String maNV) {
-        return nvDAO.delete(maNV);
+    public boolean xoaKH(String maKH) {
+        return khDAO.delete(maKH);
     }
-
-    public Object layTenNhanVien(String maNV) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    // Gọi DAO lấy lịch sử mua hàng
+    public ArrayList<Object[]> getLichSuMuaHang(String maKH) {
+        return khDAO.getLichSuMuaHang(maKH);
     }
 }
