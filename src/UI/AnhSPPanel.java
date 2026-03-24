@@ -59,6 +59,11 @@ public class AnhSPPanel extends JPanel {
         
         add(pnlContent, BorderLayout.CENTER);
         taiDuLieuLenBang();
+        
+        new Utility.AutoRefresh(3000, () -> { 
+            imgBus.reload(); 
+            taiDuLieuLenBang(); 
+        }).start();
     }
 
     // Đổi tên từ refreshSPCombo

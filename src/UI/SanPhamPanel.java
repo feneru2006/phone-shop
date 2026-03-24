@@ -88,6 +88,10 @@ public class SanPhamPanel extends JPanel {
         add(pnlMain, BorderLayout.CENTER);
         taiDuLieuBang(spBUS.getAll());
         thietLapSuKienBang();
+        new Utility.AutoRefresh(30000, () -> { 
+            spBUS.reload(); 
+            taiDuLieuLenBang(spBUS.getAll()); 
+        }).start();
     }
 
     public void lamMoiDuLieu() {
@@ -383,5 +387,9 @@ public class SanPhamPanel extends JPanel {
         b.setFont(new Font("Segoe UI", Font.BOLD, 12)); b.setFocusPainted(false);
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return b;
+    }
+
+    private void taiDuLieuLenBang(List<SanPhamDTO> all) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }

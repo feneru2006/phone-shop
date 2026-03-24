@@ -5,6 +5,7 @@ import BUS.SanPhamBUS;
 import DTO.ChitietSPDTO;
 import DTO.SanPhamDTO;
 
+// Thư viện Apache POI dùng để thao tác với Excel
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -30,7 +31,7 @@ public class CTSPPanel extends JPanel {
     private CtspBUS ctspBus;
     private SanPhamBUS spBus;
     private List<ChitietSPDTO> currentList;
-    private final List<String> perms = Arrays.asList("VIEW_CTSP");
+    private final List<String> perms = Arrays.asList("VIEW_CTSP", "UPDATE_CTSP", "DELETE_CTSP");
 
     private JTable table;
     private DefaultTableModel tableModel;
@@ -137,8 +138,16 @@ public class CTSPPanel extends JPanel {
         cbTinhTrang.setMaximumSize(fieldSize);
         cbTinhTrang.setAlignmentX(Component.LEFT_ALIGNMENT);
         cbTinhTrang.addItem("Tất cả Tình trạng");
-        cbTinhTrang.addItem("Sẵn có");
-        cbTinhTrang.addItem("Đã bán");
+        
+        java.util.Set<String> stSet = new java.util.LinkedHashSet<>();
+        stSet.add("Sẵn có");
+        stSet.add("Đã bán");
+        for(ChitietSPDTO ct : ctspBus.getListCtsp()) {
+            if (ct.getTinhtrang() != null && !ct.getTinhtrang().isEmpty()) {
+                stSet.add(ct.getTinhtrang());
+            }
+        }
+        for (String st : stSet) cbTinhTrang.addItem(st);
         
         filterPanel.add(cbTinhTrang); filterPanel.add(Box.createVerticalStrut(30));
         
@@ -259,12 +268,14 @@ public class CTSPPanel extends JPanel {
         currentList = new ArrayList<>();
         
         for (ChitietSPDTO ct : ctspBus.getListCtsp()) {
-            boolean matchIMEI = search.isEmpty() || ct.getMaCTSP().toLowerCase().contains(search);
-            boolean matchMaSP = maSPFilter.equals("ALL") || ct.getMaSP().equals(maSPFilter);
-            boolean matchTT = tinhTrangFilter.equals("ALL") || ct.getTinhtrang().equalsIgnoreCase(tinhTrangFilter);
+            if (ct.getIsDeleted() == 0) { 
+                boolean matchIMEI = search.isEmpty() || ct.getMaCTSP().toLowerCase().contains(search);
+                boolean matchMaSP = maSPFilter.equals("ALL") || ct.getMaSP().equals(maSPFilter);
+                boolean matchTT = tinhTrangFilter.equals("ALL") || ct.getTinhtrang().equalsIgnoreCase(tinhTrangFilter);
 
-            if (matchIMEI && matchMaSP && matchTT) {
-                currentList.add(ct);
+                if (matchIMEI && matchMaSP && matchTT) {
+                    currentList.add(ct);
+                }
             }
         }
         
@@ -278,10 +289,17 @@ public class CTSPPanel extends JPanel {
     }
 
     private int getPriority(String status) {
-        if (status == null) return 3;
-        if (status.equalsIgnoreCase("Sẵn có")) return 1;
-        if (status.equalsIgnoreCase("Đã bán")) return 2;
-        return 3;
+        if (status == null) return 5;
+        switch (status) {
+            case "Sẵn có": return 1;
+            case "Lỗi": 
+            case "Đang bảo hành":
+            case "Trưng bày": return 2;
+            case "Đã bán": return 3;
+            case "Thất lạc":
+            case "Đã hủy": return 4;
+            default: return 5;
+        }
     }
 
     public void refreshData() {
@@ -378,7 +396,7 @@ public class CTSPPanel extends JPanel {
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             
             String tt = table.getValueAt(row, 3).toString();
-            boolean isLocked = tt.equals("Đã bán");
+            boolean isLocked = tt.equals("Đã bán") || tt.equals("Đã hủy") || tt.equals("Thất lạc");
 
             if (isSelected) c.setBackground(Color.decode("#E2E8F0")); 
             else if (row == hoveredRow && !isLocked) c.setBackground(Color.decode("#F1F5F9")); 
@@ -397,7 +415,9 @@ public class CTSPPanel extends JPanel {
 
             if (column == 3) {
                 if (!isLocked) {
-                    if (tt.equals("Sẵn có")) c.setForeground(Color.decode("#10B981")); // Màu Xanh lá an toàn
+                    if (tt.equals("Sẵn có")) c.setForeground(Color.decode("#10B981")); 
+                    else if (tt.equals("Lỗi")) c.setForeground(Color.decode("#EF4444")); 
+                    else c.setForeground(Color.decode("#F59E0B")); 
                 }
                 setFont(new Font("Segoe UI", Font.BOLD, 12));
             }

@@ -11,7 +11,7 @@ import java.util.List;
 public class PhieubaohanhBUS {
 
     private PhieubaohanhDAO bhDAO;
-
+    private LogBUS logBUS = new LogBUS();
     public PhieubaohanhBUS() {
         bhDAO = new PhieubaohanhDAO();
     }
@@ -33,20 +33,14 @@ public class PhieubaohanhBUS {
             throw new IllegalArgumentException(
                     Validator.invalidFormatMessage("Mã bảo hành"));
         }
-
-        // Kiểm tra mã CTHD
         if (!Validator.isValidCode(bh.getMaCTHD())) {
             throw new IllegalArgumentException(
                     Validator.invalidFormatMessage("Mã chi tiết hóa đơn"));
         }
-
-        // Kiểm tra mã khách hàng
         if (!Validator.isValidCode(bh.getMaKH())) {
             throw new IllegalArgumentException(
                     Validator.invalidFormatMessage("Mã khách hàng"));
         }
-
-        // Kiểm tra ngày bắt đầu
         if (bh.getNgayBD() == null) {
             throw new IllegalArgumentException(
                     Validator.requiredMessage("Ngày bắt đầu"));
@@ -60,7 +54,7 @@ public class PhieubaohanhBUS {
 
         // Tự động set trạng thái
         updateTrangThaiLogic(bh);
-
+        logBUS.ghiNhatKy("Thêm", "Phiếu bảo hành", "Thêm phiếu bảo hành mã: " + bh.getMaBH());
         return bhDAO.insert(bh);
     }
 
@@ -68,14 +62,13 @@ public class PhieubaohanhBUS {
     // Cập nhật phiếu bảo hành
     // ===============================
     public boolean update(PhieubaohanhDTO bh) {
-
         if (!Validator.isValidCode(bh.getMaBH())) {
             throw new IllegalArgumentException(
                     Validator.invalidFormatMessage("Mã bảo hành"));
         }
 
         updateTrangThaiLogic(bh);
-
+        logBUS.ghiNhatKy("Thêm", "Phiếu bảo hành", "Thêm phiếu bảo hành mã: " + bh.getMaBH());
         return bhDAO.update(bh);
     }
 
@@ -88,7 +81,7 @@ public class PhieubaohanhBUS {
             throw new IllegalArgumentException(
                     Validator.invalidFormatMessage("Mã bảo hành"));
         }
-
+        logBUS.ghiNhatKy("Thêm", "Phiếu bảo hành", "Thêm phiếu bảo hành mã: " + maBH);
         return bhDAO.delete(maBH);
     }
 

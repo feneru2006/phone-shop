@@ -18,7 +18,7 @@ public class KhuyenMaiPanel extends JPanel {
     private giamgiaBUS ggBUS = new giamgiaBUS();
 
     private int currentPage = 1;
-    private int rowsPerPage = 5;
+    private int rowsPerPage = 8;
     private int totalPages = 1;
 
     private JButton btnPrev;
@@ -30,6 +30,10 @@ public class KhuyenMaiPanel extends JPanel {
         setBackground(Color.WHITE);
         initUI();
         loadData();
+        new Utility.AutoRefresh(30000, () -> { 
+            ggBUS.reload(); 
+            loadData(); 
+        }).start();
     }
 
     private void initUI() {

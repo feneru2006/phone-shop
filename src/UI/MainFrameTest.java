@@ -5,6 +5,10 @@ import com.formdev.flatlaf.FlatLightLaf;
 import UI.Panel.DashboardPanel;
 import UI.Panel.Sales.KhuyenMaiPanel;
 import UI.Panel.KhoPanel;
+import UI.Panel.LogPanel;
+import UI.Panel.BaoHanh.BaoHanhPanel;
+import UI.Panel.NCC.NCCPanel;
+import UI.Panel.PN.PNPanel;
 import UI.Utils.UIUtils; // Import UIUtils
 import Utility.SessionManager;
 import Utility.PhanQuyen;
@@ -12,6 +16,9 @@ import DAL.DAO.DBConnection;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+
+import org.apache.poi.ss.formula.functions.Log;
+
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -30,18 +37,17 @@ public class MainFrameTest extends JFrame {
     private final Map<String, NavItem> navItems = new LinkedHashMap<>();
     private JLabel pageTitleLabel;
     private JPanel menuContainer;
-
     // Biến lưu trữ thông tin tài khoản đang đăng nhập
     private String currentUsername;
     private String currentRole;
 
     // --- MÀU SẮC THEME ---
-    private static final Color HEADER_BG = Color.decode("#0F172A");
-    private static final Color BG_APP = Color.decode("#F8FAFF");
-    private static final Color SIDEBAR_BG = Color.decode("#FFFFFF");
+    private static final Color HEADER_BG = Color.decode("#3a5170");
+    private static final Color BG_APP = Color.decode("#30475e");
+    private static final Color SIDEBAR_BG = Color.decode("#2C3E50");
     private static final Color SIDEBAR_ACTIVE = Color.decode("#2563EB");
-    private static final Color TEXT_MAIN = Color.decode("#1E293B");
-    private static final Color TEXT_MUTED = Color.decode("#64748B");
+    private static final Color TEXT_MAIN = Color.decode("#f0faff");
+    private static final Color TEXT_MUTED = Color.decode("#cbffc7");
 
     // Constructor cập nhật để nhận tài khoản
     public MainFrameTest(String username, String role) {
@@ -76,7 +82,22 @@ public class MainFrameTest extends JFrame {
         contentPanel.add(taiKhoanUI, "Tài khoản");
         PhanQuyenUI phanQuyenUI = new PhanQuyenUI();
         contentPanel.add(phanQuyenUI, "Phân quyền");
-
+        SanPhamPanel sanPhamPanel = new SanPhamPanel();
+        contentPanel.add(sanPhamPanel, "Sản phẩm");
+        PNPanel pnPanel = new PNPanel();
+        contentPanel.add(pnPanel, "Nhập hàng");
+        NCCPanel nccPanel = new NCCPanel();
+        contentPanel.add(nccPanel, "Nhà cung cấp");
+        GiaoDienBanHang banHangPanel = new GiaoDienBanHang();
+        contentPanel.add(banHangPanel, "Bán hàng");
+        BaoHanhPanel baoHanhPanel = new BaoHanhPanel();
+        contentPanel.add(baoHanhPanel, "Bảo hành");
+        contentPanel.add(new LogPanel("src/main/java/resources/file.png"),"Nhật ký");
+        contentPanel.add(new AnhSPPanel(),"Hình ảnh SP");
+        contentPanel.add(new LoaiPanel(),"Loại SP");
+        contentPanel.add(new CTSPPanel(),"Chi tiết SP");
+        // LogPanel logPanel = new LogPanel();
+        // contentPanel.add(logPanel, "Log");
         applyPermissionsFromDB();
         showCard("Dashboard");
     }
@@ -143,8 +164,8 @@ public class MainFrameTest extends JFrame {
     private JPanel buildTitleBar() {
         JPanel titleBar = new JPanel(new BorderLayout());
         titleBar.setBackground(HEADER_BG);
-        titleBar.setPreferredSize(new Dimension(0, 65));
-        titleBar.setBorder(new EmptyBorder(0, 20, 0, 20));
+        titleBar.setPreferredSize(new Dimension(0, 55));
+        titleBar.setBorder(new EmptyBorder(0, 20, 0, 30));
 
         // Trái: Logo
         // Bọc vào panel có FlowLayout padding để căn giữa trục Y đều với thanh tiêu đề
@@ -153,8 +174,9 @@ public class MainFrameTest extends JFrame {
         
         JPanel titlePanel = UIUtils.createTitlePanel("src/main/java/resources/cart.png", "PHONE SHOP NHÓM 4", 16, Color.WHITE);
         leftWrapper.add(titlePanel);
+        
         // Phải: User Pill bo tròn
-        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 12));
+        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 12));
         right.setOpaque(false);
 
         UIUtils.RoundedPanel userPill = new UIUtils.RoundedPanel(30, Color.decode("#1E293B"));
@@ -178,13 +200,24 @@ public class MainFrameTest extends JFrame {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         // Truyền thông tin tài khoản đang đăng nhập
         JLabel userInfo = new JLabel("<html><b style='color:white;'>" + currentUsername + "</b><br><font size='2' color='#94A3B8'>" + currentRole + "</font></html>");
         userPill.add(avatar);
         userPill.add(userInfo);
         right.add(userPill);
-
+                JButton btnLogout = new JButton("Đăng xuất");
+        btnLogout.setFocusPainted(false);
+        btnLogout.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnLogout.setToolTipText("Đăng xuất hệ thống");
+        btnLogout.putClientProperty(com.formdev.flatlaf.FlatClientProperties.STYLE, "" +
+                "arc: 10;" +                // Bo góc
+                "background: #ef4444;" +    // Màu đỏ nhạt (Tailwind Red 500)
+                "foreground: #ffffff;" +    // Chữ trắng
+                "borderWidth: 0;" +
+                "focusWidth: 0;");
+        btnLogout.addActionListener(e -> performLogout());
+        right.add(btnLogout);
+        
         titleBar.add(leftWrapper, BorderLayout.WEST);
         titleBar.add(right, BorderLayout.EAST);
         return titleBar;
@@ -201,9 +234,11 @@ public class MainFrameTest extends JFrame {
         container.setOpaque(false);
 
         JLabel saleLabel = new JLabel("HỆ THỐNG BÁN HÀNG");
-        saleLabel.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        saleLabel.setFont(new Font("Montserrat", Font.BOLD, 14));
         saleLabel.setForeground(TEXT_MUTED);
-        saleLabel.setBorder(new EmptyBorder(15, 20, 10, 10));
+        saleLabel.setBorder(new EmptyBorder(15, 0, 10, 10));
+        saleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        saleLabel.setHorizontalAlignment(SwingConstants.CENTER);
         container.add(saleLabel);
 
         NavItem banHangItem = new NavItem("🛒 Bán hàng tại quầy");
@@ -221,9 +256,11 @@ public class MainFrameTest extends JFrame {
         container.add(new JSeparator());
 
         JLabel navLabel = new JLabel("DANH MỤC QUẢN LÝ");
-        navLabel.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        navLabel.setFont(new Font("Montserrat", Font.BOLD, 14));
         navLabel.setForeground(TEXT_MUTED);
-        navLabel.setBorder(new EmptyBorder(15, 20, 10, 10));
+        navLabel.setBorder(new EmptyBorder(15, 0, 10, 10));
+        navLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        navLabel.setHorizontalAlignment(SwingConstants.CENTER);
         container.add(navLabel);
 
         JPanel menuContainer = new JPanel();
@@ -264,6 +301,12 @@ public class MainFrameTest extends JFrame {
         scroll.setBorder(null);
         scroll.getViewport().setBackground(SIDEBAR_BG);
         scroll.getVerticalScrollBar().setUnitIncrement(16);
+        // Khóa thanh cuộn
+        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        // Chặn luôn con lăn chuột
+        scroll.setWheelScrollingEnabled(false);
+        
         sidebar.add(scroll, BorderLayout.CENTER);
 
         return sidebar;
@@ -274,7 +317,7 @@ public class MainFrameTest extends JFrame {
         main.setOpaque(false);
 
         JPanel header = new JPanel(new BorderLayout());
-        header.setBackground(Color.WHITE);
+        header.setBackground(BG_APP);
         header.setPreferredSize(new Dimension(0, 60));
         header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.decode("#E2E8F0")));
 
@@ -294,7 +337,11 @@ public class MainFrameTest extends JFrame {
 
     private void initCards() {
         for (String key : navItems.keySet()) {
-            if (key.equals("Dashboard") || key.equals("Khuyến mãi") || key.equals("Kho")) continue; 
+            if (key.equals("Dashboard") || key.equals("Khuyến mãi") || key.equals("Kho") ||
+             key.equals("Sản phẩm") || key.equals("Nhập hàng") || key.equals("Nhà cung cấp") ||
+              key.equals("Bán hàng")
+             || key.equals("Bảo hành") || key.equals("Nhật ký") ||  key.equals("Hình ảnh SP")
+            || key.equals("Loại SP")) continue; 
 
             JPanel card = new JPanel(new GridBagLayout());
             card.setBackground(Color.WHITE);
@@ -360,6 +407,31 @@ public class MainFrameTest extends JFrame {
                 g2.dispose();
             }
             super.paintComponent(g);
+        }
+    }
+        private void performLogout() {
+        // 1. Hiển thị thông báo xác nhận bằng tiếng Việt
+        int confirm = JOptionPane.showConfirmDialog(
+                this, 
+                "Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?", 
+                "Xác nhận đăng xuất", 
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            // 2. Xóa dữ liệu trong SessionManager và RolePermission (Các file bạn đã cung cấp)
+            Utility.SessionManager.currentUser = null;
+            Utility.RolePermission.clear(); 
+            Utility.RolePermission.set(null, null);
+
+            // 3. Đóng cửa sổ hiện tại (MainFrameTest)
+            this.dispose();
+
+            // 4. Mở lại màn hình Đăng nhập (LoginFrame)
+            java.awt.EventQueue.invokeLater(() -> {
+                new LoginFrame().setVisible(true);
+            });
         }
     }
 }

@@ -28,7 +28,7 @@ public class AuthService {
         if (!user.getPass().equals(harshInput)) {
             return null;
         }
-
+        
         // Lấy danh sách quyền dùng user.getQuyen() từ accountDTO
         ArrayList<String> listPerms = phanQuyenDAO.getChucNangByMaQuyen(user.getQuyen());
         Set<String> permsSet = new HashSet<>(listPerms);

@@ -10,7 +10,7 @@ public class giamgiaBUS {
 
     private giamgiaDAO ggDAO = new giamgiaDAO();
     private List<giamgiaDTO> dsGG = new ArrayList<>();
-
+    private LogBUS logBUS = new LogBUS();
     public giamgiaBUS() {
         dsGG = ggDAO.getAll();
     }
@@ -60,6 +60,7 @@ public class giamgiaBUS {
 
     // 2️⃣ Sau đó thêm vào database
     if (ggDAO.insert(gg)) {
+        logBUS.ghiNhatKy("Thểm", "Giảm giá", "Thểm đợt giảm giá mã: " + gg.getMAGG());
         return true;
     } else {
         // 3️⃣ Nếu DB lỗi thì rollback list
@@ -103,6 +104,7 @@ public class giamgiaBUS {
 
             // update DB
             if (ggDAO.update(gg)) {
+                logBUS.ghiNhatKy("Cập nhật", "Giảm giá", "Cập nhật đợt giảm giá mã: " + gg.getMAGG());
                 return true;
             } else {
                 // rollback nếu DB lỗi
@@ -134,9 +136,9 @@ public class giamgiaBUS {
 
             // xóa khỏi list trước
             dsGG.remove(i);
-
             // xóa DB
             if (ggDAO.delete(maGG)) {
+                logBUS.ghiNhatKy("Xóa", "Giảm giá", "Xóa đợt giảm giá mã: " + maGG);
                 return true;
             } else {
                 // rollback nếu DB lỗi
