@@ -1,26 +1,35 @@
-
 package BUS;
 
-import DAL.DAO.KhachHangDAO;
-import DTO.khachhangDTO;
+import DAL.DAO.NhanVienDAO;
+import DTO.nhanvienDTO;
 import java.util.ArrayList;
 
-public class KhachHangBUS {
-    private KhachHangDAO dao = new KhachHangDAO();
+public class NhanVienBUS {
+    private NhanVienDAO nvDAO = new NhanVienDAO();
 
-    public ArrayList<khachhangDTO> getList() {
-        return dao.getAll();
+    // Dùng chung cho Load Data và Tìm Kiếm
+    public ArrayList<nhanvienDTO> timKiem(String keyword) {
+        return nvDAO.timKiem(keyword);
+    }
+    
+    // Đảm bảo có hàm getList() để mấy form khác gọi (như cái PNAddDialog, GiaoDienBanHang hồi trưa)
+    public ArrayList<nhanvienDTO> getList() {
+        return nvDAO.timKiem("");
     }
 
-    // Phục vụ "Chăm sóc khách hàng": Tìm khách theo SĐT khi họ đến mua hàng
-    public khachhangDTO timKhachHangTheoSDT(String sdt) {
-        for (khachhangDTO kh : getList()) {
-            if (kh.getSdt().equals(sdt)) return kh;
-        }
-        return null;
+    public boolean themNV(nhanvienDTO nv) {
+        return nvDAO.insert(nv);
     }
 
-    public boolean themKhachHangMoi(khachhangDTO kh) {
-        return dao.insert(kh);
+    public boolean suaNV(nhanvienDTO nv) {
+        return nvDAO.update(nv);
+    }
+
+    public boolean xoaNV(String maNV) {
+        return nvDAO.delete(maNV);
+    }
+
+    public Object layTenNhanVien(String maNV) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }
