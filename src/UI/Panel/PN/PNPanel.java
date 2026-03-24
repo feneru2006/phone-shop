@@ -485,7 +485,7 @@ public class PNPanel extends JPanel {
         currentList = new ArrayList<>();
         for (phieunhapDTO pn : pnBus.getListPhieuNhap()) {
             String tenNCC = nccBus.layTenNccTheoMa(pn.getMaNCC());
-            String tenNV = nvBus.layTenNhanVien(pn.getMaNV()); 
+            String tenNV = nvBus.layTenNhanVien(pn.getMaNV())+"; 
             LocalDate ngayPN = pn.getNgayNhap().toLocalDate();
 
             boolean matchSearch = pn.getMaPNH().toLowerCase().contains(search) || tenNCC.toLowerCase().contains(search) || tenNV.toLowerCase().contains(search);
