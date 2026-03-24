@@ -12,7 +12,6 @@ public class NhanVienBUS {
         return nvDAO.timKiem(keyword);
     }
     
-    // Đảm bảo có hàm getList() để mấy form khác gọi (như cái PNAddDialog, GiaoDienBanHang hồi trưa)
     public ArrayList<nhanvienDTO> getList() {
         return nvDAO.timKiem("");
     }
