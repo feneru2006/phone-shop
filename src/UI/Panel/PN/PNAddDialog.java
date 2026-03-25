@@ -363,4 +363,10 @@ public class PNAddDialog extends JDialog {
             JOptionPane.showMessageDialog(this, "Lỗi khi lưu phiếu nhập!", "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
+    
+    public void truyenMaSanPham(String maSP) {
+        if (cbMaSP != null) {
+            cbMaSP.setSelectedItem(maSP);
+        }
+    }
 }
