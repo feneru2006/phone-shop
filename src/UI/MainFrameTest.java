@@ -352,10 +352,13 @@ public class MainFrameTest extends JFrame {
         }
     }
 
-    private void showCard(String name) {
+    public void showCard(String name) {
         navItems.forEach((k, v) -> v.setActive(k.equals(name)));
         if (pageTitleLabel != null) pageTitleLabel.setText(name);
         cardLayout.show(contentPanel, name);
+    }
+    public JPanel getContentPanel() {
+        return contentPanel;
     }
 
     // --- LỚP NÚT SIDENAV CÓ EMOJI ---

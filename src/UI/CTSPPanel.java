@@ -426,4 +426,9 @@ public class CTSPPanel extends JPanel {
             return c;
         }
     }
+    public void timKiemSanPham(String maSP) {
+    if (txtSearch != null) {
+        txtSearch.setText(maSP);
+    }
+}
 }
