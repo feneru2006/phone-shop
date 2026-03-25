@@ -329,66 +329,66 @@ public class BaoHanhPanel extends JPanel {
 
     /* ================= ADD ================= */
 
-    private void openAddDialog() {
+    // private void openAddDialog() {
 
-        JTextField txtMaBH = new JTextField();
-        JTextField txtCTHD = new JTextField();
-        JTextField txtKH = new JTextField();
-        JTextField txtNgay = new JTextField("2026-01-01");
-        JTextField txtThoiHan = new JTextField("12");
+    //     JTextField txtMaBH = new JTextField();
+    //     JTextField txtCTHD = new JTextField();
+    //     JTextField txtKH = new JTextField();
+    //     JTextField txtNgay = new JTextField("2026-01-01");
+    //     JTextField txtThoiHan = new JTextField("12");
 
-        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
+    //     JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
 
-        panel.add(new JLabel("Mã BH"));
-        panel.add(txtMaBH);
+    //     panel.add(new JLabel("Mã BH"));
+    //     panel.add(txtMaBH);
 
-        panel.add(new JLabel("Mã CTHD"));
-        panel.add(txtCTHD);
+    //     panel.add(new JLabel("Mã CTHD"));
+    //     panel.add(txtCTHD);
 
-        panel.add(new JLabel("Mã KH"));
-        panel.add(txtKH);
+    //     panel.add(new JLabel("Mã KH"));
+    //     panel.add(txtKH);
 
-        panel.add(new JLabel("Ngày BD"));
-        panel.add(txtNgay);
+    //     panel.add(new JLabel("Ngày BD"));
+    //     panel.add(txtNgay);
 
-        panel.add(new JLabel("Thời hạn"));
-        panel.add(txtThoiHan);
+    //     panel.add(new JLabel("Thời hạn"));
+    //     panel.add(txtThoiHan);
 
-        int result = JOptionPane.showConfirmDialog(
-                this,
-                panel,
-                "THÊM BẢO HÀNH",
-                JOptionPane.OK_CANCEL_OPTION);
+    //     int result = JOptionPane.showConfirmDialog(
+    //             this,
+    //             panel,
+    //             "THÊM BẢO HÀNH",
+    //             JOptionPane.OK_CANCEL_OPTION);
 
-        if (result == JOptionPane.OK_OPTION) {
+    //     if (result == JOptionPane.OK_OPTION) {
 
-            try {
+    //         try {
 
-                PhieubaohanhDTO bh = new PhieubaohanhDTO();
+    //             PhieubaohanhDTO bh = new PhieubaohanhDTO();
 
-                bh.setMaBH(txtMaBH.getText());
-                bh.setMaCTHD(txtCTHD.getText());
-                bh.setMaKH(txtKH.getText());
-                bh.setNgayBD(java.time.LocalDate.parse(txtNgay.getText()));
-                bh.setThoiHan(Integer.parseInt(txtThoiHan.getText()));
+    //             bh.setMaBH(txtMaBH.getText());
+    //             bh.setMaCTHD(txtCTHD.getText());
+    //             bh.setMaKH(txtKH.getText());
+    //             bh.setNgayBD(java.time.LocalDate.parse(txtNgay.getText()));
+    //             bh.setThoiHan(Integer.parseInt(txtThoiHan.getText()));
 
-                if (bhBUS.add(bh)) {
+    //             if (bhBUS.add(bh)) {
 
-                    JOptionPane.showMessageDialog(this, "Thêm thành công");
+    //                 JOptionPane.showMessageDialog(this, "Thêm thành công");
 
-                    loadData();
+    //                 loadData();
 
-                } else {
-                    JOptionPane.showMessageDialog(this, "Thêm thất bại");
-                }
+    //             } else {
+    //                 JOptionPane.showMessageDialog(this, "Thêm thất bại");
+    //             }
 
-            } catch (Exception ex) {
+    //         } catch (Exception ex) {
 
-                JOptionPane.showMessageDialog(this, ex.getMessage());
+    //             JOptionPane.showMessageDialog(this, ex.getMessage());
 
-            }
+    //         }
 
-        }
+    //     }
 
-    }
+    // }
 }
