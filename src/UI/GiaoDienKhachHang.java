@@ -1,4 +1,4 @@
-package Utility;
+package UI;
 
 import BUS.KhachHangBUS;
 import DTO.khachhangDTO;
@@ -34,7 +34,7 @@ public class GiaoDienKhachHang extends JPanel {
         setBackground(new Color(236, 240, 241));
         setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        JLabel lblTitle = new JLabel("👥 QUẢN LÝ KHÁCH HÀNG & CHĂM SÓC", SwingConstants.LEFT);
+        JLabel lblTitle = new JLabel(" QUẢN LÝ KHÁCH HÀNG & CHĂM SÓC", SwingConstants.LEFT);
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
         lblTitle.setForeground(primaryColor);
         add(lblTitle, BorderLayout.NORTH);
@@ -86,15 +86,15 @@ public class GiaoDienKhachHang extends JPanel {
         JPanel pnlSearch = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         pnlSearch.setBackground(Color.WHITE);
         txtTimKiem = new JTextField(15);
-        btnTimKiem = createFlatButton("🔍 Tìm Tên/SĐT", primaryColor);
+        btnTimKiem = createFlatButton(" Tìm Tên/SĐT", primaryColor);
         pnlSearch.add(txtTimKiem); pnlSearch.add(btnTimKiem);
 
         JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         pnlButtons.setBackground(Color.WHITE);
-        btnThem = createFlatButton("➕ Thêm", successColor);
-        btnSua = createFlatButton("✏️ Cập Nhật", warningColor);
-        btnXoa = createFlatButton("🗑️ Xóa", dangerColor);
-        btnLamMoi = createFlatButton("🔄 Làm Mới", primaryColor);
+        btnThem = createFlatButton(" Thêm", successColor);
+        btnSua = createFlatButton(" Cập Nhật", warningColor);
+        btnXoa = createFlatButton(" Xóa", dangerColor);
+        btnLamMoi = createFlatButton(" Làm Mới", primaryColor);
 
         pnlButtons.add(btnThem); pnlButtons.add(btnSua); pnlButtons.add(btnXoa); pnlButtons.add(btnLamMoi);
 

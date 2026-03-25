@@ -307,7 +307,7 @@ public class PNPanel extends JPanel {
         cbNV.setMaximumSize(fieldSize);
         cbNV.setAlignmentX(Component.LEFT_ALIGNMENT);
         cbNV.addItem("Tất cả");
-        for (nhanvienDTO nv : nvBus.getAll()) cbNV.addItem(nv.getHoTen());
+        for (nhanvienDTO nv : nvBus.getList()) cbNV.addItem(nv.getHoTen());
         filterPanel.add(cbNV); filterPanel.add(Box.createVerticalStrut(15));
 
         filterPanel.add(createLabel("Từ ngày (dd/MM/yyyy):"));
@@ -485,7 +485,7 @@ public class PNPanel extends JPanel {
         currentList = new ArrayList<>();
         for (phieunhapDTO pn : pnBus.getListPhieuNhap()) {
             String tenNCC = nccBus.layTenNccTheoMa(pn.getMaNCC());
-            String tenNV = nvBus.layTenNhanVien(pn.getMaNV())+"; 
+            String tenNV = nvBus.layTenNhanVien(pn.getMaNV())+""; 
             LocalDate ngayPN = pn.getNgayNhap().toLocalDate();
 
             boolean matchSearch = pn.getMaPNH().toLowerCase().contains(search) || tenNCC.toLowerCase().contains(search) || tenNV.toLowerCase().contains(search);

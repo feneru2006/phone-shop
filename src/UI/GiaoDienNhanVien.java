@@ -1,4 +1,4 @@
-package Utility;
+package UI;
 
 import BUS.NhanVienBUS;
 import DTO.nhanvienDTO;

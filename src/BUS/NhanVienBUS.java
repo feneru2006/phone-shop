@@ -29,7 +29,16 @@ public class NhanVienBUS {
         return nvDAO.delete(maNV);
     }
 
-    public Object layTenNhanVien(String maNV) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public String layTenNhanVien(String maNV) {
+
+    ArrayList<nhanvienDTO> list = getList();
+
+    for (nhanvienDTO nv : list) {
+        if (nv.getMaNV().equals(maNV)) {
+            return nv.getHoTen();
+        }
     }
+
+    return "Không tìm thấy";
+}
 }

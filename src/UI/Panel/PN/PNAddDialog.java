@@ -223,7 +223,7 @@ public class PNAddDialog extends JDialog {
         txtMaPhieu = new JTextField(); txtMaPhieu.setEditable(false);
         
         cbNV = new JComboBox<>(); 
-        for (nhanvienDTO nv : nvBus.getAll()) {
+        for (nhanvienDTO nv : nvBus.getList()) {
             cbNV.addItem(nv.getMaNV() + " - " + nv.getHoTen());
         }
 
