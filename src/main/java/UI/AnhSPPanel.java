@@ -49,7 +49,7 @@ public class AnhSPPanel extends JPanel {
         setBorder(new EmptyBorder(20, 20, 20, 20));
 
         JLabel lblTitle = new JLabel("Quản lý Hình ảnh Sản phẩm");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
         add(lblTitle, BorderLayout.NORTH);
 
         JPanel pnlContent = new JPanel(new BorderLayout(20, 0));
@@ -60,7 +60,7 @@ public class AnhSPPanel extends JPanel {
         add(pnlContent, BorderLayout.CENTER);
         taiDuLieuLenBang();
         
-        new Utility.AutoRefresh(3000, () -> { 
+        new Utility.AutoRefresh(30000, () -> { 
             imgBus.reload(); 
             taiDuLieuLenBang(); 
         }).start();

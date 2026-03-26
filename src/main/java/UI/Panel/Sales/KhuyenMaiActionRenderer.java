@@ -5,7 +5,7 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 
 public class KhuyenMaiActionRenderer extends JPanel implements TableCellRenderer {
-
+    Cursor hand = new Cursor(Cursor.HAND_CURSOR);
     JButton btnEdit = new JButton("Sửa");
     JButton btnView = new JButton("Xem");
     JButton btnDelete = new JButton("Xóa");
@@ -20,6 +20,9 @@ public class KhuyenMaiActionRenderer extends JPanel implements TableCellRenderer
         btnEdit.setPreferredSize(size);
         btnView.setPreferredSize(size);
         btnDelete.setPreferredSize(size);
+        btnEdit.setCursor(hand);
+        btnView.setCursor(hand);
+        btnDelete.setCursor(hand);
 
         JPanel inner = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
         inner.setOpaque(false);

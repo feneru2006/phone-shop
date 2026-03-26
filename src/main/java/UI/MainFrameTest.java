@@ -96,6 +96,8 @@ public class MainFrameTest extends JFrame {
         contentPanel.add(new AnhSPPanel(),"Hình ảnh SP");
         contentPanel.add(new LoaiPanel(),"Loại SP");
         contentPanel.add(new CTSPPanel(),"Chi tiết SP");
+        contentPanel.add(new GiaoDienKhachHang(),"Khách hàng");
+        contentPanel.add(new GiaoDienNhanVien(),"Nhân viên");
         // LogPanel logPanel = new LogPanel();
         // contentPanel.add(logPanel, "Log");
         applyPermissionsFromDB();
@@ -341,7 +343,7 @@ public class MainFrameTest extends JFrame {
              key.equals("Sản phẩm") || key.equals("Nhập hàng") || key.equals("Nhà cung cấp") ||
               key.equals("Bán hàng")
              || key.equals("Bảo hành") || key.equals("Nhật ký") ||  key.equals("Hình ảnh SP")
-            || key.equals("Loại SP")) continue; 
+            || key.equals("Loại SP" )|| key.equals("Nhân vi")|| key.equals("Khách hàng")) continue; 
 
             JPanel card = new JPanel(new GridBagLayout());
             card.setBackground(Color.WHITE);
@@ -350,10 +352,13 @@ public class MainFrameTest extends JFrame {
         }
     }
 
-    private void showCard(String name) {
+    public void showCard(String name) {
         navItems.forEach((k, v) -> v.setActive(k.equals(name)));
         if (pageTitleLabel != null) pageTitleLabel.setText(name);
         cardLayout.show(contentPanel, name);
+    }
+    public JPanel getContentPanel() {
+        return contentPanel;
     }
 
     // --- LỚP NÚT SIDENAV CÓ EMOJI ---

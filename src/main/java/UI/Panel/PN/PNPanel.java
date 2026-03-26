@@ -104,7 +104,7 @@ public class PNPanel extends JPanel {
         txtSearch.putClientProperty("JTextField.placeholderText", "Tìm mã phiếu, nhân viên...");
         txtSearch.setPreferredSize(new Dimension(200, 38));
         
-        JButton btnImport = new JButton("📤 IMPORT EXCEL");
+        JButton btnImport = new JButton("IMPORT EXCEL");
         btnImport.setBackground(Color.decode("#10B981"));
         btnImport.setForeground(Color.WHITE);
         btnImport.setFont(new Font("Segoe UI", Font.BOLD, 12));
@@ -307,7 +307,7 @@ public class PNPanel extends JPanel {
         cbNV.setMaximumSize(fieldSize);
         cbNV.setAlignmentX(Component.LEFT_ALIGNMENT);
         cbNV.addItem("Tất cả");
-        for (nhanvienDTO nv : nvBus.getAll()) cbNV.addItem(nv.getHoTen());
+        for (nhanvienDTO nv : nvBus.getList()) cbNV.addItem(nv.getHoTen());
         filterPanel.add(cbNV); filterPanel.add(Box.createVerticalStrut(15));
 
         filterPanel.add(createLabel("Từ ngày (dd/MM/yyyy):"));
@@ -379,11 +379,21 @@ public class PNPanel extends JPanel {
         table.setGridColor(Color.decode("#E2E8F0"));
         table.setIntercellSpacing(new Dimension(1, 1)); 
 
+        // --- CÁC THIẾT LẬP MỚI ĐƯỢC THÊM VÀO ĐÂY ---
+        // Khóa việc kéo thả đổi vị trí và kéo giãn kích thước cột
+        table.getTableHeader().setReorderingAllowed(false);
+        table.getTableHeader().setResizingAllowed(false);
+        
+        // Cài đặt chế độ tự động dàn trải đều không gian (flow)
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+
+        // Cập nhật lại chiều rộng các cột
         table.getColumnModel().getColumn(0).setPreferredWidth(80);
-        table.getColumnModel().getColumn(1).setPreferredWidth(200);
+        table.getColumnModel().getColumn(1).setPreferredWidth(150); // Đã giảm từ 200 xuống 150
         table.getColumnModel().getColumn(2).setPreferredWidth(150);
         table.getColumnModel().getColumn(3).setPreferredWidth(160); 
-        table.getColumnModel().getColumn(4).setPreferredWidth(120);
+        table.getColumnModel().getColumn(4).setPreferredWidth(170); // Đã tăng từ 120 lên 170
+        // ------------------------------------------
         
         CustomRowRenderer rowRenderer = new CustomRowRenderer();
         for (int i = 0; i < 5; i++) table.getColumnModel().getColumn(i).setCellRenderer(rowRenderer);
@@ -485,7 +495,7 @@ public class PNPanel extends JPanel {
         currentList = new ArrayList<>();
         for (phieunhapDTO pn : pnBus.getListPhieuNhap()) {
             String tenNCC = nccBus.layTenNccTheoMa(pn.getMaNCC());
-            String tenNV = nvBus.layTenNhanVien(pn.getMaNV()); 
+            String tenNV = nvBus.layTenNhanVien(pn.getMaNV())+""; 
             LocalDate ngayPN = pn.getNgayNhap().toLocalDate();
 
             boolean matchSearch = pn.getMaPNH().toLowerCase().contains(search) || tenNCC.toLowerCase().contains(search) || tenNV.toLowerCase().contains(search);

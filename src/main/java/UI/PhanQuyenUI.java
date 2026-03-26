@@ -329,23 +329,51 @@ public class PhanQuyenUI extends JPanel {
         dialog.add(header, BorderLayout.NORTH);
 
         String[] cols = {"Mã Nhân Viên", "Tên Đăng Nhập", "Mã Quyền"};
-        DefaultTableModel modelUsers = new DefaultTableModel(cols, 0);
+        DefaultTableModel modelUsers = new DefaultTableModel(cols, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
         JTable tblUsers = new JTable(modelUsers);
         tblUsers.setRowHeight(35);
 
         AccountDAO accDAO = new AccountDAO();
         List<accountDTO> list = accDAO.selectByRole(maQuyen);
-        for (accountDTO acc : list) modelUsers.addRow(new Object[]{acc.getId(), acc.getTen(), acc.getQuyen()});
-        if (list.isEmpty()) modelUsers.addRow(new Object[]{"", "Chưa có nhân viên nào", ""});
+
+        // LẤY TỔNG SỐ LƯỢNG NHÂN VIÊN
+        int totalUsers = list.size();
+
+        for (accountDTO acc : list) {
+            modelUsers.addRow(new Object[]{acc.getId(), acc.getTen(), acc.getQuyen()});
+        }
+
+        if (list.isEmpty()) {
+            modelUsers.addRow(new Object[]{"", "Chưa có nhân viên nào", ""});
+        }
 
         JScrollPane scroll = new JScrollPane(tblUsers);
         scroll.setBorder(new EmptyBorder(10, 10, 10, 10));
         dialog.add(scroll, BorderLayout.CENTER);
 
-        JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 10));
+        // HIỂN THỊ TỔNG SỐ LƯỢNG TỚI NGƯỜI DÙNG
+        JPanel footer = new JPanel(new BorderLayout()); // Dùng BorderLayout để ép 2 thành phần về 2 góc
+        footer.setBackground(Color.WHITE);
+        footer.setBorder(new EmptyBorder(10, 15, 10, 15));
+
+        // Tạo Label hiển thị tổng số
+        JLabel lblTotal = new JLabel("Tổng số nhân viên: " + totalUsers);
+        lblTotal.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblTotal.setForeground(Color.decode("#DC2626")); // Màu đỏ để nổi bật thông tin
+
         JButton btnClose = createStyledButton("Đóng", "#94A3B8");
         btnClose.addActionListener(e -> dialog.dispose());
-        footer.add(btnClose);
+
+        // Đẩy nhãn Tổng số sang bên Trái, nút Đóng sang bên Phải
+        footer.add(lblTotal, BorderLayout.WEST);
+        footer.add(btnClose, BorderLayout.EAST);
+
         dialog.add(footer, BorderLayout.SOUTH);
         dialog.setVisible(true);
     }
@@ -399,9 +427,8 @@ public class PhanQuyenUI extends JPanel {
             setLayout(new FlowLayout(FlowLayout.CENTER, 8, 15));
             setOpaque(true);
             JLabel lblUsers = new JLabel("👥"); lblUsers.setForeground(Color.decode("#6366F1")); lblUsers.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 18));
-            JLabel lblEdit = new JLabel("✏"); lblEdit.setForeground(Color.decode("#10B981")); lblEdit.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 16));
             JLabel lblDel = new JLabel("🗑"); lblDel.setForeground(Color.RED); lblDel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 16));
-            add(lblUsers); add(lblEdit); add(lblDel);
+            add(lblUsers); add(lblDel);
         }
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -412,37 +439,22 @@ public class PhanQuyenUI extends JPanel {
 
     class ActionButtonsEditor extends DefaultCellEditor {
         private JPanel panel;
-        private JButton btnUsers, btnEdit, btnDel;
+        private JButton btnUsers, btnDel;
 
         public ActionButtonsEditor(JTable rightTable, List<String[]> nhomQuyenList) {
             super(new JCheckBox());
             panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 15));
 
             btnUsers = createIconButton("👥", Color.decode("#6366F1"));
-            btnEdit = createIconButton("✏", Color.decode("#10B981"));
             btnDel = createIconButton("🗑", Color.RED);
 
             btnUsers.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 18));
-            btnEdit.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 16));
             btnDel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 16));
 
             btnUsers.addActionListener(e -> {
                 fireEditingStopped();
                 int row = rightTable.getSelectedRow();
                 showUsersInRoleDialog(nhomQuyenList.get(row)[0], nhomQuyenList.get(row)[1]);
-            });
-
-            btnEdit.addActionListener(e -> {
-                fireEditingStopped();
-                int row = rightTable.getSelectedRow();
-                String maQuyen = nhomQuyenList.get(row)[0];
-
-                // [RULE 3]: KHÔNG CHO SỬA ADMIN
-                if (maQuyen.equals("AD")) {
-                    JOptionPane.showMessageDialog(panel, "Quyền Admin (AD) là tối thượng, không thể sửa!", "Từ chối truy cập", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                JOptionPane.showMessageDialog(panel, "Sửa quyền cho Mã: " + maQuyen);
             });
 
             btnDel.addActionListener(e -> {
@@ -471,7 +483,7 @@ public class PhanQuyenUI extends JPanel {
                 }
             });
 
-            panel.add(btnUsers); panel.add(btnEdit); panel.add(btnDel);
+            panel.add(btnUsers); panel.add(btnDel);
         }
 
         private JButton createIconButton(String text, Color color) {

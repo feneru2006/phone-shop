@@ -4,6 +4,8 @@ import BUS.giamgiaBUS;
 import DTO.giamgiaDTO;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -16,6 +18,11 @@ public class KhuyenMaiPanel extends JPanel {
     private DefaultTableModel model;
 
     private giamgiaBUS ggBUS = new giamgiaBUS();
+
+    private JComboBox<String> cbFilter;
+    private String currentFilter = "Tất cả";
+
+    private JTextField txtSearch; // ===== SEARCH =====
 
     private int currentPage = 1;
     private int rowsPerPage = 8;
@@ -30,9 +37,12 @@ public class KhuyenMaiPanel extends JPanel {
         setBackground(Color.WHITE);
         initUI();
         loadData();
-        new Utility.AutoRefresh(30000, () -> { 
-            ggBUS.reload(); 
-            loadData(); 
+
+        new Utility.AutoRefresh(30000, () -> {
+            SwingUtilities.invokeLater(() -> {
+                ggBUS.reload();
+                loadData();
+            });
         }).start();
     }
 
@@ -49,14 +59,62 @@ public class KhuyenMaiPanel extends JPanel {
         btnAdd.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnAdd.addActionListener(e -> openAddDialog());
 
+        // ===== SEARCH =====
+        txtSearch = new JTextField(15);
+        txtSearch.setPreferredSize(new Dimension(180, 35));
+
+        txtSearch.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                onSearch();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                onSearch();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                onSearch();
+            }
+        });
+
+        // ===== FILTER =====
+        cbFilter = new JComboBox<>(new String[] {
+                "Tất cả",
+                "Sắp diễn ra",
+                "Đang hoạt động",
+                "Đã kết thúc"
+        });
+        cbFilter.setPreferredSize(new Dimension(150, 35));
+
+        cbFilter.addActionListener(e -> {
+            currentFilter = cbFilter.getSelectedItem().toString();
+            currentPage = 1;
+            loadData();
+        });
+
+        // ===== TOP =====
         JPanel top = new JPanel(new BorderLayout());
         top.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
         top.setBackground(Color.WHITE);
+
         top.add(lblTitle, BorderLayout.WEST);
-        top.add(btnAdd, BorderLayout.EAST);
+
+        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        right.setBackground(Color.WHITE);
+
+        right.add(new JLabel("Tìm:"));
+        right.add(txtSearch);
+
+        right.add(new JLabel("Lọc:"));
+        right.add(cbFilter);
+
+        right.add(btnAdd);
+
+        top.add(right, BorderLayout.EAST);
 
         add(top, BorderLayout.NORTH);
 
+        // ===== TABLE =====
         String[] cols = {
                 "MAGG", "ĐỢT GG", "BẮT ĐẦU", "KẾT THÚC", "TRẠNG THÁI", "THAO TÁC"
         };
@@ -69,44 +127,37 @@ public class KhuyenMaiPanel extends JPanel {
 
         table = new JTable(model);
 
-        table.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
-            public void mouseMoved(java.awt.event.MouseEvent e) {
-
-                int col = table.columnAtPoint(e.getPoint());
-
-                if (col == 5) { // cột THAO TÁC
-                    table.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                } else {
-                    table.setCursor(Cursor.getDefaultCursor());
-                    table.setFocusable(false);
-                    table.setRowSelectionAllowed(false);
-                    table.setCellSelectionEnabled(false);
-                    table.getTableHeader().setReorderingAllowed(false);
-                    table.getTableHeader().setResizingAllowed(false);
-                }
-            }
-        });
-
         table.setRowHeight(60);
         table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
-        /* ===== HEADER STYLE ===== */
-
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
-        table.getTableHeader().setBackground(new Color(51, 65, 85)); // nền đen/xám
-        table.getTableHeader().setForeground(Color.WHITE); // chữ trắng
-        table.getTableHeader().setPreferredSize(new Dimension(0, 36));
-
+        table.getTableHeader().setBackground(new Color(51, 65, 85));
+        table.getTableHeader().setForeground(Color.WHITE);
+        table.setRowSelectionAllowed(false);
+        table.getTableHeader().setReorderingAllowed(false); // ❌ kéo đổi vị trí cột
+        table.getTableHeader().setResizingAllowed(false); // ❌ kéo giãn cột
         ((DefaultTableCellRenderer) table.getTableHeader()
                 .getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER);
 
-        /* ===== TABLE GRID STYLE ===== */
-
         table.setShowVerticalLines(false);
         table.setGridColor(new Color(230, 230, 230));
-        table.setIntercellSpacing(new Dimension(0, 0));
+        table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(
+                    JTable table, Object value, boolean isSelected,
+                    boolean hasFocus, int row, int column) {
 
-        /* ===== ACTION COLUMN ===== */
+                Component c = super.getTableCellRendererComponent(
+                        table, value, false, false, row, column); // 👈 ép false hết
+
+                // màu dòng xen kẽ cho đẹp
+                c.setBackground(row % 2 == 0 ? Color.WHITE : new Color(245, 245, 245));
+
+                setHorizontalAlignment(JLabel.CENTER);
+
+                return c;
+            }
+        });
 
         table.getColumn("THAO TÁC").setPreferredWidth(260);
         table.getColumn("THAO TÁC")
@@ -116,6 +167,7 @@ public class KhuyenMaiPanel extends JPanel {
 
         JScrollPane scroll = new JScrollPane(table);
 
+        // ===== PAGINATION =====
         btnPrev = new JButton("<<");
         btnNext = new JButton(">>");
         lblPage = new JLabel();
@@ -144,9 +196,31 @@ public class KhuyenMaiPanel extends JPanel {
         add(center, BorderLayout.CENTER);
     }
 
+    private void onSearch() {
+        currentPage = 1;
+        loadData();
+    }
+
     public void loadData() {
 
         List<giamgiaDTO> list = ggBUS.getAll();
+
+        // ===== SEARCH =====
+        String keyword = txtSearch.getText().toLowerCase().trim();
+
+        if (!keyword.isEmpty()) {
+            list = list.stream()
+                    .filter(gg -> gg.getMAGG().toLowerCase().contains(keyword) ||
+                            gg.getdotGG().toLowerCase().contains(keyword))
+                    .toList();
+        }
+
+        // ===== FILTER =====
+        if (!currentFilter.equals("Tất cả")) {
+            list = list.stream()
+                    .filter(gg -> getStatus(gg).equals(currentFilter))
+                    .toList();
+        }
 
         int totalRows = list.size();
         totalPages = (int) Math.ceil((double) totalRows / rowsPerPage);
@@ -191,106 +265,106 @@ public class KhuyenMaiPanel extends JPanel {
         return "Đang hoạt động";
     }
 
-public void editRow(int row) {
+    public void editRow(int row) {
 
-    String ma = model.getValueAt(row, 0).toString();
-    String ten = model.getValueAt(row, 1).toString();
-    String bdStr = model.getValueAt(row, 2).toString();
-    String ktStr = model.getValueAt(row, 3).toString();
+        String ma = model.getValueAt(row, 0).toString();
+        String ten = model.getValueAt(row, 1).toString();
+        String bdStr = model.getValueAt(row, 2).toString();
+        String ktStr = model.getValueAt(row, 3).toString();
 
-    JTextField txtTen = new JTextField(ten);
+        JTextField txtTen = new JTextField(ten);
 
-    JSpinner spBD = new JSpinner(new SpinnerDateModel());
-    JSpinner spKT = new JSpinner(new SpinnerDateModel());
+        JSpinner spBD = new JSpinner(new SpinnerDateModel());
+        JSpinner spKT = new JSpinner(new SpinnerDateModel());
 
-    JSpinner.DateEditor edBD = new JSpinner.DateEditor(spBD, "dd-MM-yyyy");
-    JSpinner.DateEditor edKT = new JSpinner.DateEditor(spKT, "dd-MM-yyyy");
+        JSpinner.DateEditor edBD = new JSpinner.DateEditor(spBD, "dd-MM-yyyy");
+        JSpinner.DateEditor edKT = new JSpinner.DateEditor(spKT, "dd-MM-yyyy");
 
-    spBD.setEditor(edBD);
-    spKT.setEditor(edKT);
+        spBD.setEditor(edBD);
+        spKT.setEditor(edKT);
 
-    // ===== LẤY NGÀY TỪ TABLE =====
-    try {
-
-        LocalDateTime bdTime = LocalDateTime.parse(bdStr);
-        LocalDateTime ktTime = LocalDateTime.parse(ktStr);
-
-        java.util.Date bdDate = java.util.Date.from(
-                bdTime.atZone(java.time.ZoneId.systemDefault()).toInstant());
-
-        java.util.Date ktDate = java.util.Date.from(
-                ktTime.atZone(java.time.ZoneId.systemDefault()).toInstant());
-
-        spBD.setValue(bdDate);
-        spKT.setValue(ktDate);
-
-    } catch (Exception e) {
-
-        spBD.setValue(new java.util.Date());
-        spKT.setValue(new java.util.Date());
-    }
-
-    Object[] message = {
-            "Tên khuyến mãi:", txtTen,
-            "Ngày bắt đầu:", spBD,
-            "Ngày kết thúc:", spKT
-    };
-
-    while (true) {
-
-        int option = JOptionPane.showConfirmDialog(
-                this,
-                message,
-                "Sửa khuyến mãi",
-                JOptionPane.OK_CANCEL_OPTION);
-
-        if (option != JOptionPane.OK_OPTION) {
-            break;
-        }
-
+        // ===== LẤY NGÀY TỪ TABLE =====
         try {
 
-            java.util.Date bdDate = (java.util.Date) spBD.getValue();
-            java.util.Date ktDate = (java.util.Date) spKT.getValue();
+            LocalDateTime bdTime = LocalDateTime.parse(bdStr);
+            LocalDateTime ktTime = LocalDateTime.parse(ktStr);
 
-            LocalDateTime bd = bdDate.toInstant()
-                    .atZone(java.time.ZoneId.systemDefault())
-                    .toLocalDateTime()
-                    .toLocalDate()
-                    .atStartOfDay();
+            java.util.Date bdDate = java.util.Date.from(
+                    bdTime.atZone(java.time.ZoneId.systemDefault()).toInstant());
 
-            LocalDateTime kt = ktDate.toInstant()
-                    .atZone(java.time.ZoneId.systemDefault())
-                    .toLocalDateTime()
-                    .toLocalDate()
-                    .atTime(23, 59, 59);
+            java.util.Date ktDate = java.util.Date.from(
+                    ktTime.atZone(java.time.ZoneId.systemDefault()).toInstant());
 
-            if (kt.isBefore(bd)) {
-                JOptionPane.showMessageDialog(this,
-                        "Ngày kết thúc phải sau ngày bắt đầu!");
-                continue;
-            }
+            spBD.setValue(bdDate);
+            spKT.setValue(ktDate);
 
-            giamgiaDTO gg = new giamgiaDTO(
-                    ma,
-                    txtTen.getText(),
-                    bd,
-                    kt);
+        } catch (Exception e) {
 
-            if (ggBUS.update(gg)) {
+            spBD.setValue(new java.util.Date());
+            spKT.setValue(new java.util.Date());
+        }
 
-                JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
-                loadData();
+        Object[] message = {
+                "Tên khuyến mãi:", txtTen,
+                "Ngày bắt đầu:", spBD,
+                "Ngày kết thúc:", spKT
+        };
+
+        while (true) {
+
+            int option = JOptionPane.showConfirmDialog(
+                    this,
+                    message,
+                    "Sửa khuyến mãi",
+                    JOptionPane.OK_CANCEL_OPTION);
+
+            if (option != JOptionPane.OK_OPTION) {
                 break;
             }
 
-        } catch (Exception ex) {
+            try {
 
-            JOptionPane.showMessageDialog(this,
-                    "Dữ liệu không hợp lệ!");
+                java.util.Date bdDate = (java.util.Date) spBD.getValue();
+                java.util.Date ktDate = (java.util.Date) spKT.getValue();
+
+                LocalDateTime bd = bdDate.toInstant()
+                        .atZone(java.time.ZoneId.systemDefault())
+                        .toLocalDateTime()
+                        .toLocalDate()
+                        .atStartOfDay();
+
+                LocalDateTime kt = ktDate.toInstant()
+                        .atZone(java.time.ZoneId.systemDefault())
+                        .toLocalDateTime()
+                        .toLocalDate()
+                        .atTime(23, 59, 59);
+
+                if (kt.isBefore(bd)) {
+                    JOptionPane.showMessageDialog(this,
+                            "Ngày kết thúc phải sau ngày bắt đầu!");
+                    continue;
+                }
+
+                giamgiaDTO gg = new giamgiaDTO(
+                        ma,
+                        txtTen.getText(),
+                        bd,
+                        kt);
+
+                if (ggBUS.update(gg)) {
+
+                    JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
+                    loadData();
+                    break;
+                }
+
+            } catch (Exception ex) {
+
+                JOptionPane.showMessageDialog(this,
+                        "Dữ liệu không hợp lệ!");
+            }
         }
     }
-}
 
     public void viewDetail(int row) {
         String maGG = model.getValueAt(row, 0).toString();

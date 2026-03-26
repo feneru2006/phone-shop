@@ -1,4 +1,3 @@
-
 package BUS;
 
 import DAL.DAO.KhachHangDAO;
@@ -6,21 +5,30 @@ import DTO.khachhangDTO;
 import java.util.ArrayList;
 
 public class KhachHangBUS {
-    private KhachHangDAO dao = new KhachHangDAO();
+    private KhachHangDAO khDAO = new KhachHangDAO();
 
+    public ArrayList<khachhangDTO> timKiem(String keyword) {
+        return khDAO.timKiem(keyword);
+    }
+    
     public ArrayList<khachhangDTO> getList() {
-        return dao.getAll();
+        return khDAO.timKiem("");
     }
 
-    // Phục vụ "Chăm sóc khách hàng": Tìm khách theo SĐT khi họ đến mua hàng
-    public khachhangDTO timKhachHangTheoSDT(String sdt) {
-        for (khachhangDTO kh : getList()) {
-            if (kh.getSdt().equals(sdt)) return kh;
-        }
-        return null;
+    public boolean themKH(khachhangDTO kh) {
+        // Có thể check thêm logic trùng SĐT ở đây nếu thích
+        return khDAO.insert(kh);
     }
 
-    public boolean themKhachHangMoi(khachhangDTO kh) {
-        return dao.insert(kh);
+    public boolean suaKH(khachhangDTO kh) {
+        return khDAO.update(kh);
+    }
+
+    public boolean xoaKH(String maKH) {
+        return khDAO.delete(maKH);
+    }
+    // Gọi DAO lấy lịch sử mua hàng
+    public ArrayList<Object[]> getLichSuMuaHang(String maKH) {
+        return khDAO.getLichSuMuaHang(maKH);
     }
 }

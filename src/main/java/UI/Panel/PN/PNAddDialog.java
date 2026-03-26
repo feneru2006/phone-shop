@@ -223,7 +223,7 @@ public class PNAddDialog extends JDialog {
         txtMaPhieu = new JTextField(); txtMaPhieu.setEditable(false);
         
         cbNV = new JComboBox<>(); 
-        for (nhanvienDTO nv : nvBus.getAll()) {
+        for (nhanvienDTO nv : nvBus.getList()) {
             cbNV.addItem(nv.getMaNV() + " - " + nv.getHoTen());
         }
 
@@ -361,6 +361,12 @@ public class PNAddDialog extends JDialog {
             dispose();
         } else {
             JOptionPane.showMessageDialog(this, "Lỗi khi lưu phiếu nhập!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    public void truyenMaSanPham(String maSP) {
+        if (cbMaSP != null) {
+            cbMaSP.setSelectedItem(maSP);
         }
     }
 }

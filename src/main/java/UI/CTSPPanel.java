@@ -92,11 +92,11 @@ public class CTSPPanel extends JPanel {
         JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
         right.setOpaque(false);
         txtSearch = new JTextField(25);
-        txtSearch.putClientProperty("JTextField.placeholderText", "🔎 Nhập mã IMEI,...");
+        txtSearch.putClientProperty("JTextField.placeholderText", "Nhập mã IMEI,...");
         txtSearch.setPreferredSize(new Dimension(250, 38));
         txtSearch.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         
-        JButton btnExport = new JButton("📤 EXPORT EXCEL");
+        JButton btnExport = new JButton("EXPORT EXCEL");
         btnExport.setBackground(Color.decode("#10B981")); 
         btnExport.setForeground(Color.WHITE);
         btnExport.setFont(new Font("Segoe UI", Font.BOLD, 13));
@@ -426,4 +426,9 @@ public class CTSPPanel extends JPanel {
             return c;
         }
     }
+    public void timKiemSanPham(String maSP) {
+    if (txtSearch != null) {
+        txtSearch.setText(maSP);
+    }
+}
 }

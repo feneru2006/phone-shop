@@ -88,10 +88,7 @@ public class SanPhamPanel extends JPanel {
         add(pnlMain, BorderLayout.CENTER);
         taiDuLieuBang(spBUS.getAll());
         thietLapSuKienBang();
-        new Utility.AutoRefresh(30000, () -> { 
-            spBUS.reload(); 
-            taiDuLieuLenBang(spBUS.getAll()); 
-        }).start();
+
     }
 
     public void lamMoiDuLieu() {

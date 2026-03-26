@@ -1,9 +1,11 @@
 package UI.Panel;
 
+import BUS.NCCBUS;
+import BUS.PhieuNhapBUS;
 import BUS.SanPhamBUS;
 import DTO.SanPhamDTO;
 import UI.Utils.UIUtils;
-import UI.Dialog.ExcelPreviewDialog; // Import Dialog xem trước
+import UI.Dialog.ExcelPreviewDialog;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -17,6 +19,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class KhoPanel extends JPanel {
@@ -51,9 +54,9 @@ public class KhoPanel extends JPanel {
         loadDataKho(sanPhamBUS.getAll());
         loadLowStock();
         new Utility.AutoRefresh(30000, () -> { 
-        sanPhamBUS.reload(); 
-        loadDataKho(sanPhamBUS.getAll()); 
-        loadLowStock(); 
+            sanPhamBUS.reload(); 
+            loadDataKho(sanPhamBUS.getAll()); 
+            loadLowStock(); 
         }).start();
     }
 
@@ -106,7 +109,7 @@ public class KhoPanel extends JPanel {
             loadLowStock();
         });
 
-        // NÚT XUẤT EXCEL (MỚI)
+        // NÚT XUẤT EXCEL
         btnXuatExcel = new JButton("Xuất Excel");
         btnXuatExcel.setBackground(Color.decode("#217346"));
         btnXuatExcel.setForeground(Color.WHITE);
@@ -122,7 +125,7 @@ public class KhoPanel extends JPanel {
         toolPanel.add(txtTimKiem);
         toolPanel.add(btnTimKiem);
         toolPanel.add(btnLamMoi);
-        toolPanel.add(btnXuatExcel); // Thêm vào giao diện
+        toolPanel.add(btnXuatExcel);
         toolPanel.add(btnToggleCanhBao);
         topPanel.add(toolPanel, BorderLayout.CENTER);
 
@@ -147,6 +150,20 @@ public class KhoPanel extends JPanel {
         cm.getColumn(3).setPreferredWidth(120); cm.getColumn(3).setMaxWidth(120);
         cm.getColumn(2).setPreferredWidth(350); 
         cm.getColumn(4).setPreferredWidth(150);
+
+        // BẮT SỰ KIỆN DOUBLE CLICK TRÊN BẢNG KHO CHÍNH -> CHUYỂN SANG CTSP
+        tableKho.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    int row = tableKho.rowAtPoint(e.getPoint());
+                    if (row != -1) {
+                        String maSP = modelKho.getValueAt(row, 1).toString(); // Cột 1 là Mã SP
+                        chuyenHuongSangCTSP(maSP);
+                    }
+                }
+            }
+        });
 
         scrollKho = new JScrollPane(tableKho);
         scrollKho.getViewport().setBackground(Color.WHITE);
@@ -214,6 +231,20 @@ public class KhoPanel extends JPanel {
         TableColumnModel cmCB = tableCanhBao.getColumnModel();
         cmCB.getColumn(0).setPreferredWidth(70); cmCB.getColumn(0).setMaxWidth(70);
         cmCB.getColumn(2).setPreferredWidth(50); cmCB.getColumn(2).setMaxWidth(50);
+
+        // BẮT SỰ KIỆN DOUBLE CLICK TRÊN BẢNG SẮP HẾT HÀNG -> CHUYỂN SANG NHẬP HÀNG
+        tableCanhBao.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    int row = tableCanhBao.rowAtPoint(e.getPoint());
+                    if (row != -1) {
+                        String maSP = modelCanhBao.getValueAt(row, 0).toString(); // Cột 0 là Mã SP
+                        chuyenHuongVaHienFormNhap(maSP);
+                    }
+                }
+            }
+        });
 
         JScrollPane scrollCanhBao = new JScrollPane(tableCanhBao);
         scrollCanhBao.getViewport().setBackground(Color.WHITE);
@@ -371,9 +402,6 @@ public class KhoPanel extends JPanel {
         }
     }
 
-    // ==========================================
-    // 4. XỬ LÝ PREVIEW EXCEL (MỚI)
-    // ==========================================
     private void handlePreviewExcel() {
         if (currentList == null || currentList.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Không có dữ liệu để xuất!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
@@ -382,5 +410,74 @@ public class KhoPanel extends JPanel {
         Window owner = SwingUtilities.getWindowAncestor(this);
         ExcelPreviewDialog previewDialog = new ExcelPreviewDialog(owner, currentList);
         previewDialog.setVisible(true);
+    }
+
+    // =======================================================
+    // 3. XỬ LÝ CHUYỂN TAB TỪ SỰ KIỆN DOUBLE CLICK
+    // =======================================================
+
+    private void chuyenHuongSangCTSP(String maSP) {
+        Window window = SwingUtilities.getWindowAncestor(this);
+        if (window instanceof UI.MainFrameTest) {
+            UI.MainFrameTest mainFrame = (UI.MainFrameTest) window;
+            
+            // 1. Chuyển Tab (Sẽ tự động đổi màu sidebar vì gọi hàm showCard)
+            mainFrame.showCard("Chi tiết SP"); 
+
+            // 2. Tìm CTSPPanel và đẩy mã sản phẩm vào ô tìm kiếm
+            for (Component comp : mainFrame.getContentPanel().getComponents()) {
+                if (comp instanceof UI.CTSPPanel) {
+                    try {
+                        // Gọi hàm timKiemSanPham() ở file CTSPPanel
+                        java.lang.reflect.Method method = comp.getClass().getMethod("timKiemSanPham", String.class);
+                        method.invoke(comp, maSP);
+                    } catch (Exception e) {
+                        System.out.println("Hãy thêm hàm public void timKiemSanPham(String maSP) vào CTSPPanel.java");
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    private void chuyenHuongVaHienFormNhap(String maSP) {
+        Window window = SwingUtilities.getWindowAncestor(this);
+        if (window instanceof UI.MainFrameTest) {
+            UI.MainFrameTest mainFrame = (UI.MainFrameTest) window;
+            
+            // 1. Chuyển Tab Nhập Hàng (Tự động cập nhật active state trên sidebar)
+            mainFrame.showCard("Nhập hàng");
+
+            // 2. Lấy đối tượng PNPanel đang hiển thị
+            UI.Panel.PN.PNPanel pnPanel = null;
+            for (Component comp : mainFrame.getContentPanel().getComponents()) {
+                if (comp instanceof UI.Panel.PN.PNPanel) {
+                    pnPanel = (UI.Panel.PN.PNPanel) comp;
+                    break;
+                }
+            }
+
+            // 3. Khởi tạo và mở Dialog thêm Phiếu Nhập
+            BUS.PhieuNhapBUS pnBus = new BUS.PhieuNhapBUS();
+            BUS.NCCBUS nccBus = new BUS.NCCBUS();
+            List<String> perms = Arrays.asList("VIEW_NHAPHANG", "CREATE_NHAPHANG", "DELETE_NHAPHANG", "UPDATE_NHAPHANG");
+            
+            UI.Panel.PN.PNAddDialog dialog = new UI.Panel.PN.PNAddDialog(pnPanel, pnBus, nccBus, perms);
+            
+            // Dùng reflection để gọi hàm truyenMaSanPham(maSP) trong form PNAddDialog
+            try {
+                java.lang.reflect.Method method = dialog.getClass().getMethod("truyenMaSanPham", String.class);
+                method.invoke(dialog, maSP);
+            } catch (Exception e) {
+                System.out.println("Hãy thêm hàm public void truyenMaSanPham(String maSP) vào PNAddDialog.java");
+            }
+
+            dialog.setVisible(true);
+            
+            // 4. Reload lại bảng phía dưới sau khi tắt Dialog
+            if(pnPanel != null) {
+                pnPanel.refreshData();
+            }
+        }
     }
 }
