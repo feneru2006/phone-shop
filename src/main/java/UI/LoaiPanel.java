@@ -162,14 +162,42 @@ public class LoaiPanel extends JPanel {
         });
 
         btnThem.addActionListener(e -> {
-            if(bus.them(new loaiDTO(txtMaLoai.getText(), txtDanhMuc.getText()))) {
+            String ma = txtMaLoai.getText().trim();
+            String ten = txtDanhMuc.getText().trim();
+            
+            if(ma.isEmpty() || ten.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ Mã Loại và Tên Danh Mục!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            if(!ma.matches("^L\\d+$")) {
+                JOptionPane.showMessageDialog(this, "Mã Loại không hợp lệ!\nVui lòng nhập định dạng L + số (Ví dụ: L01, L15)", "Lỗi định dạng", JOptionPane.ERROR_MESSAGE);
+                txtMaLoai.requestFocus();
+                return;
+            }
+
+            if(bus.them(new loaiDTO(ma, ten))) {
                 taiDuLieuBang(bus.getAll()); 
-            } else JOptionPane.showMessageDialog(this, "Thêm thất bại (Trùng mã hoặc rỗng)!");
+                JOptionPane.showMessageDialog(this, "Thêm Loại SP thành công!");
+            } else JOptionPane.showMessageDialog(this, "Thêm thất bại! Mã Loại này có thể đã tồn tại.");
         });
 
         btnSua.addActionListener(e -> {
-            if(bus.sua(new loaiDTO(txtMaLoai.getText(), txtDanhMuc.getText()))) {
+            String ma = txtMaLoai.getText().trim();
+            String ten = txtDanhMuc.getText().trim();
+            
+            if(ma.isEmpty() || ten.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ Mã Loại và Tên Danh Mục!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            if(!ma.matches("^L\\d+$")) {
+                JOptionPane.showMessageDialog(this, "Mã Loại không hợp lệ!\nVui lòng nhập định dạng L + số (Ví dụ: L01, L15)", "Lỗi định dạng", JOptionPane.ERROR_MESSAGE);
+                txtMaLoai.requestFocus();
+                return;
+            }
+
+            if(bus.sua(new loaiDTO(ma, ten))) {
                 taiDuLieuBang(bus.getAll()); 
+                JOptionPane.showMessageDialog(this, "Cập nhật Loại SP thành công!");
             } else JOptionPane.showMessageDialog(this, "Sửa thất bại!");
         });
 

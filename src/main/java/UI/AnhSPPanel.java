@@ -49,7 +49,7 @@ public class AnhSPPanel extends JPanel {
         setBorder(new EmptyBorder(20, 20, 20, 20));
 
         JLabel lblTitle = new JLabel("Quản lý Hình ảnh Sản phẩm");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
         add(lblTitle, BorderLayout.NORTH);
 
         JPanel pnlContent = new JPanel(new BorderLayout(20, 0));
@@ -59,11 +59,6 @@ public class AnhSPPanel extends JPanel {
         
         add(pnlContent, BorderLayout.CENTER);
         taiDuLieuLenBang();
-        
-        new Utility.AutoRefresh(30000, () -> { 
-            imgBus.reload(); 
-            taiDuLieuLenBang(); 
-        }).start();
     }
 
     // Đổi tên từ refreshSPCombo
@@ -91,13 +86,37 @@ public class AnhSPPanel extends JPanel {
 
         txtMaAnh = new JTextField(); txtUrl = new JTextField();
         cbMaSP = new JComboBox<>();
-        
         JButton btnBrowse = new JButton("Chọn ảnh từ máy...");
         btnBrowse.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnBrowse.addActionListener(e -> {
             JFileChooser fc = new JFileChooser();
+            // Gợi ý mở tại thư mục dự án hiện tại
+            fc.setCurrentDirectory(new java.io.File(".")); 
+            
             if(fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                txtUrl.setText(fc.getSelectedFile().getAbsolutePath());
+                // 1. Lấy đường dẫn tuyệt đối đầy đủ
+                String absolutePath = fc.getSelectedFile().getAbsolutePath();
+                
+                // 2. Tìm vị trí của thư mục "src"
+                String keyword = "src";
+                int index = absolutePath.indexOf(keyword);
+                
+                String finalPath = absolutePath;
+                if (index != -1) {
+                    // 3. Cắt chuỗi lấy từ "src" đến hết
+                    finalPath = absolutePath.substring(index);
+                    
+                    // 4. Chuẩn hóa dấu gạch chéo ngược (Windows) thành gạch chéo xuôi
+                    finalPath = finalPath.replace("\\", "/");
+                } else {
+                    // Trường hợp người dùng chọn ảnh nằm ngoài thư mục dự án
+                    JOptionPane.showMessageDialog(this, 
+                        "Cảnh báo: Ảnh phải nằm trong thư mục 'src' của dự án phoneshop!", 
+                        "Sai vị trí", JOptionPane.WARNING_MESSAGE);
+                }
+                
+                // 5. Hiển thị đường dẫn tương đối lên TextField và xem trước
+                txtUrl.setText(finalPath);
                 capNhatXemTruoc(txtUrl.getText());
             }
         });
@@ -109,15 +128,49 @@ public class AnhSPPanel extends JPanel {
         JButton btnReload = taoNut("Làm mới", "#64748B");
 
         btnThem.addActionListener(e -> {
-            if(imgBus.add(new anhspDTO(txtMaAnh.getText(), cbMaSP.getSelectedItem().toString(), txtUrl.getText(), true))) {
+            String maAnh = txtMaAnh.getText().trim();
+            String url = txtUrl.getText().trim();
+            
+            if(maAnh.isEmpty() || url.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập Mã Ảnh và bấm nút Chọn ảnh từ máy!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            if(!maAnh.matches("^A\\d+$")) {
+                JOptionPane.showMessageDialog(this, "Mã Ảnh không hợp lệ!\nVui lòng nhập định dạng A + số (Ví dụ: A01, A99)", "Lỗi định dạng", JOptionPane.ERROR_MESSAGE);
+                txtMaAnh.requestFocus();
+                return;
+            }
+            if(cbMaSP.getSelectedItem() == null) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn một Sản Phẩm để gán ảnh!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            String maSP = cbMaSP.getSelectedItem().toString();
+            if(imgBus.add(new anhspDTO(maAnh, maSP, url, true))) {
                 taiDuLieuLenBang(); 
-            } else JOptionPane.showMessageDialog(this, "Mã ảnh đã tồn tại!");
+                JOptionPane.showMessageDialog(this, "Thêm Ảnh thành công!");
+            } else JOptionPane.showMessageDialog(this, "Mã ảnh này đã tồn tại!");
         });
 
         btnSua.addActionListener(e -> {
-            if(imgBus.update(new anhspDTO(txtMaAnh.getText(), cbMaSP.getSelectedItem().toString(), txtUrl.getText(), true))) {
-                taiDuLieuLenBang(); 
+            String maAnh = txtMaAnh.getText().trim();
+            String url = txtUrl.getText().trim();
+            
+            if(maAnh.isEmpty() || url.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập Mã Ảnh và bấm nút Chọn ảnh từ máy!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                return;
             }
+            if(!maAnh.matches("^A\\d+$")) {
+                JOptionPane.showMessageDialog(this, "Mã Ảnh không hợp lệ!\nVui lòng nhập định dạng A + số (Ví dụ: A01, A99)", "Lỗi định dạng", JOptionPane.ERROR_MESSAGE);
+                txtMaAnh.requestFocus();
+                return;
+            }
+
+            String maSP = cbMaSP.getSelectedItem() != null ? cbMaSP.getSelectedItem().toString() : "";
+            if(imgBus.update(new anhspDTO(maAnh, maSP, url, true))) {
+                taiDuLieuLenBang(); 
+                JOptionPane.showMessageDialog(this, "Cập nhật Ảnh thành công!");
+            } else JOptionPane.showMessageDialog(this, "Sửa thất bại!");
         });
 
         btnXoa.addActionListener(e -> { 

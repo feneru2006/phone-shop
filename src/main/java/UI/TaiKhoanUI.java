@@ -261,6 +261,14 @@ public class TaiKhoanUI extends JPanel {
     // 3. CÁC FORM: THÊM, SỬA TÀI KHOẢN, SỬA QUYỀN
     // ==========================================================
     private void showAddAccountDialog() {
+        // Lấy danh sách ID nhân viên chưa có tài khoản từ database
+        ArrayList<String[]> availableEmployees = accountDAO.getAvailableEmployees();
+
+        if (availableEmployees.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Tất cả nhân viên đã có tài khoản!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Thêm tài khoản mới", true);
         dialog.setSize(420, 480);
         dialog.setLocationRelativeTo(this);
@@ -281,11 +289,19 @@ public class TaiKhoanUI extends JPanel {
         bodyPanel.setBackground(Color.WHITE);
         bodyPanel.setBorder(new EmptyBorder(25, 30, 25, 30));
 
-        JTextField txtId = createModernTextField();
+        // Sử dụng JComboBox thay vì JTextField cho ID
+        JComboBox<String> cbId = new JComboBox<>();
+        cbId.setBackground(Color.WHITE);
+        cbId.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        cbId.setPreferredSize(new Dimension(200, 38));
+        for (String[] emp : availableEmployees) {
+            cbId.addItem(emp[0] + " - " + emp[1]); // Hiển thị MANV - Họ tên
+        }
+
         JTextField txtTen = createModernTextField();
 
         JPasswordField txtPass = new JPasswordField();
-        txtPass.setBorder(txtId.getBorder());
+        txtPass.setBorder(txtTen.getBorder());
         txtPass.setPreferredSize(new Dimension(200, 38));
         txtPass.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
@@ -302,7 +318,7 @@ public class TaiKhoanUI extends JPanel {
         cbQuyen.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         cbQuyen.setPreferredSize(new Dimension(200, 38));
 
-        bodyPanel.add(createInputGroup("Mã tài khoản (ID):", txtId));
+        bodyPanel.add(createInputGroup("Chọn Nhân viên (ID):", cbId));
         bodyPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         bodyPanel.add(createInputGroup("Tên đăng nhập:", txtTen));
         bodyPanel.add(Box.createRigidArea(new Dimension(0, 15)));
@@ -322,14 +338,15 @@ public class TaiKhoanUI extends JPanel {
         btnHuy.addActionListener(e -> dialog.dispose());
 
         btnLuu.addActionListener(e -> {
-            String id = txtId.getText().trim();
+            String selected = (String) cbId.getSelectedItem();
+            String id = selected.split(" - ")[0]; // Tách lấy MANV
             String ten = txtTen.getText().trim();
             String pass = new String(txtPass.getPassword());
 
             String quyenFull = cbQuyen.getSelectedItem().toString();
             String quyen = quyenFull.split(" - ")[0].trim();
 
-            if (id.isEmpty() || ten.isEmpty() || pass.isEmpty()) {
+            if (ten.isEmpty() || pass.isEmpty()) {
                 JOptionPane.showMessageDialog(dialog, "Vui lòng nhập đầy đủ thông tin!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
                 return;
             }
@@ -347,7 +364,7 @@ public class TaiKhoanUI extends JPanel {
                     JOptionPane.showMessageDialog(dialog, "Thêm tài khoản thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
                     dialog.dispose();
                 } else {
-                    JOptionPane.showMessageDialog(dialog, "Thêm thất bại! Kiểm tra lại mã ID (không được trùng).", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(dialog, "Thêm thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 }
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(dialog, "Đã có lỗi xảy ra khi lưu!", "Lỗi", JOptionPane.ERROR_MESSAGE);

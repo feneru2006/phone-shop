@@ -48,6 +48,22 @@ public class AccountDAO {
         return list;
     }
 
+    public ArrayList<String[]> getAvailableEmployees() {
+        ArrayList<String[]> list = new ArrayList<>();
+        String sql = "SELECT MANV, hoten FROM nhanvien WHERE MANV NOT IN (SELECT id FROM account)";
+        try (Connection conn = DAL.DAO.DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                list.add(new String[]{rs.getString("MANV"), rs.getString("hoten")});
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     // ==========================================================
     // THÊM MỚI: Lấy danh sách tài khoản theo mã quyền
     // ==========================================================

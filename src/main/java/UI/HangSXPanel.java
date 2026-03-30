@@ -157,20 +157,48 @@ public class HangSXPanel extends JPanel {
         });
 
         btnThem.addActionListener(e -> {
-            if(bus.them(new hangsxDTO(txtMaNSX.getText(), txtTenNSX.getText()))) {
+                String ma = txtMaNSX.getText().trim();
+            String ten = txtTenNSX.getText().trim();
+            
+            if(ma.isEmpty() || ten.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ Mã Hãng và Tên Thương Hiệu!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            if(!ma.matches("^HSX\\d+$")) {
+                JOptionPane.showMessageDialog(this, "Mã Hãng không hợp lệ!\nVui lòng nhập định dạng HSX + số (Ví dụ: HSX01, H   SX02)", "Lỗi định dạng", JOptionPane.ERROR_MESSAGE);
+                txtMaNSX.requestFocus();
+                return;
+            }
+
+            if(bus.them(new hangsxDTO(ma, ten))) {
                 taiDuLieuBang(bus.getAll());
-            } else JOptionPane.showMessageDialog(this, "Thêm thất bại (Trùng mã hoặc rỗng)!");
+                JOptionPane.showMessageDialog(this, "Thêm Hãng SX thành công!");
+            } else JOptionPane.showMessageDialog(this, "Thêm thất bại! Mã Hãng này có thể đã tồn tại.");
         });
 
         btnSua.addActionListener(e -> {
-            if(bus.sua(new hangsxDTO(txtMaNSX.getText(), txtTenNSX.getText()))) {
+            String ma = txtMaNSX.getText().trim();
+            String ten = txtTenNSX.getText().trim();
+            
+            if(ma.isEmpty() || ten.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ Mã Hãng và Tên Thương Hiệu!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            if(!ma.matches("^HSX\\d+$")) {
+                JOptionPane.showMessageDialog(this, "Mã Hãng không hợp lệ!\nVui lòng nhập định dạng HSX + số (Ví dụ: HSX01, HSX02)", "Lỗi định dạng", JOptionPane.ERROR_MESSAGE);
+                txtMaNSX.requestFocus();
+                return;
+            }
+
+            if(bus.sua(new hangsxDTO(ma, ten))) {
                 taiDuLieuBang(bus.getAll());
+                JOptionPane.showMessageDialog(this, "Cập nhật Hãng SX thành công!");
             } else JOptionPane.showMessageDialog(this, "Sửa thất bại!");
         });
 
         btnXoa.addActionListener(e -> {
             if(txtMaNSX.getText().isEmpty()) return;
-            if(JOptionPane.showConfirmDialog(this, "Xóa NSX này?") == JOptionPane.YES_OPTION) {
+            if(JOptionPane.showConfirmDialog(this, "Xóa HSX này?") == JOptionPane.YES_OPTION) {
                 if(bus.xoa(txtMaNSX.getText())) {
                     taiDuLieuBang(bus.getAll());
                     txtMaNSX.setText(""); txtTenNSX.setText("");

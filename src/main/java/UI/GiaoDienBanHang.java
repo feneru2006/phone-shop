@@ -17,18 +17,22 @@ import BUS.NhanVienBUS;
 import BUS.BanHangBUS;
 import DTO.nhanvienDTO;
 import DTO.SanPhamDTO;
+import Utility.SessionManager; 
+import BUS.KhachHangBUS; 
+import DTO.khachhangDTO; 
 
 public class GiaoDienBanHang extends JPanel {
 
     private JTable tbGioHang, tbSanPham;
     private DefaultTableModel modelSanPham, modelGioHang;
-    private JTextField txtTimKiemSP, txtSdtKhach, txtTenKhach, txtKhachDua;
+    private JTextField txtTimKiemSP, txtKhachDua;
     private JLabel lblTongTien, lblTienThua, lblNgay;
-    private JComboBox<String> cbxNhanVien; 
     
-    private JButton btnXacNhan, btnHuy, btnXuatHoaDon, btnXemLichSu, btnThemSP, btnXoa, btnTimKhach, btnThemKhach, btnTimSP;
+    private JLabel lblNhanVien; 
+    private JComboBox<String> cbxKhachHang; 
+    
+    private JButton btnXacNhan, btnHuy, btnXuatHoaDon, btnXemLichSu, btnThemSP, btnXoa, btnThemKhach, btnTimSP;
 
-    // GỌI BUS BÁN HÀNG LÊN LÀM VIỆC
     private BanHangBUS bhBUS = new BanHangBUS();
 
     private Color primaryColor = new Color(41, 128, 185);   
@@ -58,6 +62,7 @@ public class GiaoDienBanHang extends JPanel {
         setupEventTriggers();
         loadDataKhoSanPham(new SanPhamBUS().getAll()); 
         loadDataNhanVien(); 
+        loadDataKhachHang(); 
     }
 
     private JPanel createHeaderPanel() {
@@ -73,8 +78,11 @@ public class GiaoDienBanHang extends JPanel {
         pnlInfo.setBackground(Color.WHITE);
 
         pnlInfo.add(new JLabel("Nhân viên trực: "));
-        cbxNhanVien = new JComboBox<>();
-        pnlInfo.add(cbxNhanVien);
+        
+        lblNhanVien = new JLabel("Đang tải..."); 
+        lblNhanVien.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        lblNhanVien.setForeground(primaryColor);
+        pnlInfo.add(lblNhanVien);
 
         lblNgay = new JLabel("Ngày: " + java.time.LocalDate.now().toString());
         pnlInfo.add(lblNgay);
@@ -86,14 +94,38 @@ public class GiaoDienBanHang extends JPanel {
 
     private void loadDataNhanVien() {
         try {
-            cbxNhanVien.removeAllItems();
-            List<nhanvienDTO> list = new NhanVienBUS().getList();
-            if (list != null) {
-                for (nhanvienDTO nv : list) {
-                    cbxNhanVien.addItem(nv.getHoTen()); 
+            if (SessionManager.currentUser != null) {
+                String maNV = SessionManager.currentUser.getId(); 
+                String hoTenThucTe = new NhanVienBUS().layTenNhanVien(maNV);
+                
+                if (hoTenThucTe.equals("Không tìm thấy")) {
+                    hoTenThucTe = SessionManager.currentUser.getTen(); 
+                }
+                lblNhanVien.setText(hoTenThucTe);
+            } else {
+                lblNhanVien.setText("Hệ Thống");
+            }
+        } catch (Exception e) { 
+            e.printStackTrace(); 
+        }
+    }
+
+    private void loadDataKhachHang() {
+        try {
+            cbxKhachHang.removeAllItems();
+            cbxKhachHang.addItem("Khách Vãng Lai - 0000000000"); 
+            
+            KhachHangBUS khBUS = new KhachHangBUS();
+            ArrayList<khachhangDTO> listKH = khBUS.getList(); 
+            
+            if (listKH != null) {
+                for (khachhangDTO kh : listKH) {
+                    cbxKhachHang.addItem(kh.getHoTen() + " - " + kh.getSdt());
                 }
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private JPanel createGioHangPanel() {
@@ -103,9 +135,7 @@ public class GiaoDienBanHang extends JPanel {
         
         modelGioHang = new DefaultTableModel(new String[]{"STT", "Mã IMEI", "Tên SP", "Bảo hành (Tháng)", "Đơn Giá", "Thành Tiền"}, 0) {
             @Override
-            public boolean isCellEditable(int row, int column) {
-                return column == 3; 
-            }
+            public boolean isCellEditable(int row, int column) { return column == 3; }
         };
         
         tbGioHang = new JTable(modelGioHang);
@@ -155,24 +185,25 @@ public class GiaoDienBanHang extends JPanel {
         pnl.setBackground(Color.WHITE);
         pnl.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.GRAY, 1), "3. THÔNG TIN THANH TOÁN", TitledBorder.LEFT, TitledBorder.TOP, titleFont, primaryColor));
 
-        JPanel pnlKhach = new JPanel(new GridLayout(2, 1, 5, 5));
+        // --- GIAO DIỆN CHỌN KHÁCH ĐÃ ĐƯỢC CHỈNH LẠI BẰNG BORDERLAYOUT ---
+        JPanel pnlKhach = new JPanel(new BorderLayout(10, 0));
         pnlKhach.setBackground(Color.WHITE);
+        pnlKhach.setBorder(new EmptyBorder(5, 20, 5, 20));
         
-        JPanel pnlSDT = new JPanel(new FlowLayout(FlowLayout.LEFT)); 
-        pnlSDT.setBackground(Color.WHITE);
-        txtSdtKhach = new JTextField(15); 
-        btnTimKhach = createFlatButton("Tìm", primaryColor, Color.WHITE);
-        btnThemKhach = createFlatButton("Khách Mới", successColor, Color.WHITE); 
-        pnlSDT.add(new JLabel("SĐT Khách:")); pnlSDT.add(txtSdtKhach); pnlSDT.add(btnTimKhach); pnlSDT.add(btnThemKhach); 
+        cbxKhachHang = new JComboBox<>();
+        cbxKhachHang.setFont(mainFont);
+        
+        btnThemKhach = createFlatButton("Thêm Mới", successColor, Color.WHITE); 
+        btnThemKhach.setPreferredSize(new Dimension(100, 35));
+        
+        pnlKhach.add(new JLabel("Khách Hàng: "), BorderLayout.WEST); 
+        pnlKhach.add(cbxKhachHang, BorderLayout.CENTER); 
+        pnlKhach.add(btnThemKhach, BorderLayout.EAST); 
 
-        JPanel pnlTen = new JPanel(new FlowLayout(FlowLayout.LEFT)); pnlTen.setBackground(Color.WHITE);
-        txtTenKhach = new JTextField(25); txtTenKhach.setEditable(false); 
-        pnlTen.add(new JLabel("Họ Tên:")); pnlTen.add(txtTenKhach);
-        pnlKhach.add(pnlSDT); pnlKhach.add(pnlTen);
-
+        // --- TÍNH TIỀN ---
         JPanel pnlTien = new JPanel(new GridLayout(3, 2, 10, 15)); 
         pnlTien.setBackground(Color.WHITE);
-        pnlTien.setBorder(new EmptyBorder(10, 20, 10, 20)); 
+        pnlTien.setBorder(new EmptyBorder(5, 20, 5, 20)); 
         
         lblTongTien = new JLabel("0 VNĐ"); lblTongTien.setForeground(dangerColor); lblTongTien.setFont(new Font("Segoe UI", Font.BOLD, 22)); 
         txtKhachDua = new JTextField(""); lblTienThua = new JLabel("0 VNĐ"); lblTienThua.setFont(new Font("Segoe UI", Font.BOLD, 18));
@@ -187,14 +218,24 @@ public class GiaoDienBanHang extends JPanel {
     }
 
     private JPanel createChucNangPanel() {
-        JPanel pnl = new JPanel(new GridLayout(2, 2, 10, 10));
+        JPanel pnl = new JPanel(new GridLayout(3, 2, 10, 10));
         pnl.setBackground(Color.WHITE);
         pnl.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.GRAY, 1), "4. CHỨC NĂNG", TitledBorder.LEFT, TitledBorder.TOP, titleFont, primaryColor));
+        
         btnXacNhan = createFlatButton("XÁC NHẬN CHỐT ĐƠN", successColor, Color.WHITE);
         btnHuy = createFlatButton("HỦY GIỎ HÀNG", dangerColor, Color.WHITE);
         btnXuatHoaDon = createFlatButton("XUẤT HÓA ĐƠN", primaryColor, Color.WHITE);
         btnXemLichSu = createFlatButton("XEM LỊCH SỬ", new Color(241, 196, 15), Color.BLACK);
-        pnl.add(btnXacNhan); pnl.add(btnHuy); pnl.add(btnXuatHoaDon); pnl.add(btnXemLichSu);
+        
+        JButton btnInBaoHanh = createFlatButton("IN BẢO HÀNH", new Color(142, 68, 173), Color.WHITE);
+        btnInBaoHanh.addActionListener(e -> hienThiPhieuBaoHanh()); 
+
+        pnl.add(btnXacNhan); 
+        pnl.add(btnHuy); 
+        pnl.add(btnXuatHoaDon); 
+        pnl.add(btnInBaoHanh); 
+        pnl.add(btnXemLichSu); 
+        
         return pnl;
     }
 
@@ -227,7 +268,6 @@ public class GiaoDienBanHang extends JPanel {
         try {
             modelSanPham.setRowCount(0); 
             for (SanPhamDTO sp : listSP) {
-                // GỌI QUA BUS
                 int slHienThi = bhBUS.getSoLuongMayRanh(sp.getMaSP());
                 Object[] dataKM = bhBUS.getGiaKhuyenMai(sp.getMaSP(), sp.getGia());
                 
@@ -283,9 +323,12 @@ public class GiaoDienBanHang extends JPanel {
             try { tongTien = Double.parseDouble(lblTongTien.getText().replaceAll("[^\\d]", "")); } catch (Exception ex) {}
             try { khachDua = Double.parseDouble(txtKhachDua.getText().replaceAll("[^\\d]", "")); } catch (Exception ex) {}
             
-            String tenKhach = txtTenKhach.getText().isEmpty() ? "Khách Vãng Lai" : txtTenKhach.getText();
-            String sdt = txtSdtKhach.getText().trim();
-            String tenNV = cbxNhanVien.getSelectedItem() != null ? cbxNhanVien.getSelectedItem().toString() : "Hệ Thống";
+            String selectedKhach = cbxKhachHang.getSelectedItem() != null ? cbxKhachHang.getSelectedItem().toString() : "Khách Vãng Lai - 0000000000";
+            String[] parts = selectedKhach.split(" - ");
+            String tenKhach = parts[0];
+            String sdt = parts.length > 1 ? parts[1] : "0000000000";
+            
+            String tenNV = lblNhanVien.getText();
             
             hienThiHoaDon("BẢN NHÁP (CHƯA LƯU)", tenKhach, sdt, tenNV, tongTien, khachDua, khachDua - tongTien, null);
         });
@@ -296,20 +339,10 @@ public class GiaoDienBanHang extends JPanel {
             else loadDataKhoSanPham(new SanPhamBUS().timKiem("Tất cả", keyword));
         });
 
-        btnTimKhach.addActionListener(e -> {
-            String sdt = txtSdtKhach.getText().trim();
-            if (!sdt.matches("^0\\d{9}$")) { JOptionPane.showMessageDialog(this, "SĐT sai định dạng!"); return; }
-            
-            // GỌI QUA BUS
-            String ten = bhBUS.getTenKhachBySDT(sdt);
-            if (ten != null) txtTenKhach.setText(ten);
-            else { txtTenKhach.setText(""); JOptionPane.showMessageDialog(this, "Không tìm thấy khách! Bấm 'Khách Mới' để thêm."); }
-        });
-
+        // --- NÚT THÊM KHÁCH HÀNG MỚI ĐÃ ĐƯỢC GIỮ NGUYÊN ---
         btnThemKhach.addActionListener(e -> {
             JTextField txtTen = new JTextField();
             JTextField txtSDT = new JTextField();
-            txtSDT.setText(txtSdtKhach.getText()); 
             
             JComboBox<String> cbGioiTinh = new JComboBox<>(new String[]{"Nam", "Nữ"});
             JTextField txtDiaChi = new JTextField();
@@ -328,10 +361,13 @@ public class GiaoDienBanHang extends JPanel {
                 if (!sdt.matches("^0\\d{9}$")) { JOptionPane.showMessageDialog(this, "SĐT sai định dạng!"); return; }
 
                 try {
-                    // GỌI QUA BUS THÊM KHÁCH
                     bhBUS.themKhachHangNhanh(ten, sdt, gioiTinh, diaChi);
                     JOptionPane.showMessageDialog(this, "Đã thêm khách hàng mới thành công!");
-                    txtSdtKhach.setText(sdt); txtTenKhach.setText(ten);
+                    
+                    String khachMoi = ten + " - " + sdt;
+                    cbxKhachHang.addItem(khachMoi);
+                    cbxKhachHang.setSelectedItem(khachMoi);
+                    
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(this, ex.getMessage());
                 }
@@ -350,13 +386,11 @@ public class GiaoDienBanHang extends JPanel {
             try { ton = Integer.parseInt(tbSanPham.getValueAt(row, 2).toString().trim()); } catch(Exception ex){}
             if (ton <= 0) { JOptionPane.showMessageDialog(this,  "Máy này đã hết hàng!"); return; }
 
-            // Lấy list IMEI đang nằm trong giỏ để không bị trùng
             List<String> imeiTrongGio = new ArrayList<>();
             for (int i = 0; i < modelGioHang.getRowCount(); i++) {
                 imeiTrongGio.add(modelGioHang.getValueAt(i, 1).toString().trim());
             }
 
-            // GỌI QUA BUS TÌM IMEI
             String realIMEI = bhBUS.getIMEIKhaDung(maSP, imeiTrongGio);
 
             if (realIMEI != null) {
@@ -381,7 +415,6 @@ public class GiaoDienBanHang extends JPanel {
             if (tbGioHang.isEditing()) tbGioHang.getCellEditor().stopCellEditing();
 
             if (modelGioHang.getRowCount() == 0) { JOptionPane.showMessageDialog(this, " Giỏ hàng đang trống!"); return; }
-            if (txtTenKhach.getText().isEmpty()) { JOptionPane.showMessageDialog(this, " Bắt buộc phải nhập Khách Hàng!"); txtSdtKhach.requestFocus(); return; }
 
             try {
                 double tongTien = Double.parseDouble(lblTongTien.getText().replaceAll("[^\\d]", ""));
@@ -393,8 +426,20 @@ public class GiaoDienBanHang extends JPanel {
                 if (khachDua < tongTien) { JOptionPane.showMessageDialog(this, "️ Khách đưa THIẾU TIỀN!"); txtKhachDua.requestFocus(); return; }
                 
                 double tienThua = khachDua - tongTien;
-                String sdt = txtSdtKhach.getText().trim();
-                String tenNV = cbxNhanVien.getSelectedItem() != null ? cbxNhanVien.getSelectedItem().toString() : "";
+                
+                String selectedKhach = cbxKhachHang.getSelectedItem() != null ? cbxKhachHang.getSelectedItem().toString() : "";
+                String[] parts = selectedKhach.split(" - ");
+                String tenKhach = parts[0];
+                String sdt = parts.length > 1 ? parts[1] : "";
+                
+                // --- BẮT LỖI KHÁCH VÃNG LAI Ở ĐÂY ---
+                if (sdt.isEmpty() || sdt.equals("0000000000")) { 
+                    JOptionPane.showMessageDialog(this, "Bạn bắt buộc phải chọn Khách Hàng có thật hoặc Thêm Khách Mới để lưu Hóa Đơn vào CSDL!"); 
+                    cbxKhachHang.requestFocus();
+                    return; 
+                }
+                
+                String tenNV = lblNhanVien.getText();
 
                 List<Object[]> cartItems = new ArrayList<>();
                 for (int i = 0; i < modelGioHang.getRowCount(); i++) {
@@ -404,18 +449,17 @@ public class GiaoDienBanHang extends JPanel {
                     cartItems.add(new Object[]{imei, donGia, soThangBH});
                 }
 
-                // GỌI BUS THỰC THI TRANSACTION
                 List<String> listKetQua = bhBUS.chotDonHang(sdt, tenNV, tongTien, cartItems);
 
-                // Lấy cái mã HĐ ở vị trí số 0 ra
                 String maHDMoi = listKetQua.get(0);
-                listKetQua.remove(0); // Xóa nó khỏi list, phần còn lại toàn bộ là mã CTHD
+                listKetQua.remove(0); 
 
                 JOptionPane.showMessageDialog(this, "XUẤT SẮC! Đã lưu Hóa Đơn " + maHDMoi + " thành công!");
-                hienThiHoaDon(maHDMoi, txtTenKhach.getText(), sdt, tenNV, tongTien, khachDua, tienThua, listKetQua);
+                hienThiHoaDon(maHDMoi, tenKhach, sdt, tenNV, tongTien, khachDua, tienThua, listKetQua);
                 
                 modelGioHang.setRowCount(0); capNhatTongTien(); 
-                txtKhachDua.setText(""); txtTenKhach.setText(""); txtSdtKhach.setText("");
+                txtKhachDua.setText(""); 
+                cbxKhachHang.setSelectedIndex(0); 
                 lblTienThua.setText("0 VNĐ");
                 loadDataKhoSanPham(new SanPhamBUS().getAll());
                 
@@ -433,33 +477,26 @@ public class GiaoDienBanHang extends JPanel {
             DefaultTableModel mdlLS = new DefaultTableModel(cols, 0) {
                 @Override 
                 public boolean isCellEditable(int row, int column) { 
-                    return false; // Khóa không cho người dùng click đúp sửa dữ liệu lịch sử
+                    return false; 
                 }
             };
             
             JTable tbLS = new JTable(mdlLS); 
             tbLS.setRowHeight(30);
             
-            // --- CÁC THIẾT LẬP MỚI ĐƯỢC THÊM VÀO ĐÂY ---
-            // 1. Đồng bộ style giao diện với các bảng khác
             styleTable(tbLS);
 
-            // 2. Khóa kéo thả đổi vị trí và kéo giãn kích thước cột
             tbLS.getTableHeader().setReorderingAllowed(false);
             tbLS.getTableHeader().setResizingAllowed(false);
             
-            // 3. Tự động dàn đều không gian (flow)
             tbLS.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
             
-            // 4. Chia lại tỷ lệ chiều rộng các cột cho hợp lý
-            tbLS.getColumnModel().getColumn(0).setPreferredWidth(80);  // Mã HĐ
-            tbLS.getColumnModel().getColumn(1).setPreferredWidth(100); // Mã KH
-            tbLS.getColumnModel().getColumn(2).setPreferredWidth(120); // Mã NV
-            tbLS.getColumnModel().getColumn(3).setPreferredWidth(160); // Thời Gian Lập
-            tbLS.getColumnModel().getColumn(4).setPreferredWidth(140); // Tổng Tiền
-            // ------------------------------------------
+            tbLS.getColumnModel().getColumn(0).setPreferredWidth(80);  
+            tbLS.getColumnModel().getColumn(1).setPreferredWidth(100); 
+            tbLS.getColumnModel().getColumn(2).setPreferredWidth(120); 
+            tbLS.getColumnModel().getColumn(3).setPreferredWidth(160); 
+            tbLS.getColumnModel().getColumn(4).setPreferredWidth(140); 
             
-            // Lấy dữ liệu và Format lại tiền
             List<Object[]> lichSu = bhBUS.getLichSuHoaDon();
             for (Object[] row : lichSu) {
                 double tien = (Double) row[4];
@@ -518,7 +555,6 @@ public class GiaoDienBanHang extends JPanel {
             
             double giaGoc = giaDaGiam;
             if (danhSachMaCTHD != null) { 
-                // GỌI BUS LẤY GIÁ GỐC
                 giaGoc = bhBUS.getGiaGocByIMEI(imei);
             }
 
@@ -570,5 +606,75 @@ public class GiaoDienBanHang extends JPanel {
         
         JPanel pnlBot = new JPanel(); pnlBot.add(btnIn); dialogHD.add(pnlBot, BorderLayout.SOUTH);
         dialogHD.setVisible(true);
+    }
+
+    private void hienThiPhieuBaoHanh() {
+        if (modelGioHang.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(this, "⚠️ Giỏ hàng đang trống! Chưa có sản phẩm để in bảo hành.");
+            return;
+        }
+
+        String selectedKhach = cbxKhachHang.getSelectedItem() != null ? cbxKhachHang.getSelectedItem().toString() : "Khách Vãng Lai - 0000000000";
+        String[] parts = selectedKhach.split(" - ");
+        String tenKhach = parts[0];
+        String sdt = parts.length > 1 ? parts[1] : "0000000000";
+        
+        String tenNV = lblNhanVien.getText();
+
+        JDialog dialogBH = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "PHIẾU BẢO HÀNH", true);
+        dialogBH.setSize(650, 500);
+        dialogBH.setLocationRelativeTo(this);
+        JTextArea txtBH = new JTextArea();
+        txtBH.setFont(new Font("Courier New", Font.PLAIN, 14));
+        txtBH.setEditable(false);
+        txtBH.setMargin(new Insets(10, 10, 10, 10));
+
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        String ngayGioDep = java.time.LocalDateTime.now().format(formatter);
+
+        txtBH.append("===========================================================================\n");
+        txtBH.append("                        PHIẾU BẢO HÀNH CHÍNH HÃNG                          \n");
+        txtBH.append("===========================================================================\n");
+        txtBH.append(" Ngày mua  : " + ngayGioDep + "\n");
+        txtBH.append(" Nhân viên : " + tenNV + "\n");
+        txtBH.append(" Khách hàng: " + tenKhach + " - " + sdt + "\n");
+        txtBH.append("---------------------------------------------------------------------------\n");
+        txtBH.append(String.format(" %-30s | %-15s | %s\n", "TÊN MÁY", "MÃ IMEI", "THỜI HẠN BH"));
+        txtBH.append("---------------------------------------------------------------------------\n");
+
+        boolean coBaoHanh = false;
+        for (int i = 0; i < modelGioHang.getRowCount(); i++) {
+            String tenMay = modelGioHang.getValueAt(i, 2).toString();
+            if (tenMay.contains("(KM")) tenMay = tenMay.substring(0, tenMay.indexOf("(KM")).trim();
+            if (tenMay.length() > 28) tenMay = tenMay.substring(0, 25) + "...";
+            
+            String imei = modelGioHang.getValueAt(i, 1).toString();
+            String thoiHan = modelGioHang.getValueAt(i, 3).toString();
+            
+            if (!thoiHan.equals("0") && !thoiHan.isEmpty()) {
+                txtBH.append(String.format(" %-30s | %-15s | %s\n", tenMay, imei, thoiHan + " Tháng"));
+                coBaoHanh = true;
+            }
+        }
+
+        if (!coBaoHanh) {
+            txtBH.append(" Không có sản phẩm nào áp dụng bảo hành trong đơn hàng này.\n");
+        }
+
+        txtBH.append("---------------------------------------------------------------------------\n");
+        txtBH.append(" ĐIỀU KIỆN BẢO HÀNH:\n");
+        txtBH.append(" 1. Máy còn nguyên tem, không rơi vỡ, cấn móp, vào nước.\n");
+        txtBH.append(" 2. Lỗi do nhà sản xuất (Phần cứng, màn hình, mainboard...).\n");
+        txtBH.append(" 3. Quý khách vui lòng đọc SĐT hoặc giữ phiếu này khi đến bảo hành.\n");
+        txtBH.append("===========================================================================\n");
+        txtBH.append("                 TRUNG TÂM BẢO HÀNH PHONE SHOP - XIN CẢM ƠN!               \n");
+
+        dialogBH.add(new JScrollPane(txtBH), BorderLayout.CENTER);
+
+        JButton btnIn = createFlatButton("🖨️ XUẤT FILE PDF / IN BẢO HÀNH", new Color(142, 68, 173), Color.WHITE);
+        btnIn.addActionListener(e -> { try { txtBH.print(); } catch (Exception ex) {} });
+        JPanel pnlBot = new JPanel(); pnlBot.add(btnIn); dialogBH.add(pnlBot, BorderLayout.SOUTH);
+        
+        dialogBH.setVisible(true);
     }
 }
