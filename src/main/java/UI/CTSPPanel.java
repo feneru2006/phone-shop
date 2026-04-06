@@ -427,8 +427,22 @@ public class CTSPPanel extends JPanel {
         }
     }
     public void timKiemSanPham(String maSP) {
-    if (txtSearch != null) {
-        txtSearch.setText(maSP);
+        // Duyệt qua các item trong ComboBox Sản phẩm
+        if (cbSanPham != null) {
+            for (int i = 0; i < cbSanPham.getItemCount(); i++) {
+                String item = cbSanPham.getItemAt(i);
+                // Các item được add với định dạng: "Mã SP - Tên SP"
+                // Ta kiểm tra xem item có bắt đầu bằng Mã SP + " - " hay không
+                if (item.startsWith(maSP + " - ")) {
+                    cbSanPham.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
+        
+        // (Tùy chọn) Reset ô tìm kiếm IMEI về rỗng để đảm bảo kết quả lọc ra chính xác toàn bộ lô hàng của SP đó
+        if (txtSearch != null) {
+            txtSearch.setText("");
+        }
     }
-}
 }

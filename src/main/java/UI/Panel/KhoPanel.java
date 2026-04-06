@@ -40,41 +40,101 @@ public class KhoPanel extends JPanel {
 
     private List<SanPhamDTO> currentList = new ArrayList<>();
     private int currentPage = 1;
-    private int rowsPerPage = 20; // Sẽ được cập nhật động
+    private int rowsPerPage = 20; 
     private int totalPages = 1;
     private JLabel lblPageInfo;
     private JButton btnFirst, btnPrev, btnNext, btnLast;
     
-    // Biến lưu JScrollPane chứa bảng Kho
     private JScrollPane scrollKho;
 
     public KhoPanel() {
-        sanPhamBUS = new SanPhamBUS();
         initUI();
-        loadDataKho(sanPhamBUS.getAll());
-        loadLowStock();
+        
+        modelKho.setRowCount(0);
+        modelKho.addRow(new Object[]{"", "", "⏳ Đang tải dữ liệu từ máy chủ...", "", ""});
+        
+        loadDataAsync();
+        
         new Utility.AutoRefresh(30000, () -> { 
-            sanPhamBUS.reload(); 
-            loadDataKho(sanPhamBUS.getAll()); 
-            loadLowStock(); 
+            if (sanPhamBUS != null) {
+                sanPhamBUS.reload(); 
+                loadDataAsync(); 
+            }
         }).start();
+    }
+
+    // THÊM HÀM NÀY ĐỂ BÊN MAINFRAME CÓ THỂ GỌI ĐƯỢC
+    public void reloadData() {
+        if (sanPhamBUS != null) sanPhamBUS.reload();
+        if (txtTimKiem != null) txtTimKiem.setText("");
+        if (modelKho != null) {
+            modelKho.setRowCount(0);
+            modelKho.addRow(new Object[]{"", "", "⏳ Đang cập nhật dữ liệu mới...", "", ""});
+        }
+        loadDataAsync();
+    }
+
+    private void loadDataAsync() {
+        if (btnLamMoi != null) btnLamMoi.setEnabled(false);
+        if (btnTimKiem != null) btnTimKiem.setEnabled(false);
+        if (btnXuatExcel != null) btnXuatExcel.setEnabled(false);
+
+        SwingWorker<List<SanPhamDTO>, Void> worker = new SwingWorker<List<SanPhamDTO>, Void>() {
+            @Override
+            protected List<SanPhamDTO> doInBackground() throws Exception {
+                if (sanPhamBUS == null) {
+                    sanPhamBUS = new SanPhamBUS(); 
+                }
+                return sanPhamBUS.getAll();
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    List<SanPhamDTO> data = get();
+                    loadDataKho(data);
+                    loadLowStock(data); 
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    modelKho.setRowCount(0);
+                    modelKho.addRow(new Object[]{"", "", "❌ Lỗi kết nối cơ sở dữ liệu!", "", ""});
+                } finally {
+                    if (btnLamMoi != null) btnLamMoi.setEnabled(true);
+                    if (btnTimKiem != null) btnTimKiem.setEnabled(true);
+                    if (btnXuatExcel != null) btnXuatExcel.setEnabled(true);
+                }
+            }
+        };
+        worker.execute();
     }
 
     private void initUI() {
         setLayout(new BorderLayout());
         setBackground(Color.decode("#F8FAFF"));
 
-        layeredPane = new JLayeredPane();
+        layeredPane = new JLayeredPane() {
+            @Override
+            public void doLayout() {
+                super.doLayout();
+                int w = getWidth();
+                int h = getHeight();
+                
+                if (mainContent != null) {
+                    mainContent.setBounds(0, 0, w, h);
+                }
+                if (pnlCanhBao != null) {
+                    int cbWidth = 380;
+                    int cbHeight = 280;
+                    pnlCanhBao.setBounds(w - cbWidth - 30, h - cbHeight - 30, cbWidth, cbHeight);
+                }
+            }
+        };
         add(layeredPane, BorderLayout.CENTER);
 
-        // ==========================================
-        // 1. NỘI DUNG CHÍNH (Lớp đáy)
-        // ==========================================
         mainContent = new JPanel(new BorderLayout(15, 10));
         mainContent.setBackground(Color.decode("#F8FAFF"));
         mainContent.setBorder(new EmptyBorder(0, 15, 15, 15));
 
-        // --- TOP PANEL ---
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setOpaque(false);
 
@@ -102,14 +162,9 @@ public class KhoPanel extends JPanel {
         btnLamMoi.setBackground(Color.decode("#10B981"));
         btnLamMoi.setForeground(Color.WHITE);
         styleButton(btnLamMoi);
-        btnLamMoi.addActionListener(e -> {
-            sanPhamBUS.reload();
-            txtTimKiem.setText("");
-            loadDataKho(sanPhamBUS.getAll());
-            loadLowStock();
-        });
+        // SỬA: Gọi chung hàm reloadData
+        btnLamMoi.addActionListener(e -> reloadData());
 
-        // NÚT XUẤT EXCEL
         btnXuatExcel = new JButton("Xuất Excel");
         btnXuatExcel.setBackground(Color.decode("#217346"));
         btnXuatExcel.setForeground(Color.WHITE);
@@ -131,7 +186,6 @@ public class KhoPanel extends JPanel {
 
         mainContent.add(topPanel, BorderLayout.NORTH);
 
-        // --- CENTER PANEL (TABLE) ---
         JPanel centerWrapper = new JPanel(new BorderLayout(0, 10));
         centerWrapper.setOpaque(false);
 
@@ -151,15 +205,17 @@ public class KhoPanel extends JPanel {
         cm.getColumn(2).setPreferredWidth(350); 
         cm.getColumn(4).setPreferredWidth(150);
 
-        // BẮT SỰ KIỆN DOUBLE CLICK TRÊN BẢNG KHO CHÍNH -> CHUYỂN SANG CTSP
         tableKho.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
                     int row = tableKho.rowAtPoint(e.getPoint());
                     if (row != -1) {
-                        String maSP = modelKho.getValueAt(row, 1).toString(); // Cột 1 là Mã SP
-                        chuyenHuongSangCTSP(maSP);
+                        // Đổi thành cột 1 (chứa Mã SP) thay vì cột 2 (Tên Sản Phẩm)
+                        Object valMaSP = modelKho.getValueAt(row, 1); 
+                        if(valMaSP != null && !valMaSP.toString().contains("Đang tải dữ liệu") && !valMaSP.toString().contains("Đang cập nhật")) {
+                            chuyenHuongSangCTSP(valMaSP.toString());
+                        }
                     }
                 }
             }
@@ -179,25 +235,10 @@ public class KhoPanel extends JPanel {
         centerWrapper.add(createPaginationPanel(), BorderLayout.SOUTH);
         mainContent.add(centerWrapper, BorderLayout.CENTER);
 
-        // ==========================================
-        // 2. LỚP NỔI (BẢNG CẢNH BÁO)
-        // ==========================================
         setupCanhBaoUI();
 
         layeredPane.add(mainContent, JLayeredPane.DEFAULT_LAYER);
         layeredPane.add(pnlCanhBao, JLayeredPane.PALETTE_LAYER);
-
-        layeredPane.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                int w = layeredPane.getWidth();
-                int h = layeredPane.getHeight();
-                mainContent.setBounds(0, 0, w, h);
-                int cbWidth = 380;
-                int cbHeight = 280;
-                pnlCanhBao.setBounds(w - cbWidth - 30, h - cbHeight - 30, cbWidth, cbHeight);
-            }
-        });
     }
 
     private void setupCanhBaoUI() {
@@ -232,14 +273,13 @@ public class KhoPanel extends JPanel {
         cmCB.getColumn(0).setPreferredWidth(70); cmCB.getColumn(0).setMaxWidth(70);
         cmCB.getColumn(2).setPreferredWidth(50); cmCB.getColumn(2).setMaxWidth(50);
 
-        // BẮT SỰ KIỆN DOUBLE CLICK TRÊN BẢNG SẮP HẾT HÀNG -> CHUYỂN SANG NHẬP HÀNG
         tableCanhBao.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
                     int row = tableCanhBao.rowAtPoint(e.getPoint());
                     if (row != -1) {
-                        String maSP = modelCanhBao.getValueAt(row, 0).toString(); // Cột 0 là Mã SP
+                        String maSP = modelCanhBao.getValueAt(row, 0).toString();
                         chuyenHuongVaHienFormNhap(maSP);
                     }
                 }
@@ -260,7 +300,9 @@ public class KhoPanel extends JPanel {
             int newRowsPerPage = Math.max(1, (viewportHeight / rowHeight));
             if (newRowsPerPage != this.rowsPerPage) {
                 this.rowsPerPage = newRowsPerPage;
-                updateTableKho();
+                if(!currentList.isEmpty()) {
+                    updateTableKho();
+                }
             }
         }
     }
@@ -372,9 +414,8 @@ public class KhoPanel extends JPanel {
         }
     }
 
-    private void loadLowStock() {
+    private void loadLowStock(List<SanPhamDTO> all) {
         modelCanhBao.setRowCount(0);
-        List <SanPhamDTO> all = sanPhamBUS.getAll();
         if (all == null) return;
         for (SanPhamDTO sp : all) {
             if (!sp.isDeleted() && sp.getSlTon() >= 0 && sp.getSlTon() <= 10) { 
@@ -384,9 +425,14 @@ public class KhoPanel extends JPanel {
     }
 
     private void handleTimKiem() {
+        if (sanPhamBUS == null) {
+            JOptionPane.showMessageDialog(this, "Dữ liệu đang được tải, vui lòng đợi giây lát!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        
         String keyword = txtTimKiem.getText().trim();
         if (keyword.isEmpty()) {
-            loadDataKho(sanPhamBUS.getAll());
+            reloadData();
             return;
         }
         try {
@@ -412,27 +458,20 @@ public class KhoPanel extends JPanel {
         previewDialog.setVisible(true);
     }
 
-    // =======================================================
-    // 3. XỬ LÝ CHUYỂN TAB TỪ SỰ KIỆN DOUBLE CLICK
-    // =======================================================
-
-    private void chuyenHuongSangCTSP(String maSP) {
+    private void chuyenHuongSangCTSP(String tenSP) {
         Window window = SwingUtilities.getWindowAncestor(this);
         if (window instanceof UI.MainFrameTest) {
             UI.MainFrameTest mainFrame = (UI.MainFrameTest) window;
             
-            // 1. Chuyển Tab (Sẽ tự động đổi màu sidebar vì gọi hàm showCard)
             mainFrame.showCard("Chi tiết SP"); 
 
-            // 2. Tìm CTSPPanel và đẩy mã sản phẩm vào ô tìm kiếm
             for (Component comp : mainFrame.getContentPanel().getComponents()) {
                 if (comp instanceof UI.CTSPPanel) {
                     try {
-                        // Gọi hàm timKiemSanPham() ở file CTSPPanel
                         java.lang.reflect.Method method = comp.getClass().getMethod("timKiemSanPham", String.class);
-                        method.invoke(comp, maSP);
+                        method.invoke(comp, tenSP);
                     } catch (Exception e) {
-                        System.out.println("Hãy thêm hàm public void timKiemSanPham(String maSP) vào CTSPPanel.java");
+                        System.out.println("Hãy thêm hàm public void timKiemSanPham(String tenSP) vào CTSPPanel.java");
                     }
                     break;
                 }
@@ -445,10 +484,8 @@ public class KhoPanel extends JPanel {
         if (window instanceof UI.MainFrameTest) {
             UI.MainFrameTest mainFrame = (UI.MainFrameTest) window;
             
-            // 1. Chuyển Tab Nhập Hàng (Tự động cập nhật active state trên sidebar)
             mainFrame.showCard("Nhập hàng");
 
-            // 2. Lấy đối tượng PNPanel đang hiển thị
             UI.Panel.PN.PNPanel pnPanel = null;
             for (Component comp : mainFrame.getContentPanel().getComponents()) {
                 if (comp instanceof UI.Panel.PN.PNPanel) {
@@ -457,14 +494,12 @@ public class KhoPanel extends JPanel {
                 }
             }
 
-            // 3. Khởi tạo và mở Dialog thêm Phiếu Nhập
             BUS.PhieuNhapBUS pnBus = new BUS.PhieuNhapBUS();
             BUS.NCCBUS nccBus = new BUS.NCCBUS();
             List<String> perms = Arrays.asList("VIEW_NHAPHANG", "CREATE_NHAPHANG", "DELETE_NHAPHANG", "UPDATE_NHAPHANG");
             
             UI.Panel.PN.PNAddDialog dialog = new UI.Panel.PN.PNAddDialog(pnPanel, pnBus, nccBus, perms);
             
-            // Dùng reflection để gọi hàm truyenMaSanPham(maSP) trong form PNAddDialog
             try {
                 java.lang.reflect.Method method = dialog.getClass().getMethod("truyenMaSanPham", String.class);
                 method.invoke(dialog, maSP);
@@ -474,7 +509,6 @@ public class KhoPanel extends JPanel {
 
             dialog.setVisible(true);
             
-            // 4. Reload lại bảng phía dưới sau khi tắt Dialog
             if(pnPanel != null) {
                 pnPanel.refreshData();
             }

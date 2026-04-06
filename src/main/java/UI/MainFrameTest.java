@@ -9,21 +9,19 @@ import UI.Panel.LogPanel;
 import UI.Panel.BaoHanh.BaoHanhPanel;
 import UI.Panel.NCC.NCCPanel;
 import UI.Panel.PN.PNPanel;
-import UI.Utils.UIUtils; // Import UIUtils
+import UI.Utils.UIUtils; 
 import Utility.SessionManager;
 import Utility.PhanQuyen;
 import DAL.DAO.DBConnection;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-
-import org.apache.poi.ss.formula.functions.Log;
-
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
 import java.io.File;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.sql.PreparedStatement;
@@ -34,14 +32,16 @@ import java.sql.Connection;
 public class MainFrameTest extends JFrame {
     private final CardLayout cardLayout = new CardLayout();
     private final JPanel contentPanel = new JPanel(cardLayout);
+    
     private final Map<String, NavItem> navItems = new LinkedHashMap<>();
+    private final Map<String, JPanel> cachedPanels = new HashMap<>();
+    
     private JLabel pageTitleLabel;
     private JPanel menuContainer;
-    // Biến lưu trữ thông tin tài khoản đang đăng nhập
+    
     private String currentUsername;
     private String currentRole;
 
-    // --- MÀU SẮC THEME ---
     private static final Color HEADER_BG = Color.decode("#3a5170");
     private static final Color BG_APP = Color.decode("#30475e");
     private static final Color SIDEBAR_BG = Color.decode("#2C3E50");
@@ -49,7 +49,6 @@ public class MainFrameTest extends JFrame {
     private static final Color TEXT_MAIN = Color.decode("#f0faff");
     private static final Color TEXT_MUTED = Color.decode("#cbffc7");
 
-    // Constructor cập nhật để nhận tài khoản
     public MainFrameTest(String username, String role) {
         this.currentUsername = (username != null && !username.isEmpty()) ? username : "Guest";
         this.currentRole = (role != null && !role.isEmpty()) ? role : "Người dùng";
@@ -70,49 +69,19 @@ public class MainFrameTest extends JFrame {
         root.add(buildMainContent(), BorderLayout.CENTER);
 
         setContentPane(root);
-        initCards();
         
-        DashboardPanel dashboard = new DashboardPanel();
-        contentPanel.add(dashboard, "Dashboard");
-        KhuyenMaiPanel giamgia = new KhuyenMaiPanel();
-        contentPanel.add(giamgia,"Khuyến mãi");
-        KhoPanel khoPanel = new KhoPanel();
-        contentPanel.add(khoPanel, "Kho");
-        TaiKhoanUI taiKhoanUI = new TaiKhoanUI();
-        contentPanel.add(taiKhoanUI, "Tài khoản");
-        PhanQuyenUI phanQuyenUI = new PhanQuyenUI();
-        contentPanel.add(phanQuyenUI, "Phân quyền");
-        SanPhamPanel sanPhamPanel = new SanPhamPanel();
-        contentPanel.add(sanPhamPanel, "Sản phẩm");
-        PNPanel pnPanel = new PNPanel();
-        contentPanel.add(pnPanel, "Nhập hàng");
-        NCCPanel nccPanel = new NCCPanel();
-        contentPanel.add(nccPanel, "Nhà cung cấp");
-        GiaoDienBanHang banHangPanel = new GiaoDienBanHang();
-        contentPanel.add(banHangPanel, "Bán hàng");
-        BaoHanhPanel baoHanhPanel = new BaoHanhPanel();
-        contentPanel.add(baoHanhPanel, "Bảo hành");
-        contentPanel.add(new LogPanel("src/main/java/resources/file.png"),"Nhật ký");
-        contentPanel.add(new AnhSPPanel(),"Hình ảnh SP");
-        contentPanel.add(new LoaiPanel(),"Loại SP");
-        contentPanel.add(new CTSPPanel(),"Chi tiết SP");
-        contentPanel.add(new GiaoDienKhachHang(),"Khách hàng");
-        contentPanel.add(new GiaoDienNhanVien(),"Nhân viên");
-        // LogPanel logPanel = new LogPanel();
-        // contentPanel.add(logPanel, "Log");
         applyPermissionsFromDB();
+        
         showCard("Dashboard");
     }
 
     private void applyPermissionsFromDB() {
         if (SessionManager.currentUser == null) return;
         String roleCode = SessionManager.currentUser.getQuyen();
-        // 1. Nếu là Admin (AD) -> Hiển thị tất cả
         if (roleCode.equals("AD")) return;
 
-        // 2. Lấy danh sách menu từ DB
         ArrayList<String> permittedMenus = new ArrayList<>();
-        permittedMenus.add("dashboard"); // Luôn lưu dạng chữ thường để so sánh
+        permittedMenus.add("dashboard"); 
 
         try (Connection conn = DBConnection.getConnection()) {
             String sql = "SELECT c.tenCN FROM phanquyen p " +
@@ -122,17 +91,16 @@ public class MainFrameTest extends JFrame {
             ps.setString(1, roleCode);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                // Ép hết về chữ thường để tránh lỗi hoa/thường
                 permittedMenus.add(rs.getString("tenCN").toLowerCase().trim());
             }
         } catch (Exception e) { e.printStackTrace(); }
-        // 3. CHẶN CỨNG: Nếu không phải Quản lý (M) -> Xóa 3 mục nhạy cảm
+        
         if (!roleCode.equals("M")) {
             permittedMenus.remove("tài khoản");
             permittedMenus.remove("phân quyền");
             permittedMenus.remove("nhật ký");
         }
-        // 4. Gọi hàm lọc với danh sách đã chuẩn hóa
+        
         filterMenu(permittedMenus);
     }
 
@@ -141,15 +109,13 @@ public class MainFrameTest extends JFrame {
             String key = entry.getKey().toLowerCase().trim();
             NavItem item = entry.getValue();
 
-            // Nếu không có trong danh sách cho phép -> Ẩn
             if (!allowedMenus.contains(key)) {
                 item.setVisible(false);
             } else {
-                item.setVisible(true); // Đảm bảo các mục khác được hiện
+                item.setVisible(true); 
             }
         }
 
-        // QUAN TRỌNG: Làm mới lại toàn bộ Sidebar
         if (menuContainer != null) {
             menuContainer.revalidate();
             menuContainer.repaint();
@@ -169,15 +135,12 @@ public class MainFrameTest extends JFrame {
         titleBar.setPreferredSize(new Dimension(0, 55));
         titleBar.setBorder(new EmptyBorder(0, 20, 0, 30));
 
-        // Trái: Logo
-        // Bọc vào panel có FlowLayout padding để căn giữa trục Y đều với thanh tiêu đề
         JPanel leftWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 15)); 
         leftWrapper.setOpaque(false);
         
         JPanel titlePanel = UIUtils.createTitlePanel("src/main/java/resources/cart.png", "PHONE SHOP NHÓM 4", 16, Color.WHITE);
         leftWrapper.add(titlePanel);
         
-        // Phải: User Pill bo tròn
         JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 12));
         right.setOpaque(false);
 
@@ -188,12 +151,11 @@ public class MainFrameTest extends JFrame {
         avatar.setPreferredSize(new Dimension(30, 30));
 
         try {
-            File avatarFile = new File("src/main/java/resources/human.png"); // Thay bằng ảnh avatar thực tế
+            File avatarFile = new File("src/main/java/resources/human.png"); 
             if (avatarFile.exists()) {
                 Image img = new ImageIcon(avatarFile.getAbsolutePath()).getImage();
                 avatar.setImage(img);
             } else {
-                // Fallback: Nếu không tìm thấy ảnh thì hiển thị chữ cái đầu tiên của Username
                 JLabel avTxt = new JLabel(currentUsername.substring(0, 1).toUpperCase(), SwingConstants.CENTER);
                 avTxt.setForeground(Color.WHITE);
                 avTxt.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -202,19 +164,20 @@ public class MainFrameTest extends JFrame {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        // Truyền thông tin tài khoản đang đăng nhập
+        
         JLabel userInfo = new JLabel("<html><b style='color:white;'>" + currentUsername + "</b><br><font size='2' color='#94A3B8'>" + currentRole + "</font></html>");
         userPill.add(avatar);
         userPill.add(userInfo);
         right.add(userPill);
-                JButton btnLogout = new JButton("Đăng xuất");
+        
+        JButton btnLogout = new JButton("Đăng xuất");
         btnLogout.setFocusPainted(false);
         btnLogout.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnLogout.setToolTipText("Đăng xuất hệ thống");
         btnLogout.putClientProperty(com.formdev.flatlaf.FlatClientProperties.STYLE, "" +
-                "arc: 10;" +                // Bo góc
-                "background: #ef4444;" +    // Màu đỏ nhạt (Tailwind Red 500)
-                "foreground: #ffffff;" +    // Chữ trắng
+                "arc: 10;" +                
+                "background: #ef4444;" +    
+                "foreground: #ffffff;" +    
                 "borderWidth: 0;" +
                 "focusWidth: 0;");
         btnLogout.addActionListener(e -> performLogout());
@@ -265,7 +228,7 @@ public class MainFrameTest extends JFrame {
         navLabel.setHorizontalAlignment(SwingConstants.CENTER);
         container.add(navLabel);
 
-        JPanel menuContainer = new JPanel();
+        menuContainer = new JPanel();
         menuContainer.setLayout(new BoxLayout(menuContainer, BoxLayout.Y_AXIS));
         menuContainer.setOpaque(false);
         menuContainer.setBorder(new EmptyBorder(0, 10, 10, 10));
@@ -303,10 +266,8 @@ public class MainFrameTest extends JFrame {
         scroll.setBorder(null);
         scroll.getViewport().setBackground(SIDEBAR_BG);
         scroll.getVerticalScrollBar().setUnitIncrement(16);
-        // Khóa thanh cuộn
         scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        // Chặn luôn con lăn chuột
         scroll.setWheelScrollingEnabled(false);
         
         sidebar.add(scroll, BorderLayout.CENTER);
@@ -337,31 +298,70 @@ public class MainFrameTest extends JFrame {
         return main;
     }
 
-    private void initCards() {
-        for (String key : navItems.keySet()) {
-            if (key.equals("Dashboard") || key.equals("Khuyến mãi") || key.equals("Kho") ||
-             key.equals("Sản phẩm") || key.equals("Nhập hàng") || key.equals("Nhà cung cấp") ||
-              key.equals("Bán hàng")
-             || key.equals("Bảo hành") || key.equals("Nhật ký") ||  key.equals("Hình ảnh SP")
-            || key.equals("Loại SP" )|| key.equals("Nhân vi")|| key.equals("Khách hàng")) continue; 
-
-            JPanel card = new JPanel(new GridBagLayout());
-            card.setBackground(Color.WHITE);
-            card.add(new JLabel("Đang phát triển chức năng: " + key));
-            contentPanel.add(card, key);
+    private JPanel createPanelByName(String name) {
+        switch (name) {
+            case "Dashboard": return new DashboardPanel();
+            case "Khuyến mãi": return new KhuyenMaiPanel();
+            case "Kho": return new KhoPanel();
+            case "Tài khoản": return new TaiKhoanUI();
+            case "Phân quyền": return new PhanQuyenUI();
+            case "Sản phẩm": return new SanPhamPanel();
+            case "Nhập hàng": return new PNPanel();
+            case "Nhà cung cấp": return new NCCPanel();
+            case "Bán hàng": return new GiaoDienBanHang();
+            case "Bảo hành": return new BaoHanhPanel();
+            case "Nhật ký": return new LogPanel("src/main/java/resources/file.png");
+            case "Hình ảnh SP": return new AnhSPPanel();
+            case "Loại SP": return new LoaiPanel();
+            case "Chi tiết SP": return new CTSPPanel();
+            case "Khách hàng": return new GiaoDienKhachHang();
+            case "Nhân viên": return new GiaoDienNhanVien();
+            default:
+                JPanel devPanel = new JPanel(new GridBagLayout());
+                devPanel.setBackground(Color.WHITE);
+                devPanel.add(new JLabel("Đang phát triển chức năng: " + name));
+                return devPanel;
         }
     }
 
     public void showCard(String name) {
         navItems.forEach((k, v) -> v.setActive(k.equals(name)));
         if (pageTitleLabel != null) pageTitleLabel.setText(name);
+
+        boolean keepCache = name.equals("Kho") || name.equals("Dashboard");
+
+        if (keepCache) {
+            if (!cachedPanels.containsKey(name)) {
+                JPanel panel = createPanelByName(name);
+                cachedPanels.put(name, panel);
+                contentPanel.add(panel, name);
+            } else {
+                // SỬA LỖI KHÔNG LÀM MỚI KHI CLICK TAB KHO:
+                // Nếu panel Kho đã có trong cache, gọi hàm reloadData() để tải lại data mới nhất
+                JPanel existingPanel = cachedPanels.get(name);
+                if (name.equals("Kho") && existingPanel instanceof KhoPanel) {
+                    ((KhoPanel) existingPanel).reloadData();
+                }
+            }
+        } else {
+            if (cachedPanels.containsKey(name)) {
+                contentPanel.remove(cachedPanels.get(name));
+                cachedPanels.remove(name); 
+            }
+            JPanel newPanel = createPanelByName(name);
+            cachedPanels.put(name, newPanel);
+            contentPanel.add(newPanel, name);
+        }
+
         cardLayout.show(contentPanel, name);
+        contentPanel.revalidate();
+        contentPanel.repaint();
     }
+
     public JPanel getContentPanel() {
         return contentPanel;
     }
 
-    // --- LỚP NÚT SIDENAV CÓ EMOJI ---
     private class NavItem extends JPanel {
         private final JLabel labelIcon;
         private final JLabel labelText;
@@ -414,8 +414,8 @@ public class MainFrameTest extends JFrame {
             super.paintComponent(g);
         }
     }
-        private void performLogout() {
-        // 1. Hiển thị thông báo xác nhận bằng tiếng Việt
+    
+    private void performLogout() {
         int confirm = JOptionPane.showConfirmDialog(
                 this, 
                 "Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?", 
@@ -425,15 +425,12 @@ public class MainFrameTest extends JFrame {
         );
 
         if (confirm == JOptionPane.YES_OPTION) {
-            // 2. Xóa dữ liệu trong SessionManager và RolePermission (Các file bạn đã cung cấp)
             Utility.SessionManager.currentUser = null;
             Utility.RolePermission.clear(); 
             Utility.RolePermission.set(null, null);
 
-            // 3. Đóng cửa sổ hiện tại (MainFrameTest)
             this.dispose();
 
-            // 4. Mở lại màn hình Đăng nhập (LoginFrame)
             java.awt.EventQueue.invokeLater(() -> {
                 new LoginFrame().setVisible(true);
             });
